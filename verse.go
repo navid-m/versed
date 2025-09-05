@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"path/filepath"
 	"verse/database"
 	"verse/feeds"
 
@@ -20,10 +21,10 @@ func main() {
 	store := session.New(session.Config{
 		KeyLookup: "cookie:session_id",
 	})
-
+	viewsPath, _ := filepath.Abs("./views")
+	engine := mustache.New(viewsPath, ".mustache")
 	var (
-		engine = mustache.New("views", ".mustache")
-		app    = fiber.New(fiber.Config{
+		app = fiber.New(fiber.Config{
 			Views: engine,
 		})
 	)

@@ -52,8 +52,8 @@
                     <!-- User Profile Section -->
                     <div class="relative">
                         <button id="userMenuButton" class="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 rounded-md p-1">
-                            <div class="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-semibold">
-                                {{Email.charAt(0).toUpperCase()}}
+                            <div class="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-semibold" data-email="{{Email}}">
+                                <!-- Initial will be set by JavaScript -->
                             </div>
                             <span class="text-sm font-medium hidden sm:block">{{Email}}</span>
                             <i class="fas fa-chevron-down text-xs"></i>
@@ -152,7 +152,7 @@
                             </h2>
                             
                             <p class="text-gray-600 dark:text-gray-400 mb-3 text-sm leading-relaxed line-clamp-2">
-                                {{{Description}}}
+                                {{Description}}
                             </p>
                             
                             <div class="flex items-center text-xs text-gray-500 dark:text-gray-400 space-x-3">
@@ -175,281 +175,15 @@
             {{/FeedItems}}
 
             {{^FeedItems}}
-            <!-- Post 1 -->
-            <article class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md dark:hover:shadow-xl transition-shadow">
-                <div class="p-4">
-                    <div class="flex items-start space-x-3">
-                        <!-- Vote buttons -->
-                        <div class="flex flex-col items-center space-y-1 flex-shrink-0">
-                            <button class="p-1 text-orange-500 hover:text-orange-600 transition-colors">
-                                <i class="fas fa-chevron-up text-sm"></i>
-                            </button>
-                            <span class="text-xs font-medium text-orange-500">1.2k</span>
-                            <button class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
-                                <i class="fas fa-chevron-down text-sm"></i>
-                            </button>
-                        </div>
-                        
-                        <!-- Content -->
-                        <div class="flex-1 min-w-0">
-                            <h2 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 hover:text-gray-700 dark:hover:text-gray-300 transition-colors line-clamp-2">
-                                <a href="#" class="hover:underline">The Future of Artificial Intelligence in 2024</a>
-                            </h2>
-                            
-                            <p class="text-gray-600 dark:text-gray-400 mb-3 text-sm leading-relaxed line-clamp-2">
-                                Exploring the latest advancements in AI and how they're shaping our future. From natural language processing to computer vision, the possibilities are endless.
-                            </p>
-                            
-                            <div class="flex items-center text-xs text-gray-500 dark:text-gray-400 space-x-3">
-                                <span class="flex items-center">
-                                    <i class="far fa-user mr-1"></i>
-                                    John Doe
-                                </span>
-                                <span class="flex items-center">
-                                    <i class="far fa-clock mr-1"></i>
-                                    2h
-                                </span>
-                                <span class="flex items-center">
-                                    <i class="far fa-comment mr-1"></i>
-                                    24
-                                </span>
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
-                                    Tech
-                                </span>
-                            </div>
-                        </div>
-                    </div>
+            <!-- Fallback content when no feed items -->
+            <div class="text-center py-12">
+                <div class="w-16 h-16 mx-auto mb-4 text-gray-400 dark:text-gray-600">
+                    <i class="fas fa-rss text-4xl"></i>
                 </div>
-            </article>
-
-            <!-- Post 2 -->
-            <article class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md dark:hover:shadow-xl transition-shadow">
-                <div class="p-4">
-                    <div class="flex items-start space-x-3">
-                        <!-- Vote buttons -->
-                        <div class="flex flex-col items-center space-y-1 flex-shrink-0">
-                            <button class="p-1 text-gray-400 hover:text-orange-600 transition-colors">
-                                <i class="fas fa-chevron-up text-sm"></i>
-                            </button>
-                            <span class="text-xs font-medium text-gray-700 dark:text-gray-300">845</span>
-                            <button class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
-                                <i class="fas fa-chevron-down text-sm"></i>
-                            </button>
-                        </div>
-                        
-                        <!-- Content -->
-                        <div class="flex-1 min-w-0">
-                            <h2 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 hover:text-gray-700 dark:hover:text-gray-300 transition-colors line-clamp-2">
-                                <a href="#" class="hover:underline">Breakthrough in Quantum Computing Research</a>
-                            </h2>
-                            
-                            <p class="text-gray-600 dark:text-gray-400 mb-3 text-sm leading-relaxed line-clamp-2">
-                                Scientists have made significant progress in quantum computing, bringing us closer to solving problems that were previously thought to be unsolvable.
-                            </p>
-                            
-                            <div class="flex items-center text-xs text-gray-500 dark:text-gray-400 space-x-3">
-                                <span class="flex items-center">
-                                    <i class="far fa-user mr-1"></i>
-                                    Jane Smith
-                                </span>
-                                <span class="flex items-center">
-                                    <i class="far fa-clock mr-1"></i>
-                                    5h
-                                </span>
-                                <span class="flex items-center">
-                                    <i class="far fa-comment mr-1"></i>
-                                    42
-                                </span>
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
-                                    Science
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </article>
-
-            <!-- Post 3 -->
-            <article class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md dark:hover:shadow-xl transition-shadow">
-                <div class="p-4">
-                    <div class="flex items-start space-x-3">
-                        <!-- Vote buttons -->
-                        <div class="flex flex-col items-center space-y-1 flex-shrink-0">
-                            <button class="p-1 text-gray-400 hover:text-orange-600 transition-colors">
-                                <i class="fas fa-chevron-up text-sm"></i>
-                            </button>
-                            <span class="text-xs font-medium text-gray-700 dark:text-gray-300">1.5k</span>
-                            <button class="p-1 text-red-500 hover:text-red-600 transition-colors">
-                                <i class="fas fa-chevron-down text-sm"></i>
-                            </button>
-                        </div>
-                        
-                        <!-- Content -->
-                        <div class="flex-1 min-w-0">
-                            <h2 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 hover:text-gray-700 dark:hover:text-gray-300 transition-colors line-clamp-2">
-                                <a href="#" class="hover:underline">10 Tips for Building a Successful Startup</a>
-                            </h2>
-                            
-                            <p class="text-gray-600 dark:text-gray-400 mb-3 text-sm leading-relaxed line-clamp-2">
-                                Learn from industry experts about the key strategies and mindsets needed to build a startup that stands out in today's competitive market.
-                            </p>
-                            
-                            <div class="flex items-center text-xs text-gray-500 dark:text-gray-400 space-x-3">
-                                <span class="flex items-center">
-                                    <i class="far fa-user mr-1"></i>
-                                    Alex Johnson
-                                </span>
-                                <span class="flex items-center">
-                                    <i class="far fa-clock mr-1"></i>
-                                    1d
-                                </span>
-                                <span class="flex items-center">
-                                    <i class="far fa-comment mr-1"></i>
-                                    18
-                                </span>
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200">
-                                    Business
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </article>
-
-            <!-- Post 4 -->
-            <article class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md dark:hover:shadow-xl transition-shadow">
-                <div class="p-4">
-                    <div class="flex items-start space-x-3">
-                        <div class="flex flex-col items-center space-y-1 flex-shrink-0">
-                            <button class="p-1 text-gray-400 hover:text-orange-600 transition-colors">
-                                <i class="fas fa-chevron-up text-sm"></i>
-                            </button>
-                            <span class="text-xs font-medium text-gray-700 dark:text-gray-300">672</span>
-                            <button class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
-                                <i class="fas fa-chevron-down text-sm"></i>
-                            </button>
-                        </div>
-                        
-                        <div class="flex-1 min-w-0">
-                            <h2 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 hover:text-gray-700 dark:hover:text-gray-300 transition-colors line-clamp-2">
-                                <a href="#" class="hover:underline">Modern Design Principles for Web Applications</a>
-                            </h2>
-                            
-                            <p class="text-gray-600 dark:text-gray-400 mb-3 text-sm leading-relaxed line-clamp-2">
-                                A comprehensive guide to creating user-friendly interfaces that prioritize both aesthetics and functionality in today's digital landscape.
-                            </p>
-                            
-                            <div class="flex items-center text-xs text-gray-500 dark:text-gray-400 space-x-3">
-                                <span class="flex items-center">
-                                    <i class="far fa-user mr-1"></i>
-                                    Sarah Lee
-                                </span>
-                                <span class="flex items-center">
-                                    <i class="far fa-clock mr-1"></i>
-                                    8h
-                                </span>
-                                <span class="flex items-center">
-                                    <i class="far fa-comment mr-1"></i>
-                                    31
-                                </span>
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-pink-100 dark:bg-pink-900 text-pink-800 dark:text-pink-200">
-                                    Design
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </article>
-
-            <!-- Post 5 -->
-            <article class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md dark:hover:shadow-xl transition-shadow">
-                <div class="p-4">
-                    <div class="flex items-start space-x-3">
-                        <div class="flex flex-col items-center space-y-1 flex-shrink-0">
-                            <button class="p-1 text-orange-500 hover:text-orange-600 transition-colors">
-                                <i class="fas fa-chevron-up text-sm"></i>
-                            </button>
-                            <span class="text-xs font-medium text-orange-500">2.1k</span>
-                            <button class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
-                                <i class="fas fa-chevron-down text-sm"></i>
-                            </button>
-                        </div>
-                        
-                        <div class="flex-1 min-w-0">
-                            <h2 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 hover:text-gray-700 dark:hover:text-gray-300 transition-colors line-clamp-2">
-                                <a href="#" class="hover:underline">The Impact of Remote Learning on Education</a>
-                            </h2>
-                            
-                            <p class="text-gray-600 dark:text-gray-400 mb-3 text-sm leading-relaxed line-clamp-2">
-                                How the shift to online education has transformed teaching methods and student engagement across different age groups and institutions.
-                            </p>
-                            
-                            <div class="flex items-center text-xs text-gray-500 dark:text-gray-400 space-x-3">
-                                <span class="flex items-center">
-                                    <i class="far fa-user mr-1"></i>
-                                    Dr. Maria Garcia
-                                </span>
-                                <span class="flex items-center">
-                                    <i class="far fa-clock mr-1"></i>
-                                    12h
-                                </span>
-                                <span class="flex items-center">
-                                    <i class="far fa-comment mr-1"></i>
-                                    67
-                                </span>
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200">
-                                    Education
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </article>
-
-            <!-- Post 6 -->
-            <article class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md dark:hover:shadow-xl transition-shadow">
-                <div class="p-4">
-                    <div class="flex items-start space-x-3">
-                        <div class="flex flex-col items-center space-y-1 flex-shrink-0">
-                            <button class="p-1 text-gray-400 hover:text-orange-600 transition-colors">
-                                <i class="fas fa-chevron-up text-sm"></i>
-                            </button>
-                            <span class="text-xs font-medium text-gray-700 dark:text-gray-300">924</span>
-                            <button class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
-                                <i class="fas fa-chevron-down text-sm"></i>
-                            </button>
-                        </div>
-                        
-                        <div class="flex-1 min-w-0">
-                            <h2 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 hover:text-gray-700 dark:hover:text-gray-300 transition-colors line-clamp-2">
-                                <a href="#" class="hover:underline">Blockchain Technology Beyond Cryptocurrency</a>
-                            </h2>
-                            
-                            <p class="text-gray-600 dark:text-gray-400 mb-3 text-sm leading-relaxed line-clamp-2">
-                                Exploring innovative applications of blockchain technology in supply chain management, healthcare, and digital identity verification.
-                            </p>
-                            
-                            <div class="flex items-center text-xs text-gray-500 dark:text-gray-400 space-x-3">
-                                <span class="flex items-center">
-                                    <i class="far fa-user mr-1"></i>
-                                    Mike Chen
-                                </span>
-                                <span class="flex items-center">
-                                    <i class="far fa-clock mr-1"></i>
-                                    6h
-                                </span>
-                                <span class="flex items-center">
-                                    <i class="far fa-comment mr-1"></i>
-                                    35
-                                </span>
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
-                                    Tech
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </article>
+                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No feed items available</h3>
+                <p class="text-gray-500 dark:text-gray-400">Check back later for new content updates.</p>
+            </div>
+            {{/FeedItems}}
         </div>
 
         <!-- Load More -->
@@ -529,6 +263,17 @@
         const userDropdown = document.getElementById('userDropdown');
 
         html.classList.add('dark');
+
+        // Set user initial from email
+        document.addEventListener('DOMContentLoaded', function() {
+            const avatarElement = document.querySelector('[data-email]');
+            if (avatarElement) {
+                const email = avatarElement.getAttribute('data-email');
+                if (email && email.length > 0) {
+                    avatarElement.textContent = email.charAt(0).toUpperCase();
+                }
+            }
+        });
 
         // Dark mode toggle
         darkModeToggle.addEventListener('click', () => {
