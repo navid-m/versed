@@ -4,6 +4,8 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"fmt"
+	"io"
+	"log"
 	"net/http"
 	"time"
 
@@ -41,29 +43,45 @@ type FeedParser interface {
 // HTTPClient for fetching feeds
 var client = &http.Client{
 	Timeout: 30 * time.Second,
+	Transport: &http.Transport{
+		TLSHandshakeTimeout:   10 * time.Second,
+		ResponseHeaderTimeout: 10 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
+	},
 }
 
 // Fetches RSS content from URL.
 func FetchFeed(url string) ([]byte, error) {
+	log.Printf("Making HTTP request to: %s", url)
 	resp, err := client.Get(url)
 	if err != nil {
+		log.Printf("HTTP request failed for %s: %v", url, err)
 		return nil, fmt.Errorf("failed to fetch feed: %w", err)
 	}
 	defer resp.Body.Close()
 
+	log.Printf("HTTP response status: %d for URL: %s", resp.StatusCode, url)
 	if resp.StatusCode != http.StatusOK {
+		log.Printf("HTTP error status %d for URL: %s", resp.StatusCode, url)
 		return nil, fmt.Errorf("feed returned status %d", resp.StatusCode)
 	}
 
 	body := make([]byte, 0)
 	buf := make([]byte, 1024)
+	totalBytes := 0
 	for {
 		n, err := resp.Body.Read(buf)
 		if n > 0 {
 			body = append(body, buf[:n]...)
+			totalBytes += n
 		}
 		if err != nil {
-			break
+			if err == io.EOF {
+				log.Printf("Successfully read %d bytes from %s", totalBytes, url)
+				break
+			}
+			log.Printf("Error reading response body from %s: %v", url, err)
+			return nil, fmt.Errorf("failed to read response: %w", err)
 		}
 	}
 
@@ -118,8 +136,6 @@ func SaveFeedItems(db *sql.DB, items []FeedItem) error {
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback()
-
 	stmt, err := tx.Prepare(`
 		INSERT OR REPLACE INTO feed_items
 		(id, source_id, title, url, description, author, published_at, score, comments_count, created_at)

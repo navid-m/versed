@@ -67,7 +67,7 @@ func (fs *FeedScheduler) updateFeed(source feeds.FeedSourceInterface) {
 	sourceName := source.GetSourceName()
 	feedURL := source.GetFeedURL()
 
-	log.Printf("Updating feed: %s", sourceName)
+	log.Printf("Updating feed: %s from URL: %s", sourceName, feedURL)
 
 	dbSource, err := feeds.CreateOrUpdateFeedSource(fs.db, sourceName, feedURL)
 	if err != nil {
@@ -78,16 +78,22 @@ func (fs *FeedScheduler) updateFeed(source feeds.FeedSourceInterface) {
 		log.Printf("Feed %s is up to date", sourceName)
 		return
 	}
+
+	log.Printf("Fetching RSS content from %s", feedURL)
 	content, err := feeds.FetchFeed(feedURL)
 	if err != nil {
 		log.Printf("Failed to fetch feed %s: %v", sourceName, err)
 		return
 	}
+	log.Printf("Successfully fetched %d bytes from %s", len(content), sourceName)
+
 	items, err := source.ParseFeed(content, dbSource.ID)
 	if err != nil {
 		log.Printf("Failed to parse feed %s: %v", sourceName, err)
 		return
 	}
+	log.Printf("Parsed %d items from %s", len(items), sourceName)
+
 	err = feeds.SaveFeedItems(fs.db, items)
 	if err != nil {
 		log.Printf("Failed to save feed items for %s: %v", sourceName, err)
