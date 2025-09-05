@@ -22,7 +22,7 @@ func main() {
 	})
 
 	var (
-		engine = mustache.New("./views", ".mustache")
+		engine = mustache.New("views", ".mustache")
 		app    = fiber.New(fiber.Config{
 			Views: engine,
 		})
@@ -93,7 +93,6 @@ func main() {
 			return c.Status(401).SendString("Invalid credentials")
 		}
 
-		// Store user session data
 		sess, err := store.Get(c)
 		if err != nil {
 			return c.Status(500).SendString("Session error")
@@ -110,7 +109,6 @@ func main() {
 	app.Get("/signout", func(c *fiber.Ctx) error {
 		sess, err := store.Get(c)
 		if err == nil {
-			// Clear session data
 			sess.Delete("user_id")
 			sess.Delete("user_email")
 			sess.Save()
@@ -118,13 +116,8 @@ func main() {
 		return c.Redirect("/")
 	})
 
-	// API endpoints for feeds
 	app.Get("/api/feeds", func(c *fiber.Ctx) error {
-		limit := c.QueryInt("limit", 50)
-		if limit > 200 {
-			limit = 200
-		}
-
+		limit := min(c.QueryInt("limit", 50), 200)
 		items, err := feeds.GetAllFeedItems(database.GetDB(), limit)
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{
@@ -140,12 +133,7 @@ func main() {
 
 	app.Get("/api/feeds/:source", func(c *fiber.Ctx) error {
 		sourceName := c.Params("source")
-		limit := c.QueryInt("limit", 30)
-		if limit > 100 {
-			limit = 100
-		}
-
-		// Get source by name
+		limit := min(c.QueryInt("limit", 30), 100)
 		source, err := feeds.GetFeedSourceByName(database.GetDB(), sourceName)
 		if err != nil {
 			return c.Status(404).JSON(fiber.Map{
