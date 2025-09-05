@@ -36,14 +36,12 @@ func main() {
 	app.Post("/signup", func(c *fiber.Ctx) error {
 		email := c.FormValue("email")
 		password := c.FormValue("password")
-
 		if email == "" || password == "" {
 			return c.Status(400).SendString("Email and password are required")
 		}
 		if err := database.CreateUser(email, password); err != nil {
 			return c.Status(500).SendString("Failed to create user")
 		}
-
 		return c.Redirect("/")
 	})
 
