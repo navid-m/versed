@@ -3,8 +3,10 @@ package main
 import (
 	"log"
 	"verse/database"
+	"verse/feeds"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/session"
 	"github.com/gofiber/template/mustache/v2"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -13,8 +15,11 @@ func main() {
 	if err := database.InitDatabase(); err != nil {
 		log.Fatal("Failed to initialize database:", err)
 	}
-
 	defer database.CloseConnection()
+
+	store := session.New(session.Config{
+		KeyLookup: "cookie:session_id",
+	})
 
 	var (
 		engine = mustache.New("./views", ".mustache")
@@ -23,8 +28,38 @@ func main() {
 		})
 	)
 
+	scheduler := NewFeedScheduler(database.GetDB())
+	scheduler.Start()
+	defer scheduler.Stop()
+
+	app.Use(func(c *fiber.Ctx) error {
+		sess, err := store.Get(c)
+		if err == nil {
+			userID := sess.Get("user_id")
+			userEmail := sess.Get("user_email")
+			if userID != nil && userEmail != nil {
+				c.Locals("userID", userID)
+				c.Locals("userEmail", userEmail)
+			}
+		}
+		return c.Next()
+	})
+
 	app.Get("/", func(c *fiber.Ctx) error {
-		return c.Render("index", fiber.Map{})
+		userEmail := c.Locals("userEmail")
+
+		feedItems, err := feeds.GetAllFeedItems(database.GetDB(), 20)
+		if err != nil {
+			log.Printf("Failed to get feed items: %v", err)
+		}
+
+		data := fiber.Map{
+			"FeedItems": feedItems,
+		}
+		if userEmail != nil {
+			data["Email"] = userEmail
+		}
+		return c.Render("index", data)
 	})
 	app.Get("/signin", func(c *fiber.Ctx) error {
 		return c.Render("signin", fiber.Map{})
@@ -57,8 +92,78 @@ func main() {
 		if err != nil || user.Password != password {
 			return c.Status(401).SendString("Invalid credentials")
 		}
-		return c.Render("index", fiber.Map{
-			"Email": user.Email,
+
+		// Store user session data
+		sess, err := store.Get(c)
+		if err != nil {
+			return c.Status(500).SendString("Session error")
+		}
+		sess.Set("user_id", user.ID)
+		sess.Set("user_email", user.Email)
+		if err := sess.Save(); err != nil {
+			return c.Status(500).SendString("Failed to save session")
+		}
+
+		return c.Redirect("/")
+	})
+
+	app.Get("/signout", func(c *fiber.Ctx) error {
+		sess, err := store.Get(c)
+		if err == nil {
+			// Clear session data
+			sess.Delete("user_id")
+			sess.Delete("user_email")
+			sess.Save()
+		}
+		return c.Redirect("/")
+	})
+
+	// API endpoints for feeds
+	app.Get("/api/feeds", func(c *fiber.Ctx) error {
+		limit := c.QueryInt("limit", 50)
+		if limit > 200 {
+			limit = 200
+		}
+
+		items, err := feeds.GetAllFeedItems(database.GetDB(), limit)
+		if err != nil {
+			return c.Status(500).JSON(fiber.Map{
+				"error": "Failed to retrieve feed items",
+			})
+		}
+
+		return c.JSON(fiber.Map{
+			"items": items,
+			"count": len(items),
+		})
+	})
+
+	app.Get("/api/feeds/:source", func(c *fiber.Ctx) error {
+		sourceName := c.Params("source")
+		limit := c.QueryInt("limit", 30)
+		if limit > 100 {
+			limit = 100
+		}
+
+		// Get source by name
+		source, err := feeds.GetFeedSourceByName(database.GetDB(), sourceName)
+		if err != nil {
+			return c.Status(404).JSON(fiber.Map{
+				"error": "Feed source not found",
+			})
+		}
+
+		items, err := feeds.GetFeedItemsBySource(database.GetDB(), source.ID, limit)
+		if err != nil {
+			return c.Status(500).JSON(fiber.Map{
+				"error": "Failed to retrieve feed items",
+			})
+		}
+
+		return c.JSON(fiber.Map{
+			"source": sourceName,
+			"items":  items,
+			"count":  len(items),
 		})
 	})
 
