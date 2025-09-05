@@ -46,8 +46,10 @@ func main() {
 	})
 
 	app.Post("/signin", func(c *fiber.Ctx) error {
-		email := c.FormValue("email")
-		password := c.FormValue("password")
+		var (
+			email    = c.FormValue("email")
+			password = c.FormValue("password")
+		)
 		if email == "" || password == "" {
 			return c.Status(400).SendString("Email and password are required")
 		}
