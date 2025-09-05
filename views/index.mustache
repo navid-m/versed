@@ -21,7 +21,6 @@
     </script>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200">
-    <!-- Header -->
     <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
         <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
             <div class="flex justify-between items-center h-12">
@@ -41,7 +40,6 @@
                         <i class="fas fa-search"></i>
                     </button>
                     
-                    <!-- Dark Mode Toggle -->
                     <div class="flex items-center">
                         <button id="darkModeToggle" class="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-200 dark:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
                             <span id="toggleSlider" class="inline-block h-4 w-4 transform rounded-full bg-white dark:bg-gray-300 transition-transform translate-x-6 dark:translate-x-1">
@@ -49,17 +47,14 @@
                         </button>
                     </div>
                     {{#Email}}
-                    <!-- User Profile Section -->
                     <div class="relative">
                         <button id="userMenuButton" class="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 rounded-md p-1">
                             <div class="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-semibold" data-email="{{Email}}">
-                                <!-- Initial will be set by JavaScript -->
                             </div>
                             <span class="text-sm font-medium hidden sm:block">{{Email}}</span>
                             <i class="fas fa-chevron-down text-xs"></i>
                         </button>
                         
-                        <!-- User Dropdown Menu -->
                         <div id="userDropdown" class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-50 hidden">
                             <div class="py-1">
                                 <div class="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
@@ -127,14 +122,11 @@
             </div>
         </div>
 
-        <!-- Posts List -->
         <div class="space-y-3">
             {{#FeedItems}}
-            <!-- Feed Item -->
             <article class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md dark:hover:shadow-xl transition-shadow">
                 <div class="p-4">
                     <div class="flex items-start space-x-3">
-                        <!-- Vote buttons -->
                         <div class="flex flex-col items-center space-y-1 flex-shrink-0">
                             <button class="p-1 text-orange-500 hover:text-orange-600 transition-colors">
                                 <i class="fas fa-chevron-up text-sm"></i>
@@ -145,7 +137,6 @@
                             </button>
                         </div>
                         
-                        <!-- Content -->
                         <div class="flex-1 min-w-0">
                             <h2 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 hover:text-gray-700 dark:hover:text-gray-300 transition-colors line-clamp-2">
                                 <a href="{{URL}}" target="_blank" class="hover:underline">{{Title}}</a>
@@ -175,7 +166,6 @@
             {{/FeedItems}}
 
             {{^FeedItems}}
-            <!-- Fallback content when no feed items -->
             <div class="text-center py-12">
                 <div class="w-16 h-16 mx-auto mb-4 text-gray-400 dark:text-gray-600">
                     <i class="fas fa-rss text-4xl"></i>
@@ -186,7 +176,6 @@
             {{/FeedItems}}
         </div>
 
-        <!-- Load More -->
         <div class="text-center py-6">
             <button class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium text-sm">
                 <i class="fas fa-plus mr-2"></i>
@@ -194,8 +183,6 @@
             </button>
         </div>
     </main>
-
-    <!-- Footer -->
     <footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-8">
         <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-8">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -253,18 +240,14 @@
         const darkModeToggle = document.getElementById('darkModeToggle');
         const toggleSlider = document.getElementById('toggleSlider');
         const html = document.documentElement;
-
         const listViewBtn = document.getElementById('listView');
         const gridViewBtn = document.getElementById('gridView');
         const postsContainer = document.getElementById('postsContainer');
-
-        // User menu functionality
         const userMenuButton = document.getElementById('userMenuButton');
         const userDropdown = document.getElementById('userDropdown');
 
         html.classList.add('dark');
 
-        // Set user initial from email
         document.addEventListener('DOMContentLoaded', function() {
             const avatarElement = document.querySelector('[data-email]');
             if (avatarElement) {
@@ -275,7 +258,6 @@
             }
         });
 
-        // Dark mode toggle
         darkModeToggle.addEventListener('click', () => {
             html.classList.toggle('dark');
             if (html.classList.contains('dark')) {
@@ -287,14 +269,12 @@
             }
         });
 
-        // User menu toggle
         if (userMenuButton && userDropdown) {
             userMenuButton.addEventListener('click', (e) => {
                 e.stopPropagation();
                 userDropdown.classList.toggle('hidden');
             });
 
-            // Close dropdown when clicking outside
             document.addEventListener('click', (e) => {
                 if (!userMenuButton.contains(e.target) && !userDropdown.contains(e.target)) {
                     userDropdown.classList.add('hidden');
@@ -302,7 +282,6 @@
             });
         }
 
-        // View switching (keeping existing functionality)
         if (listViewBtn && gridViewBtn && postsContainer) {
             listViewBtn.addEventListener('click', () => {
                 postsContainer.className = 'space-y-3';
