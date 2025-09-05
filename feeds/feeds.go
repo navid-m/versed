@@ -31,7 +31,7 @@ type FeedItem struct {
 	CreatedAt     time.Time `json:"created_at"`
 }
 
-// FeedParser interface for different feed sources
+// Interface for different feed sources.
 type FeedParser interface {
 	ParseFeed(content []byte) ([]FeedItem, error)
 	GetFeedURL() string
@@ -43,7 +43,7 @@ var client = &http.Client{
 	Timeout: 30 * time.Second,
 }
 
-// FetchFeed fetches RSS content from URL
+// Fetches RSS content from URL.
 func FetchFeed(url string) ([]byte, error) {
 	resp, err := client.Get(url)
 	if err != nil {
@@ -70,7 +70,7 @@ func FetchFeed(url string) ([]byte, error) {
 	return body, nil
 }
 
-// ParseFeedWithParser parses RSS feed using gofeed
+// Parses RSS feed using gofeed.
 func ParseFeedWithParser(content []byte, sourceID int, sourceName string) ([]FeedItem, error) {
 	parser := gofeed.NewParser()
 	feed, err := parser.ParseString(string(content))
@@ -112,7 +112,7 @@ func generateItemID(url string) string {
 	return fmt.Sprintf("%x", hash)[:16]
 }
 
-// SaveFeedItems saves feed items to database.
+// Saves feed items to database.
 func SaveFeedItems(db *sql.DB, items []FeedItem) error {
 	tx, err := db.Begin()
 	if err != nil {
