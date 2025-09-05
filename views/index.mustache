@@ -27,7 +27,7 @@
             <div class="flex justify-between items-center h-12">
                 <div class="flex items-center">
                     <a href="/" class="text-xl font-bold text-gray-900 dark:text-gray-100 hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
-                        Versed - {{{Email}}}
+                        Versed
                     </a>
                 </div>
                 <nav class="hidden md:flex space-x-6">
@@ -48,10 +48,47 @@
                             </span>
                         </button>
                     </div>
+                    {{#Email}}
+                    <!-- User Profile Section -->
+                    <div class="relative">
+                        <button id="userMenuButton" class="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 rounded-md p-1">
+                            <div class="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-semibold">
+                                {{Email.charAt(0).toUpperCase()}}
+                            </div>
+                            <span class="text-sm font-medium hidden sm:block">{{Email}}</span>
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </button>
+                        
+                        <!-- User Dropdown Menu -->
+                        <div id="userDropdown" class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-50 hidden">
+                            <div class="py-1">
+                                <div class="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                                    <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{{Email}}</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">Signed in</p>
+                                </div>
+                                <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
+                                    <i class="fas fa-user mr-2"></i>
+                                    Profile
+                                </a>
+                                <a href="/settings" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
+                                    <i class="fas fa-cog mr-2"></i>
+                                    Settings
+                                </a>
+                                <div class="border-t border-gray-200 dark:border-gray-700"></div>
+                                <a href="/signout" class="block px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-300 transition-colors">
+                                    <i class="fas fa-sign-out-alt mr-2"></i>
+                                    Sign Out
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {{/Email}}
                     
+                    {{^Email}}
                     <a href="/signin" class="bg-gray-900 dark:bg-gray-700 text-white px-3 py-1.5 rounded-md hover:bg-gray-800 dark:hover:bg-gray-600 transition-colors font-medium text-sm">
                         Sign In
                     </a>
+                    {{/Email}}
                 </div>
             </div>
         </div>
@@ -441,8 +478,13 @@
         const gridViewBtn = document.getElementById('gridView');
         const postsContainer = document.getElementById('postsContainer');
 
+        // User menu functionality
+        const userMenuButton = document.getElementById('userMenuButton');
+        const userDropdown = document.getElementById('userDropdown');
+
         html.classList.add('dark');
 
+        // Dark mode toggle
         darkModeToggle.addEventListener('click', () => {
             html.classList.toggle('dark');
             if (html.classList.contains('dark')) {
@@ -454,17 +496,35 @@
             }
         });
 
-        listViewBtn.addEventListener('click', () => {
-            postsContainer.className = 'space-y-3';
-            listViewBtn.className = 'flex items-center px-3 py-1.5 rounded-md text-xs font-medium transition-colors bg-gray-900 dark:bg-gray-600 text-white';
-            gridViewBtn.className = 'flex items-center px-3 py-1.5 rounded-md text-xs font-medium transition-colors text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200';
-        });
+        // User menu toggle
+        if (userMenuButton && userDropdown) {
+            userMenuButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                userDropdown.classList.toggle('hidden');
+            });
 
-        gridViewBtn.addEventListener('click', () => {
-            postsContainer.className = 'grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4';
-            gridViewBtn.className = 'flex items-center px-3 py-1.5 rounded-md text-xs font-medium transition-colors bg-gray-900 dark:bg-gray-600 text-white';
-            listViewBtn.className = 'flex items-center px-3 py-1.5 rounded-md text-xs font-medium transition-colors text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200';
-        });
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!userMenuButton.contains(e.target) && !userDropdown.contains(e.target)) {
+                    userDropdown.classList.add('hidden');
+                }
+            });
+        }
+
+        // View switching (keeping existing functionality)
+        if (listViewBtn && gridViewBtn && postsContainer) {
+            listViewBtn.addEventListener('click', () => {
+                postsContainer.className = 'space-y-3';
+                listViewBtn.className = 'flex items-center px-3 py-1.5 rounded-md text-xs font-medium transition-colors bg-gray-900 dark:bg-gray-600 text-white';
+                gridViewBtn.className = 'flex items-center px-3 py-1.5 rounded-md text-xs font-medium transition-colors text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200';
+            });
+
+            gridViewBtn.addEventListener('click', () => {
+                postsContainer.className = 'grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4';
+                gridViewBtn.className = 'flex items-center px-3 py-1.5 rounded-md text-xs font-medium transition-colors bg-gray-900 dark:bg-gray-600 text-white';
+                listViewBtn.className = 'flex items-center px-3 py-1.5 rounded-md text-xs font-medium transition-colors text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200';
+            });
+        }
     </script>
 
     <style>
