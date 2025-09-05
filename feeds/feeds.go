@@ -55,7 +55,6 @@ func FetchFeed(url string) ([]byte, error) {
 		return nil, fmt.Errorf("feed returned status %d", resp.StatusCode)
 	}
 
-	// Read response body
 	body := make([]byte, 0)
 	buf := make([]byte, 1024)
 	for {
@@ -81,10 +80,7 @@ func ParseFeedWithParser(content []byte, sourceID int, sourceName string) ([]Fee
 
 	var items []FeedItem
 	for _, item := range feed.Items {
-		// Generate unique ID based on URL
 		id := generateItemID(item.Link)
-
-		// Parse published date
 		var publishedAt time.Time
 		if item.PublishedParsed != nil {
 			publishedAt = *item.PublishedParsed
@@ -100,8 +96,8 @@ func ParseFeedWithParser(content []byte, sourceID int, sourceName string) ([]Fee
 			Description:   item.Description,
 			Author:        item.Author.Name,
 			PublishedAt:   publishedAt,
-			Score:         0, // Will be populated by specific parsers
-			CommentsCount: 0, // Will be populated by specific parsers
+			Score:         0,
+			CommentsCount: 0,
 			CreatedAt:     time.Now(),
 		}
 		items = append(items, feedItem)
@@ -110,13 +106,13 @@ func ParseFeedWithParser(content []byte, sourceID int, sourceName string) ([]Fee
 	return items, nil
 }
 
-// generateItemID creates a unique ID for feed items
+// Creates a unique ID for feed items.
 func generateItemID(url string) string {
 	hash := sha256.Sum256([]byte(url))
 	return fmt.Sprintf("%x", hash)[:16]
 }
 
-// SaveFeedItems saves feed items to database
+// SaveFeedItems saves feed items to database.
 func SaveFeedItems(db *sql.DB, items []FeedItem) error {
 	tx, err := db.Begin()
 	if err != nil {
@@ -155,14 +151,14 @@ func SaveFeedItems(db *sql.DB, items []FeedItem) error {
 	return tx.Commit()
 }
 
-// UpdateFeedSourceTimestamp updates the last_updated timestamp for a feed source
+// Updates the last_updated timestamp for a feed source
 func UpdateFeedSourceTimestamp(db *sql.DB, sourceID int) error {
 	query := `UPDATE feed_sources SET last_updated = CURRENT_TIMESTAMP WHERE id = ?`
 	_, err := db.Exec(query, sourceID)
 	return err
 }
 
-// GetFeedSourceByName gets a feed source by name
+// Gets a feed source by name.
 func GetFeedSourceByName(db *sql.DB, name string) (*FeedSource, error) {
 	query := `SELECT id, name, url, last_updated, update_interval FROM feed_sources WHERE name = ?`
 	row := db.QueryRow(query, name)
@@ -175,12 +171,10 @@ func GetFeedSourceByName(db *sql.DB, name string) (*FeedSource, error) {
 	return &source, nil
 }
 
-// CreateOrUpdateFeedSource creates or updates a feed source
+// Creates or updates a feed source.
 func CreateOrUpdateFeedSource(db *sql.DB, name, url string) (*FeedSource, error) {
-	// Try to get existing source
 	src, err := GetFeedSourceByName(db, name)
 	if err == nil {
-		// Update existing
 		query := `UPDATE feed_sources SET url = ?, last_updated = CURRENT_TIMESTAMP WHERE id = ?`
 		_, err := db.Exec(query, url, src.ID)
 		if err != nil {
@@ -191,7 +185,6 @@ func CreateOrUpdateFeedSource(db *sql.DB, name, url string) (*FeedSource, error)
 		return src, nil
 	}
 
-	// Create new source
 	query := `INSERT INTO feed_sources (name, url) VALUES (?, ?)`
 	result, err := db.Exec(query, name, url)
 	if err != nil {
@@ -209,12 +202,12 @@ func CreateOrUpdateFeedSource(db *sql.DB, name, url string) (*FeedSource, error)
 		Name:           name,
 		URL:            url,
 		LastUpdated:    time.Now(),
-		UpdateInterval: 3600, // 1 hour default
+		UpdateInterval: 3600,
 	}
 	return &source, nil
 }
 
-// GetAllFeedSources gets all feed sources
+// Gets all feed sources.
 func GetAllFeedSources(db *sql.DB) ([]FeedSource, error) {
 	query := `SELECT id, name, url, last_updated, update_interval FROM feed_sources`
 	rows, err := db.Query(query)
@@ -235,7 +228,7 @@ func GetAllFeedSources(db *sql.DB) ([]FeedSource, error) {
 	return sources, nil
 }
 
-// GetFeedItemsBySource gets feed items for a specific source
+// Gets feed items for a specific source.
 func GetFeedItemsBySource(db *sql.DB, sourceID int, limit int) ([]FeedItem, error) {
 	query := `SELECT id, source_id, title, url, description, author, published_at, score, comments_count, created_at 
 	          FROM feed_items 
@@ -261,7 +254,7 @@ func GetFeedItemsBySource(db *sql.DB, sourceID int, limit int) ([]FeedItem, erro
 	return items, nil
 }
 
-// GetAllFeedItems gets all feed items sorted by published date
+// Gets all feed items sorted by published date.
 func GetAllFeedItems(db *sql.DB, limit int) ([]FeedItem, error) {
 	query := `SELECT fi.id, fi.source_id, fi.title, fi.url, fi.description, fi.author, fi.published_at, fi.score, fi.comments_count, fi.created_at, fs.name as source_name
 	          FROM feed_items fi
@@ -288,7 +281,7 @@ func GetAllFeedItems(db *sql.DB, limit int) ([]FeedItem, error) {
 	return items, nil
 }
 
-// ShouldUpdateFeed checks if a feed should be updated based on its last update time
+// Checks if a feed should be updated based on its last update time.
 func ShouldUpdateFeed(source FeedSource) bool {
 	return time.Since(source.LastUpdated) > time.Duration(source.UpdateInterval)*time.Second
 }
