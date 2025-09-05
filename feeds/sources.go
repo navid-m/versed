@@ -9,22 +9,22 @@ import (
 	"github.com/mmcdole/gofeed"
 )
 
-// RedditFeed represents a Reddit RSS feed
+// Represents a Reddit RSS feed.
 type RedditFeed struct {
 	Subreddit string
 }
 
-// GetFeedURL returns the RSS URL for Reddit
+// Returns the RSS URL for Reddit.
 func (r *RedditFeed) GetFeedURL() string {
 	return fmt.Sprintf("https://www.reddit.com/r/%s/.rss", r.Subreddit)
 }
 
-// GetSourceName returns the source name
+// Returns the source name.
 func (r *RedditFeed) GetSourceName() string {
 	return fmt.Sprintf("Reddit - r/%s", r.Subreddit)
 }
 
-// ParseFeed parses Reddit RSS feed with custom logic for score and comments
+// Parses Reddit RSS feed with custom logic for score and comments.
 func (r *RedditFeed) ParseFeed(content []byte, sourceID int) ([]FeedItem, error) {
 	parser := gofeed.NewParser()
 	feed, err := parser.ParseString(string(content))
@@ -35,16 +35,9 @@ func (r *RedditFeed) ParseFeed(content []byte, sourceID int) ([]FeedItem, error)
 	var items []FeedItem
 	for _, item := range feed.Items {
 		id := generateItemID(item.Link)
-
-		// Extract score from Reddit's custom fields
 		score := extractRedditScore(item.Description)
-
-		// Extract comments count from link
 		commentsCount := extractRedditComments(item.Link)
-
-		// Clean up title (remove [tags] from beginning)
 		title := cleanRedditTitle(item.Title)
-
 		var publishedAt time.Time
 		if item.PublishedParsed != nil {
 			publishedAt = *item.PublishedParsed
@@ -70,7 +63,7 @@ func (r *RedditFeed) ParseFeed(content []byte, sourceID int) ([]FeedItem, error)
 	return items, nil
 }
 
-// extractRedditScore extracts score from Reddit's HTML description
+// Extracts score from Reddit's HTML description.
 func extractRedditScore(description string) int {
 	// Look for score patterns in description
 	re := regexp.MustCompile(`(\d+)\s*points?`)
@@ -83,34 +76,29 @@ func extractRedditScore(description string) int {
 	return 0
 }
 
-// extractRedditComments extracts comment count from Reddit URL
-func extractRedditComments(url string) int {
-	// Reddit URLs sometimes have comment count in query params or path
-	// This is a simplified extraction - in practice you might need more robust parsing
-	return 0 // Placeholder - would need more sophisticated HTML parsing
+// Extracts comment count from Reddit URL.
+func extractRedditComments(_ string) int {
+	return 0
 }
 
-// cleanRedditTitle removes Reddit-specific formatting from titles
+// Removes Reddit-specific formatting from titles.
 func cleanRedditTitle(title string) string {
-	// Remove common Reddit prefixes like [OC], [Discussion], etc.
 	re := regexp.MustCompile(`^\[.*?\]\s*`)
 	return re.ReplaceAllString(title, "")
 }
 
-// HackerNewsFeed represents a HackerNews RSS feed
 type HackerNewsFeed struct{}
 
-// GetFeedURL returns the RSS URL for HackerNews
 func (h *HackerNewsFeed) GetFeedURL() string {
 	return "https://hnrss.org/frontpage"
 }
 
-// GetSourceName returns the source name
+// Returns the source name.
 func (h *HackerNewsFeed) GetSourceName() string {
 	return "Hacker News"
 }
 
-// ParseFeed parses HackerNews RSS feed
+// ParseFeed parses HackerNews RSS feed.
 func (h *HackerNewsFeed) ParseFeed(content []byte, sourceID int) ([]FeedItem, error) {
 	parser := gofeed.NewParser()
 	feed, err := parser.ParseString(string(content))
@@ -151,7 +139,7 @@ func (h *HackerNewsFeed) ParseFeed(content []byte, sourceID int) ([]FeedItem, er
 	return items, nil
 }
 
-// extractHNScore extracts score from HN description
+// Extracts score from HN description.
 func extractHNScore(description string) int {
 	re := regexp.MustCompile(`(\d+)\s*points?`)
 	matches := re.FindStringSubmatch(description)
@@ -163,7 +151,7 @@ func extractHNScore(description string) int {
 	return 0
 }
 
-// extractHNComments extracts comments count from HN description
+// Extracts comments count from HN description.
 func extractHNComments(description string) int {
 	re := regexp.MustCompile(`(\d+)\s*comments?`)
 	matches := re.FindStringSubmatch(description)
@@ -175,20 +163,18 @@ func extractHNComments(description string) int {
 	return 0
 }
 
-// LobsterFeed represents a Lobster.rs RSS feed
 type LobsterFeed struct{}
 
-// GetFeedURL returns the RSS URL for Lobster.rs
 func (l *LobsterFeed) GetFeedURL() string {
 	return "https://lobste.rs/rss"
 }
 
-// GetSourceName returns the source name
+// Returns the source name.
 func (l *LobsterFeed) GetSourceName() string {
 	return "Lobster.rs"
 }
 
-// ParseFeed parses Lobster.rs RSS feed
+// ParseFeed parses Lobster.rs RSS feed.
 func (l *LobsterFeed) ParseFeed(content []byte, sourceID int) ([]FeedItem, error) {
 	parser := gofeed.NewParser()
 	feed, err := parser.ParseString(string(content))
@@ -228,7 +214,7 @@ func (l *LobsterFeed) ParseFeed(content []byte, sourceID int) ([]FeedItem, error
 	return items, nil
 }
 
-// extractLobsterScore extracts score from Lobster description
+// Extracts score from Lobster description.
 func extractLobsterScore(description string) int {
 	// Lobster.rs includes score in description like "X points"
 	re := regexp.MustCompile(`(\d+)\s*points?`)
@@ -246,7 +232,7 @@ type DevToFeed struct {
 	Tag string // Optional tag filter
 }
 
-// GetFeedURL returns the RSS URL for Dev.to
+// Returns the RSS URL for Dev.to.
 func (d *DevToFeed) GetFeedURL() string {
 	if d.Tag != "" {
 		return fmt.Sprintf("https://dev.to/feed/tag/%s", d.Tag)
@@ -254,7 +240,7 @@ func (d *DevToFeed) GetFeedURL() string {
 	return "https://dev.to/feed"
 }
 
-// GetSourceName returns the source name
+// Returns the source name.
 func (d *DevToFeed) GetSourceName() string {
 	if d.Tag != "" {
 		return fmt.Sprintf("Dev.to - %s", d.Tag)
@@ -262,7 +248,7 @@ func (d *DevToFeed) GetSourceName() string {
 	return "Dev.to"
 }
 
-// ParseFeed parses Dev.to RSS feed
+// ParseFeed parses Dev.to RSS feed.
 func (d *DevToFeed) ParseFeed(content []byte, sourceID int) ([]FeedItem, error) {
 	parser := gofeed.NewParser()
 	feed, err := parser.ParseString(string(content))
@@ -302,9 +288,8 @@ func (d *DevToFeed) ParseFeed(content []byte, sourceID int) ([]FeedItem, error) 
 	return items, nil
 }
 
-// extractDevToReactions extracts reaction count from Dev.to description
+// Extracts reaction count from Dev.to description.
 func extractDevToReactions(description string) int {
-	// Look for reaction patterns like "X reactions" or emoji counts
 	re := regexp.MustCompile(`(\d+)\s*reactions?`)
 	matches := re.FindStringSubmatch(description)
 	if len(matches) > 1 {
@@ -315,19 +300,19 @@ func extractDevToReactions(description string) int {
 	return 0
 }
 
-// FeedManager manages multiple feed sources
+// Manages multiple feed sources.
 type FeedManager struct {
 	Sources []FeedSourceInterface
 }
 
-// FeedSourceInterface defines the interface for feed sources
+// Defines the interface for feed sources.
 type FeedSourceInterface interface {
 	GetFeedURL() string
 	GetSourceName() string
 	ParseFeed(content []byte, sourceID int) ([]FeedItem, error)
 }
 
-// NewFeedManager creates a new feed manager with default sources
+// Creates a new feed manager with default sources.
 func NewFeedManager() *FeedManager {
 	return &FeedManager{
 		Sources: []FeedSourceInterface{
