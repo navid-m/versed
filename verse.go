@@ -13,11 +13,16 @@ import (
 )
 
 func main() {
+
 	if err := database.InitDatabase(); err != nil {
 		log.Fatal("Failed to initialize database:", err)
 	}
+	err := feeds.ResetAllFeedTimestamps(database.GetDB())
+	if err != nil {
+		log.Printf("Warning: Failed to reset feed timestamps: %v", err)
+	}
 	defer database.CloseConnection()
-
+	feeds.DebugFeeds(database.GetDB())
 	store := session.New(session.Config{
 		KeyLookup: "cookie:session_id",
 	})

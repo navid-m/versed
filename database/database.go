@@ -8,7 +8,7 @@ var db *sql.DB
 
 func InitDatabase() error {
 	var err error
-	db, err = sql.Open("sqlite3", "./users.db")
+	db, err = sql.Open("sqlite3", "./data.db")
 	if err != nil {
 		return err
 	}
