@@ -105,7 +105,7 @@ func CreateOrUpdateFeedSource(db *sql.DB, name, url string) (*feeds.FeedSource, 
 
 	log.Printf("Creating new feed source: %s", name)
 	query := `INSERT INTO feed_sources (name, url, last_updated, update_interval) 
-	          VALUES (?, ?, datetime('2000-01-01 00:00:00'), 3600)`
+			VALUES (?, ?, datetime('2000-01-01 00:00:00'), 3600)`
 	result, err := db.Exec(query, name, url)
 	if err != nil {
 		return nil, fmt.Errorf("failed to insert feed source: %w", err)
@@ -177,7 +177,6 @@ func (fs *FeedScheduler) updateFeed(source feeds.FeedSourceInterface) {
 
 	log.Printf("SUCCESS: Parsed %d items from %s", len(items), sourceName)
 
-	// Log a few sample items
 	for i, item := range items {
 		if i >= 2 {
 			break
