@@ -3,10 +3,7 @@
    <head>
       <title>Versed</title>
       <meta charset="UTF-8" />
-      <meta
-         name="viewport"
-         content="width=device-width, initial-scale=1.0"
-      />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link
          rel="stylesheet"
          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
@@ -134,7 +131,7 @@
 
                         <div class="relative mb-4 modern-description">
                            <div
-                              class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed line-height-6 font-medium tracking-wide line-clamp-3 relative z-10 bg-gradient-to-br from-gray-50/80 to-white/50 dark:from-gray-800/60 dark:to-gray-700/40 backdrop-blur-sm rounded-lg px-4 py-3 border-l-4 border-blue-500/30 dark:border-blue-400/40 shadow-sm"
+                              class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed line-height-6 font-medium tracking-wide line-clamp-3 bg-gradient-to-br from-gray-50/80 to-white/50 dark:from-gray-800/60 dark:to-gray-700/40 backdrop-blur-sm rounded-lg px-4 py-3 border-l-4 border-blue-500/30 dark:border-blue-400/40 shadow-sm"
                            >
                               <p>{{ item.Description|safe }}</p>
                            </div>
@@ -162,9 +159,11 @@
                         </div>
                      </div>
                      {% if Email %}
-                     <div class="flex flex-col items-center space-y-1 flex-shrink-0 ml-3">
+                     <div
+                        class="flex flex-col items-center space-y-1 flex-shrink-0 ml-3"
+                     >
                         <button
-                           class="p-2 text-gray-400 hover:text-blue-500 transition-colors save-button"
+                           class="p-1 text-gray-400 hover:text-blue-500 transition-colors save-button"
                            data-feed-id="{{ item.ID }}"
                            data-action="save"
                            title="Save to reading list"
@@ -229,18 +228,14 @@
             if (avatarElement) {
                const email = avatarElement.getAttribute("data-email");
                if (email && email.length > 0) {
-                  avatarElement.textContent = email
-                     .charAt(0)
-                     .toUpperCase();
+                  avatarElement.textContent = email.charAt(0).toUpperCase();
                }
             }
 
-            const descriptionContainers = document.querySelectorAll(
-               "[data-description]"
-            );
+            const descriptionContainers =
+               document.querySelectorAll("[data-description]");
             descriptionContainers.forEach((container) => {
-               const htmlContent =
-                  container.getAttribute("data-description");
+               const htmlContent = container.getAttribute("data-description");
                if (htmlContent) {
                   const tempDiv = document.createElement("div");
                   tempDiv.innerHTML = htmlContent;
@@ -298,8 +293,7 @@
             });
          }
          document.addEventListener("DOMContentLoaded", function () {
-            const voteButtons =
-               document.querySelectorAll("[data-vote-type]");
+            const voteButtons = document.querySelectorAll("[data-vote-type]");
 
             voteButtons.forEach((button) => {
                button.addEventListener("click", async function () {
@@ -391,8 +385,7 @@
                           <div class="relative mb-4 modern-description">
                             <div class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed line-height-6 font-medium tracking-wide line-clamp-3 relative z-10 bg-gradient-to-br from-gray-50/80 to-white/50 dark:from-gray-800/60 dark:to-gray-700/40 backdrop-blur-sm rounded-lg px-4 py-3 border-l-4 border-blue-500/30 dark:border-blue-400/40 shadow-sm">
                               <p>${
-                                 item.description ||
-                                 "No description available"
+                                 item.description || "No description available"
                               }</p>
                             </div>
                             <div class="absolute inset-0 bg-gradient-to-r from-blue-50/20 to-indigo-50/20 dark:from-blue-900/10 dark:to-indigo-900/10 rounded-lg blur-xl transform scale-105 opacity-60"></div>
@@ -415,7 +408,7 @@
                           </div>
                         </div>
                         <div class="flex flex-col items-center space-y-1 flex-shrink-0 ml-3">
-                          <button class="p-2 text-gray-400 hover:text-blue-500 transition-colors save-button" data-feed-id="${
+                          <button class="p-1 text-gray-400 hover:text-blue-500 transition-colors save-button" data-feed-id="${
                              item.id
                           }" data-action="save" title="Save to reading list">
                             <i class="far fa-bookmark text-sm"></i>
@@ -428,7 +421,9 @@
                      });
 
                      // Re-attach event listeners for new save buttons
-                     const newSaveButtons = postsContainer.querySelectorAll(".save-button:not([data-listener-attached])");
+                     const newSaveButtons = postsContainer.querySelectorAll(
+                        ".save-button:not([data-listener-attached])"
+                     );
                      newSaveButtons.forEach((button) => {
                         button.setAttribute("data-listener-attached", "true");
                         const feedId = button.getAttribute("data-feed-id");
@@ -439,48 +434,68 @@
                            try {
                               let response;
                               if (action === "save") {
-                                 response = await fetch("/api/reading-list/save", {
-                                    method: "POST",
-                                    headers: {
-                                       "Content-Type": "application/json",
-                                    },
-                                    body: JSON.stringify({
-                                       item_id: feedId,
-                                    }),
-                                 });
+                                 response = await fetch(
+                                    "/api/reading-list/save",
+                                    {
+                                       method: "POST",
+                                       headers: {
+                                          "Content-Type": "application/json",
+                                       },
+                                       body: JSON.stringify({
+                                          item_id: feedId,
+                                       }),
+                                    }
+                                 );
                               } else {
-                                 response = await fetch("/api/reading-list/remove", {
-                                    method: "POST",
-                                    headers: {
-                                       "Content-Type": "application/json",
-                                    },
-                                    body: JSON.stringify({
-                                       item_id: feedId,
-                                    }),
-                                 });
+                                 response = await fetch(
+                                    "/api/reading-list/remove",
+                                    {
+                                       method: "POST",
+                                       headers: {
+                                          "Content-Type": "application/json",
+                                       },
+                                       body: JSON.stringify({
+                                          item_id: feedId,
+                                       }),
+                                    }
+                                 );
                               }
 
                               if (!response.ok) {
-                                 throw new Error("Failed to update reading list");
+                                 throw new Error(
+                                    "Failed to update reading list"
+                                 );
                               }
 
                               // Toggle the button state
                               const icon = this.querySelector("i");
-                              const currentAction = this.getAttribute("data-action");
+                              const currentAction =
+                                 this.getAttribute("data-action");
 
                               if (currentAction === "save") {
                                  this.setAttribute("data-action", "unsave");
                                  icon.className = "fas fa-bookmark text-sm";
-                                 this.className = "p-2 text-blue-500 hover:text-red-500 transition-colors save-button";
-                                 this.setAttribute("title", "Remove from reading list");
+                                 this.className =
+                                    "p-1 text-blue-500 hover:text-red-500 transition-colors save-button";
+                                 this.setAttribute(
+                                    "title",
+                                    "Remove from reading list"
+                                 );
                               } else {
                                  this.setAttribute("data-action", "save");
                                  icon.className = "far fa-bookmark text-sm";
-                                 this.className = "p-2 text-gray-400 hover:text-blue-500 transition-colors save-button";
-                                 this.setAttribute("title", "Save to reading list");
+                                 this.className =
+                                    "p-1 text-gray-400 hover:text-blue-500 transition-colors save-button";
+                                 this.setAttribute(
+                                    "title",
+                                    "Save to reading list"
+                                 );
                               }
                            } catch (error) {
-                              console.error("Error updating reading list:", error);
+                              console.error(
+                                 "Error updating reading list:",
+                                 error
+                              );
                            }
                         });
                      });
@@ -548,14 +563,21 @@
 
             async function checkSaveStatus(button, feedId) {
                try {
-                  const response = await fetch("/api/reading-list/check/" + feedId);
+                  const response = await fetch(
+                     "/api/reading-list/check/" + feedId
+                  );
                   if (response.ok) {
                      const data = await response.json();
                      if (data.saved) {
                         button.setAttribute("data-action", "unsave");
-                        button.querySelector("i").className = "fas fa-bookmark text-sm";
-                        button.className = "p-2 text-blue-500 hover:text-red-500 transition-colors save-button";
-                        button.setAttribute("title", "Remove from reading list");
+                        button.querySelector("i").className =
+                           "fas fa-bookmark text-sm";
+                        button.className =
+                           "p-1 text-blue-500 hover:text-red-500 transition-colors save-button";
+                        button.setAttribute(
+                           "title",
+                           "Remove from reading list"
+                        );
                      }
                   }
                } catch (error) {
@@ -570,12 +592,14 @@
                if (currentAction === "save") {
                   button.setAttribute("data-action", "unsave");
                   icon.className = "fas fa-bookmark text-sm";
-                  button.className = "p-2 text-blue-500 hover:text-red-500 transition-colors save-button";
+                  button.className =
+                     "p-1 text-blue-500 hover:text-red-500 transition-colors save-button";
                   button.setAttribute("title", "Remove from reading list");
                } else {
                   button.setAttribute("data-action", "save");
                   icon.className = "far fa-bookmark text-sm";
-                  button.className = "p-2 text-gray-400 hover:text-blue-500 transition-colors save-button";
+                  button.className =
+                     "p-1 text-gray-400 hover:text-blue-500 transition-colors save-button";
                   button.setAttribute("title", "Save to reading list");
                }
             }
