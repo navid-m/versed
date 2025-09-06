@@ -59,6 +59,14 @@ func createTables() error {
 			FOREIGN KEY (user_id) REFERENCES users(id),
 			FOREIGN KEY (item_id) REFERENCES feed_items(id)
 		)`,
+		`CREATE TABLE IF NOT EXISTS reading_list (
+			user_id INTEGER NOT NULL,
+			item_id TEXT NOT NULL,
+			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (user_id, item_id),
+			FOREIGN KEY (user_id) REFERENCES users(id),
+			FOREIGN KEY (item_id) REFERENCES feed_items(id)
+		)`,
 	}
 
 	for _, query := range queries {

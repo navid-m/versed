@@ -203,5 +203,171 @@ func main() {
 		})
 	})
 
+	app.Post("/api/reading-list/save", func(c *fiber.Ctx) error {
+		userID, ok := c.Locals("userID").(int)
+		if !ok {
+			return c.Status(401).JSON(fiber.Map{
+				"error": "Unauthorized",
+			})
+		}
+
+		var saveRequest struct {
+			ItemID string `json:"item_id"`
+		}
+
+		if err := c.BodyParser(&saveRequest); err != nil {
+			return c.Status(400).JSON(fiber.Map{
+				"error": "Invalid request body",
+			})
+		}
+
+		err := database.SaveToReadingList(userID, saveRequest.ItemID)
+		if err != nil {
+			return c.Status(500).JSON(fiber.Map{
+				"error": "Failed to save item to reading list",
+			})
+		}
+
+		return c.JSON(fiber.Map{
+			"success": true,
+		})
+	})
+
+	app.Post("/api/reading-list/remove", func(c *fiber.Ctx) error {
+		userID, ok := c.Locals("userID").(int)
+		if !ok {
+			return c.Status(401).JSON(fiber.Map{
+				"error": "Unauthorized",
+			})
+		}
+
+		var removeRequest struct {
+			ItemID string `json:"item_id"`
+		}
+
+		if err := c.BodyParser(&removeRequest); err != nil {
+			return c.Status(400).JSON(fiber.Map{
+				"error": "Invalid request body",
+			})
+		}
+
+		err := database.RemoveFromReadingList(userID, removeRequest.ItemID)
+		if err != nil {
+			return c.Status(500).JSON(fiber.Map{
+				"error": "Failed to remove item from reading list",
+			})
+		}
+
+		return c.JSON(fiber.Map{
+			"success": true,
+		})
+	})
+
+	app.Get("/api/reading-list", func(c *fiber.Ctx) error {
+		userID, ok := c.Locals("userID").(int)
+		if !ok {
+			return c.Status(401).JSON(fiber.Map{
+				"error": "Unauthorized",
+			})
+		}
+
+		query := `SELECT fi.id, fi.source_id, fi.title, fi.url, fi.description, fi.author, fi.published_at, fi.score, fi.comments_count, fi.created_at, fs.name as source_name
+			FROM feed_items fi
+			JOIN reading_list rl ON fi.id = rl.item_id
+			JOIN feed_sources fs ON fi.source_id = fs.id
+			WHERE rl.user_id = ?
+			ORDER BY rl.created_at DESC`
+
+		rows, err := database.GetDB().Query(query, userID)
+		if err != nil {
+			return c.Status(500).JSON(fiber.Map{
+				"error": "Failed to retrieve reading list",
+			})
+		}
+		defer rows.Close()
+
+		var items []feeds.FeedItem
+		for rows.Next() {
+			var item feeds.FeedItem
+			var sourceName string
+			err := rows.Scan(&item.ID, &item.SourceID, &item.Title, &item.URL, &item.Description,
+				&item.Author, &item.PublishedAt, &item.Score, &item.CommentsCount, &item.CreatedAt, &sourceName)
+			if err != nil {
+				return c.Status(500).JSON(fiber.Map{
+					"error": "Failed to scan reading list item",
+				})
+			}
+			item.SourceName = sourceName
+			items = append(items, item)
+		}
+
+		return c.JSON(fiber.Map{
+			"items": items,
+			"count": len(items),
+		})
+	})
+
+	app.Get("/api/reading-list/check/:itemId", func(c *fiber.Ctx) error {
+		userID, ok := c.Locals("userID").(int)
+		if !ok {
+			return c.Status(401).JSON(fiber.Map{
+				"error": "Unauthorized",
+			})
+		}
+
+		itemID := c.Params("itemId")
+		saved, err := database.IsInReadingList(userID, itemID)
+		if err != nil {
+			return c.Status(500).JSON(fiber.Map{
+				"error": "Failed to check reading list status",
+			})
+		}
+
+		return c.JSON(fiber.Map{
+			"saved": saved,
+		})
+	})
+
+	app.Get("/reading-list", func(c *fiber.Ctx) error {
+		userEmail := c.Locals("userEmail")
+		if userEmail == nil {
+			return c.Redirect("/signin")
+		}
+
+		query := `SELECT fi.id, fi.source_id, fi.title, fi.url, fi.description, fi.author, fi.published_at, fi.score, fi.comments_count, fi.created_at, fs.name as source_name
+			FROM feed_items fi
+			JOIN reading_list rl ON fi.id = rl.item_id
+			JOIN feed_sources fs ON fi.source_id = fs.id
+			WHERE rl.user_id = ?
+			ORDER BY rl.created_at DESC`
+
+		userID := c.Locals("userID").(int)
+		rows, err := database.GetDB().Query(query, userID)
+		if err != nil {
+			log.Printf("Failed to get reading list: %v", err)
+		}
+		defer rows.Close()
+
+		var feedItems []feeds.FeedItem
+		for rows.Next() {
+			var item feeds.FeedItem
+			var sourceName string
+			err := rows.Scan(&item.ID, &item.SourceID, &item.Title, &item.URL, &item.Description,
+				&item.Author, &item.PublishedAt, &item.Score, &item.CommentsCount, &item.CreatedAt, &sourceName)
+			if err != nil {
+				log.Printf("Failed to scan reading list item: %v", err)
+			}
+			item.SourceName = sourceName
+			feedItems = append(feedItems, item)
+		}
+
+		data := fiber.Map{
+			"FeedItems": feedItems,
+			"Email":     userEmail,
+		}
+
+		return c.Render("reading-list", data)
+	})
+
 	log.Fatal(app.Listen(":3000"))
 }
