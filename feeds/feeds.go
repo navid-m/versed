@@ -60,11 +60,9 @@ func ResetAllFeedTimestamps(db *sql.DB) error {
 	return nil
 }
 
-// Also add this simplified test to see what's in the database:
 func DebugFeeds(db *sql.DB) {
 	log.Println("=== DATABASE DEBUG ===")
 
-	// Check feed sources
 	sources, err := GetAllFeedSources(db)
 	if err != nil {
 		log.Printf("ERROR getting feed sources: %v", err)
@@ -76,7 +74,6 @@ func DebugFeeds(db *sql.DB) {
 			source.Name, source.ID, source.URL, source.LastUpdated)
 	}
 
-	// Check feed items
 	items, err := GetAllFeedItems(db, 10)
 	if err != nil {
 		log.Printf("ERROR getting feed items: %v", err)
@@ -231,19 +228,16 @@ func GetFeedSourceByName(db *sql.DB, name string) (*FeedSource, error) {
 
 // Creates or updates a feed source - FIXED to preserve timestamps
 func CreateOrUpdateFeedSource(db *sql.DB, name, url string) (*FeedSource, error) {
-	// Try to get existing source
 	existing, err := GetFeedSourceByName(db, name)
 	if err == nil {
-		// Source exists - return it WITHOUT any database updates
 		log.Printf("Found existing source: %s (ID: %d, LastUpdated: %v)",
 			name, existing.ID, existing.LastUpdated)
 		return existing, nil
 	}
 
-	// Source doesn't exist, create new one
 	log.Printf("Creating new feed source: %s", name)
 	query := `INSERT INTO feed_sources (name, url, last_updated, update_interval) 
-	          VALUES (?, ?, datetime('2000-01-01 00:00:00'), 3600)`
+			VALUES (?, ?, datetime('2000-01-01 00:00:00'), 3600)`
 	result, err := db.Exec(query, name, url)
 	if err != nil {
 		return nil, fmt.Errorf("failed to insert feed source: %w", err)
@@ -266,7 +260,6 @@ func CreateOrUpdateFeedSource(db *sql.DB, name, url string) (*FeedSource, error)
 	return source, nil
 }
 
-// TEMPORARY DEBUG - Replace your ShouldUpdateFeed function with this one that forces updates
 func ShouldUpdateFeed(source FeedSource) bool {
 	timeSince := time.Since(source.LastUpdated)
 	threshold := time.Duration(source.UpdateInterval) * time.Second
@@ -276,13 +269,11 @@ func ShouldUpdateFeed(source FeedSource) bool {
 	log.Printf("  Time since: %v", timeSince)
 	log.Printf("  Threshold: %v", threshold)
 	log.Printf("  Should update: %v", timeSince > threshold)
-
-	// TEMPORARY: Force all updates for debugging
 	log.Printf("  FORCING UPDATE FOR DEBUGGING")
+
 	return true
 }
 
-// Alternative: If you want to keep the normal logic but with debug info:
 func ShouldUpdateFeedNormal(source FeedSource) bool {
 	timeSince := time.Since(source.LastUpdated)
 	threshold := time.Duration(source.UpdateInterval) * time.Second
@@ -295,79 +286,6 @@ func ShouldUpdateFeedNormal(source FeedSource) bool {
 	log.Printf("  Should update: %v", shouldUpdate)
 
 	return shouldUpdate
-}
-
-// Also add this manual test function to your main.go to bypass the scheduler:
-func manualFeedTest(db *sql.DB) {
-	log.Println("=== MANUAL FEED TEST ===")
-
-	// Test just one feed manually
-	redditFeed := &RedditFeed{Subreddit: "programming"}
-	sourceName := redditFeed.GetSourceName()
-	feedURL := redditFeed.GetFeedURL()
-
-	log.Printf("Testing: %s", sourceName)
-	log.Printf("URL: %s", feedURL)
-
-	// Get the source from database
-	dbSource, err := GetFeedSourceByName(db, sourceName)
-	if err != nil {
-		log.Printf("ERROR: Cannot find source in database: %v", err)
-		return
-	}
-
-	log.Printf("Found source - ID: %d, LastUpdated: %v", dbSource.ID, dbSource.LastUpdated)
-
-	// Fetch the feed
-	log.Println("Fetching feed content...")
-	content, err := FetchFeed(feedURL)
-	if err != nil {
-		log.Printf("ERROR: Failed to fetch: %v", err)
-		return
-	}
-
-	log.Printf("SUCCESS: Fetched %d bytes", len(content))
-
-	// Parse the feed
-	log.Println("Parsing feed...")
-	items, err := redditFeed.ParseFeed(content, dbSource.ID)
-	if err != nil {
-		log.Printf("ERROR: Failed to parse: %v", err)
-		return
-	}
-
-	log.Printf("SUCCESS: Parsed %d items", len(items))
-	for i, item := range items {
-		if i >= 3 {
-			break
-		}
-		log.Printf("  Item %d: %s", i+1, item.Title)
-	}
-
-	// Save items
-	log.Println("Saving items to database...")
-	err = SaveFeedItems(db, items)
-	if err != nil {
-		log.Printf("ERROR: Failed to save: %v", err)
-		return
-	}
-
-	log.Printf("SUCCESS: Saved %d items", len(items))
-
-	// Check what's in database now
-	allItems, err := GetAllFeedItems(db, 10)
-	if err != nil {
-		log.Printf("ERROR: Failed to get items from database: %v", err)
-		return
-	}
-
-	log.Printf("Total items now in database: %d", len(allItems))
-	for i, item := range allItems {
-		if i >= 3 {
-			break
-		}
-		log.Printf("  DB Item %d: %s (Source: %d)", i+1, item.Title, item.SourceID)
-	}
 }
 
 // Gets all feed sources.
@@ -394,10 +312,10 @@ func GetAllFeedSources(db *sql.DB) ([]FeedSource, error) {
 // Gets feed items for a specific source.
 func GetFeedItemsBySource(db *sql.DB, sourceID int, limit int) ([]FeedItem, error) {
 	query := `SELECT id, source_id, title, url, description, author, published_at, score, comments_count, created_at 
-	          FROM feed_items 
-	          WHERE source_id = ? 
-	          ORDER BY published_at DESC 
-	          LIMIT ?`
+			FROM feed_items 
+			WHERE source_id = ? 
+			ORDER BY published_at DESC 
+			LIMIT ?`
 	rows, err := db.Query(query, sourceID, limit)
 	if err != nil {
 		return nil, err
@@ -420,10 +338,10 @@ func GetFeedItemsBySource(db *sql.DB, sourceID int, limit int) ([]FeedItem, erro
 // Gets all feed items sorted by published date.
 func GetAllFeedItems(db *sql.DB, limit int) ([]FeedItem, error) {
 	query := `SELECT fi.id, fi.source_id, fi.title, fi.url, fi.description, fi.author, fi.published_at, fi.score, fi.comments_count, fi.created_at, fs.name as source_name
-	          FROM feed_items fi
-	          JOIN feed_sources fs ON fi.source_id = fs.id
-	          ORDER BY fi.published_at DESC
-	          LIMIT ?`
+			FROM feed_items fi
+			JOIN feed_sources fs ON fi.source_id = fs.id
+			ORDER BY fi.published_at DESC
+			LIMIT ?`
 	rows, err := db.Query(query, limit)
 	if err != nil {
 		return nil, err

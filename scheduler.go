@@ -63,34 +63,7 @@ func (fs *FeedScheduler) updateAllFeeds() {
 		go fs.updateFeed(source)
 	}
 }
-func debugDatabase(db *sql.DB) {
-	log.Println("=== DATABASE DEBUG ===")
 
-	// Check feed sources
-	sources, err := feeds.GetAllFeedSources(db)
-	if err != nil {
-		log.Printf("ERROR getting feed sources: %v", err)
-		return
-	}
-	log.Printf("Feed sources in database: %d", len(sources))
-	for _, source := range sources {
-		log.Printf("  - %s (ID: %d, URL: %s, LastUpdated: %v)",
-			source.Name, source.ID, source.URL, source.LastUpdated)
-	}
-
-	// Check feed items
-	items, err := feeds.GetAllFeedItems(db, 10)
-	if err != nil {
-		log.Printf("ERROR getting feed items: %v", err)
-		return
-	}
-	log.Printf("Feed items in database: %d", len(items))
-	for _, item := range items {
-		log.Printf("  - %s (Source: %d)", item.Title, item.SourceID)
-	}
-}
-
-// Replace your CreateOrUpdateFeedSource function in feeds/feeds.go with this:
 func CreateOrUpdateFeedSource(db *sql.DB, name, url string) (*feeds.FeedSource, error) {
 	existing, err := feeds.GetFeedSourceByName(db, name)
 	if err == nil {
@@ -128,7 +101,6 @@ func CreateOrUpdateFeedSource(db *sql.DB, name, url string) (*feeds.FeedSource, 
 	return source, nil
 }
 
-// Quick fix to force update all existing feeds - add this function to feeds/feeds.go:
 func ResetAllFeedTimestamps(db *sql.DB) error {
 	query := `UPDATE feed_sources SET last_updated = datetime('2000-01-01 00:00:00')`
 	_, err := db.Exec(query)
@@ -139,7 +111,6 @@ func ResetAllFeedTimestamps(db *sql.DB) error {
 	return nil
 }
 
-// Also fix the scheduler updateFeed function to add more logging:
 func (fs *FeedScheduler) updateFeed(source feeds.FeedSourceInterface) {
 	sourceName := source.GetSourceName()
 	feedURL := source.GetFeedURL()

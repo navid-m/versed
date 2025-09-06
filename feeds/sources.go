@@ -65,7 +65,6 @@ func (r *RedditFeed) ParseFeed(content []byte, sourceID int) ([]FeedItem, error)
 
 // Extracts score from Reddit's HTML description.
 func extractRedditScore(description string) int {
-	// Look for score patterns in description
 	re := regexp.MustCompile(`(\d+)\s*points?`)
 	matches := re.FindStringSubmatch(description)
 	if len(matches) > 1 {
@@ -98,7 +97,6 @@ func (h *HackerNewsFeed) GetSourceName() string {
 	return "Hacker News"
 }
 
-// ParseFeed parses HackerNews RSS feed.
 func (h *HackerNewsFeed) ParseFeed(content []byte, sourceID int) ([]FeedItem, error) {
 	parser := gofeed.NewParser()
 	feed, err := parser.ParseString(string(content))
@@ -110,7 +108,6 @@ func (h *HackerNewsFeed) ParseFeed(content []byte, sourceID int) ([]FeedItem, er
 	for _, item := range feed.Items {
 		id := generateItemID(item.Link)
 
-		// HN RSS typically includes score and comments in description
 		score := extractHNScore(item.Description)
 		commentsCount := extractHNComments(item.Description)
 
@@ -139,7 +136,6 @@ func (h *HackerNewsFeed) ParseFeed(content []byte, sourceID int) ([]FeedItem, er
 	return items, nil
 }
 
-// Extracts score from HN description.
 func extractHNScore(description string) int {
 	re := regexp.MustCompile(`(\d+)\s*points?`)
 	matches := re.FindStringSubmatch(description)
@@ -151,7 +147,6 @@ func extractHNScore(description string) int {
 	return 0
 }
 
-// Extracts comments count from HN description.
 func extractHNComments(description string) int {
 	re := regexp.MustCompile(`(\d+)\s*comments?`)
 	matches := re.FindStringSubmatch(description)
@@ -169,12 +164,10 @@ func (l *LobsterFeed) GetFeedURL() string {
 	return "https://lobste.rs/rss"
 }
 
-// Returns the source name.
 func (l *LobsterFeed) GetSourceName() string {
 	return "Lobster.rs"
 }
 
-// ParseFeed parses Lobster.rs RSS feed.
 func (l *LobsterFeed) ParseFeed(content []byte, sourceID int) ([]FeedItem, error) {
 	parser := gofeed.NewParser()
 	feed, err := parser.ParseString(string(content))
@@ -185,8 +178,6 @@ func (l *LobsterFeed) ParseFeed(content []byte, sourceID int) ([]FeedItem, error
 	var items []FeedItem
 	for _, item := range feed.Items {
 		id := generateItemID(item.Link)
-
-		// Extract score from Lobster's custom fields
 		score := extractLobsterScore(item.Description)
 
 		var publishedAt time.Time
@@ -205,7 +196,7 @@ func (l *LobsterFeed) ParseFeed(content []byte, sourceID int) ([]FeedItem, error
 			Author:        item.Author.Name,
 			PublishedAt:   publishedAt,
 			Score:         score,
-			CommentsCount: 0, // Lobster doesn't expose comment count easily
+			CommentsCount: 0,
 			CreatedAt:     time.Now(),
 		}
 		items = append(items, feedItem)
@@ -214,7 +205,6 @@ func (l *LobsterFeed) ParseFeed(content []byte, sourceID int) ([]FeedItem, error
 	return items, nil
 }
 
-// Extracts score from Lobster description.
 func extractLobsterScore(description string) int {
 	re := regexp.MustCompile(`(\d+)\s*points?`)
 	matches := re.FindStringSubmatch(description)
