@@ -112,10 +112,11 @@ func ResetAllFeedTimestamps(db *sql.DB) error {
 }
 
 func (fs *FeedScheduler) updateFeed(source feeds.FeedSourceInterface) {
-	sourceName := source.GetSourceName()
-	feedURL := source.GetFeedURL()
-
-	dbSource, err := feeds.CreateOrUpdateFeedSource(fs.db, sourceName, feedURL)
+	var (
+		sourceName    = source.GetSourceName()
+		feedURL       = source.GetFeedURL()
+		dbSource, err = feeds.CreateOrUpdateFeedSource(fs.db, sourceName, feedURL)
+	)
 	if err != nil {
 		log.Printf("ERROR: Failed to create/update feed source %s: %v", sourceName, err)
 		return
