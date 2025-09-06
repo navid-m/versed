@@ -393,23 +393,61 @@ func GetAllFeedItemsWithPagination(db *sql.DB, limit, offset int) ([]FeedItem, e
 	return items, nil
 }
 
-func HandleVote(db *sql.DB, feedID string, voteType string) (int, error) {
-	var currentScore int
-	err := db.QueryRow("SELECT score FROM feed_items WHERE id = ?", feedID).Scan(&currentScore)
-	if err != nil {
-		return 0, fmt.Errorf("failed to get current score: %w", err)
-	}
-	switch voteType {
-	case "upvote":
-		currentScore++
-	case "downvote":
-		currentScore--
-	default:
-		return 0, fmt.Errorf("invalid vote type: %s", voteType)
-	}
-	_, err = db.Exec("UPDATE feed_items SET score = ? WHERE id = ?", currentScore, feedID)
-	if err != nil {
-		return 0, fmt.Errorf("failed to update score: %w", err)
-	}
-	return currentScore, nil
+func HandleVote(db *sql.DB, itemID string, userID int, voteType string) (int, error) {
+    // Check if the user has already voted
+    var exists bool
+    err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM upvotes WHERE user_id = ? AND item_id = ?)", userID, itemID).Scan(&exists)
+    if err != nil {
+        return 0, fmt.Errorf("failed to check if vote exists: %w", err)
+    }
+
+    if exists {
+        // User has already voted, so we can just return the current score
+        var currentScore int
+        err := db.QueryRow("SELECT score FROM feed_items WHERE id = ?", itemID).Scan(&currentScore)
+        if err != nil {
+            return 0, fmt.Errorf("failed to get current score: %w", err)
+        }
+        return currentScore, nil
+    }
+
+    // User has not voted, so update the score and record the vote
+    var currentScore int
+    err = db.QueryRow("SELECT score FROM feed_items WHERE id = ?", itemID).Scan(&currentScore)
+    if err != nil {
+        return 0, fmt.Errorf("failed to get current score: %w", err)
+    }
+
+    switch voteType {
+    case "upvote":
+        currentScore++
+    case "downvote":
+        currentScore--
+    default:
+        return 0, fmt.Errorf("invalid vote type: %s", voteType)
+    }
+
+    tx, err := db.Begin()
+    if err != nil {
+        return 0, fmt.Errorf("failed to begin transaction: %w", err)
+    }
+
+    _, err = tx.Exec("UPDATE feed_items SET score = ? WHERE id = ?", currentScore, itemID)
+    if err != nil {
+        tx.Rollback()
+        return 0, fmt.Errorf("failed to update score: %w", err)
+    }
+
+    _, err = tx.Exec("INSERT INTO upvotes (user_id, item_id) VALUES (?, ?)", userID, itemID)
+    if err != nil {
+        tx.Rollback()
+        return 0, fmt.Errorf("failed to insert into upvotes: %w", err)
+    }
+
+    err = tx.Commit()
+    if err != nil {
+        return 0, fmt.Errorf("failed to commit transaction: %w", err)
+    }
+
+    return currentScore, nil
 }

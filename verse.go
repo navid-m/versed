@@ -173,6 +173,13 @@ func main() {
 	})
 
 	app.Post("/api/vote", func(c *fiber.Ctx) error {
+		userID, ok := c.Locals("userID").(int)
+		if !ok {
+			return c.Status(401).JSON(fiber.Map{
+				"error": "Unauthorized",
+			})
+		}
+
 		var voteRequest struct {
 			FeedID   string `json:"feed_id"`
 			VoteType string `json:"vote_type"`
@@ -184,7 +191,7 @@ func main() {
 			})
 		}
 
-		newScore, err := feeds.HandleVote(database.GetDB(), voteRequest.FeedID, voteRequest.VoteType)
+		newScore, err := feeds.HandleVote(database.GetDB(), voteRequest.FeedID, int(userID), voteRequest.VoteType)
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{
 				"error": err.Error(),
