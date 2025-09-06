@@ -13,7 +13,6 @@ import (
 )
 
 func main() {
-
 	if err := database.InitDatabase(); err != nil {
 		log.Fatal("Failed to initialize database:", err)
 	}
