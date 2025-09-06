@@ -2,6 +2,7 @@ package database
 
 import "verse/models"
 
+// Creates a new user in the database
 func CreateUser(email, password string) error {
 	var (
 		query  = `INSERT INTO users (email, password) VALUES (?, ?)`
@@ -10,6 +11,7 @@ func CreateUser(email, password string) error {
 	return err
 }
 
+// Retrieves the user object given some email address
 func GetUserByEmail(email string) (*models.User, error) {
 	var (
 		query = `SELECT id, email, password FROM users WHERE email = ?`
