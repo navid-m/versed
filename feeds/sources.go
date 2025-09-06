@@ -216,85 +216,11 @@ func (l *LobsterFeed) ParseFeed(content []byte, sourceID int) ([]FeedItem, error
 
 // Extracts score from Lobster description.
 func extractLobsterScore(description string) int {
-	// Lobster.rs includes score in description like "X points"
 	re := regexp.MustCompile(`(\d+)\s*points?`)
 	matches := re.FindStringSubmatch(description)
 	if len(matches) > 1 {
 		if score, err := strconv.Atoi(matches[1]); err == nil {
 			return score
-		}
-	}
-	return 0
-}
-
-// DevToFeed represents a Dev.to RSS feed
-type DevToFeed struct {
-	Tag string // Optional tag filter
-}
-
-// Returns the RSS URL for Dev.to.
-func (d *DevToFeed) GetFeedURL() string {
-	if d.Tag != "" {
-		return fmt.Sprintf("https://dev.to/feed/tag/%s", d.Tag)
-	}
-	return "https://dev.to/feed"
-}
-
-// Returns the source name.
-func (d *DevToFeed) GetSourceName() string {
-	if d.Tag != "" {
-		return fmt.Sprintf("Dev.to - %s", d.Tag)
-	}
-	return "Dev.to"
-}
-
-// ParseFeed parses Dev.to RSS feed.
-func (d *DevToFeed) ParseFeed(content []byte, sourceID int) ([]FeedItem, error) {
-	parser := gofeed.NewParser()
-	feed, err := parser.ParseString(string(content))
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse Dev.to feed: %w", err)
-	}
-
-	var items []FeedItem
-	for _, item := range feed.Items {
-		id := generateItemID(item.Link)
-
-		// Dev.to includes reactions/reading time in description
-		reactions := extractDevToReactions(item.Description)
-
-		var publishedAt time.Time
-		if item.PublishedParsed != nil {
-			publishedAt = *item.PublishedParsed
-		} else {
-			publishedAt = time.Now()
-		}
-
-		feedItem := FeedItem{
-			ID:            id,
-			SourceID:      sourceID,
-			Title:         item.Title,
-			URL:           item.Link,
-			Description:   item.Description,
-			Author:        item.Author.Name,
-			PublishedAt:   publishedAt,
-			Score:         reactions, // Use reactions as score
-			CommentsCount: 0,         // Dev.to doesn't expose comment count easily
-			CreatedAt:     time.Now(),
-		}
-		items = append(items, feedItem)
-	}
-
-	return items, nil
-}
-
-// Extracts reaction count from Dev.to description.
-func extractDevToReactions(description string) int {
-	re := regexp.MustCompile(`(\d+)\s*reactions?`)
-	matches := re.FindStringSubmatch(description)
-	if len(matches) > 1 {
-		if reactions, err := strconv.Atoi(matches[1]); err == nil {
-			return reactions
 		}
 	}
 	return 0
@@ -320,8 +246,6 @@ func NewFeedManager() *FeedManager {
 			&RedditFeed{Subreddit: "technology"},
 			&HackerNewsFeed{},
 			&LobsterFeed{},
-			&DevToFeed{Tag: "javascript"},
-			&DevToFeed{Tag: "golang"},
 		},
 	}
 }

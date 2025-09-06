@@ -92,17 +92,18 @@ func debugDatabase(db *sql.DB) {
 
 // Replace your CreateOrUpdateFeedSource function in feeds/feeds.go with this:
 func CreateOrUpdateFeedSource(db *sql.DB, name, url string) (*feeds.FeedSource, error) {
-	// Try to get existing source
 	existing, err := feeds.GetFeedSourceByName(db, name)
 	if err == nil {
-		log.Printf("Found existing source: %s (ID: %d, LastUpdated: %v)",
-			name, existing.ID, existing.LastUpdated)
-		// Return existing source WITHOUT updating timestamp
+		log.Printf(
+			"Found existing source: %s (ID: %d, LastUpdated: %v)",
+			name,
+			existing.ID,
+			existing.LastUpdated,
+		)
 		return existing, nil
 	}
 
 	log.Printf("Creating new feed source: %s", name)
-	// Source doesn't exist, create new one with old timestamp to force immediate update
 	query := `INSERT INTO feed_sources (name, url, last_updated, update_interval) 
 	          VALUES (?, ?, datetime('2000-01-01 00:00:00'), 3600)`
 	result, err := db.Exec(query, name, url)
