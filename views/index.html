@@ -102,6 +102,8 @@
                      >
                         <button
                            class="p-1 text-orange-500 hover:text-orange-600 transition-colors"
+                           data-feed-id="{{ item.ID }}"
+                           data-vote-type="upvote"
                         >
                            <i class="fas fa-chevron-up text-sm"></i>
                         </button>
@@ -110,6 +112,8 @@
                         </span>
                         <button
                            class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                           data-feed-id="{{ item.ID }}"
+                           data-vote-type="downvote"
                         >
                            <i class="fas fa-chevron-down text-sm"></i>
                         </button>
@@ -281,6 +285,44 @@
                   "flex items-center px-3 py-1.5 rounded-md text-xs font-medium transition-colors text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200";
             });
          }
+         document.addEventListener("DOMContentLoaded", function () {
+            const voteButtons =
+               document.querySelectorAll("[data-vote-type]");
+
+            voteButtons.forEach((button) => {
+               button.addEventListener("click", async function () {
+                  const feedId = this.getAttribute("data-feed-id");
+                  const voteType = this.getAttribute("data-vote-type");
+
+                  try {
+                     const response = await fetch("/api/vote", {
+                        method: "POST",
+                        headers: {
+                           "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                           feed_id: feedId,
+                           vote_type: voteType,
+                        }),
+                     });
+
+                     if (!response.ok) {
+                        throw new Error("Failed to submit vote");
+                     }
+
+                     const data = await response.json();
+                     const scoreElement = this.parentElement.querySelector(
+                        ".text-xs.font-medium.text-orange-500"
+                     );
+                     if (scoreElement) {
+                        scoreElement.textContent = data.new_score;
+                     }
+                  } catch (error) {
+                     console.error("Error submitting vote:", error);
+                  }
+               });
+            });
+         });
       </script>
 
       <script>
@@ -310,14 +352,18 @@
                     <div class="p-4">
                       <div class="flex items-start space-x-3">
                         <div class="flex flex-col items-center space-y-1 flex-shrink-0">
-                          <button class="p-1 text-orange-500 hover:text-orange-600 transition-colors">
-                            <i class="fas fa-chevron-up text-sm"></i>
+                          <button class="p-1 text-orange-500 hover:text-orange-600 transition-colors" data-feed-id="${
+                             item.id
+                          }" data-vote-type="upvote">
+                             <i class="fas fa-chevron-up text-sm"></i>
                           </button>
                           <span class="text-xs font-medium text-orange-500">${
                              item.score || 0
                           }</span>
-                          <button class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
-                            <i class="fas fa-chevron-down text-sm"></i>
+                          <button class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" data-feed-id="${
+                             item.id
+                          }" data-vote-type="downvote">
+                             <i class="fas fa-chevron-down text-sm"></i>
                           </button>
                         </div>
 

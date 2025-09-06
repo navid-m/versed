@@ -172,5 +172,29 @@ func main() {
 		})
 	})
 
+	app.Post("/api/vote", func(c *fiber.Ctx) error {
+		var voteRequest struct {
+			FeedID   string `json:"feed_id"`
+			VoteType string `json:"vote_type"`
+		}
+
+		if err := c.BodyParser(&voteRequest); err != nil {
+			return c.Status(400).JSON(fiber.Map{
+				"error": "Invalid request body",
+			})
+		}
+
+		newScore, err := feeds.HandleVote(database.GetDB(), voteRequest.FeedID, voteRequest.VoteType)
+		if err != nil {
+			return c.Status(500).JSON(fiber.Map{
+				"error": err.Error(),
+			})
+		}
+
+		return c.JSON(fiber.Map{
+			"new_score": newScore,
+		})
+	})
+
 	log.Fatal(app.Listen(":3000"))
 }

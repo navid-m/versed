@@ -392,3 +392,24 @@ func GetAllFeedItemsWithPagination(db *sql.DB, limit, offset int) ([]FeedItem, e
 	}
 	return items, nil
 }
+
+func HandleVote(db *sql.DB, feedID string, voteType string) (int, error) {
+	var currentScore int
+	err := db.QueryRow("SELECT score FROM feed_items WHERE id = ?", feedID).Scan(&currentScore)
+	if err != nil {
+		return 0, fmt.Errorf("failed to get current score: %w", err)
+	}
+	switch voteType {
+	case "upvote":
+		currentScore++
+	case "downvote":
+		currentScore--
+	default:
+		return 0, fmt.Errorf("invalid vote type: %s", voteType)
+	}
+	_, err = db.Exec("UPDATE feed_items SET score = ? WHERE id = ?", currentScore, feedID)
+	if err != nil {
+		return 0, fmt.Errorf("failed to update score: %w", err)
+	}
+	return currentScore, nil
+}
