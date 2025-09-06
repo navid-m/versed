@@ -66,6 +66,5 @@ func createTables() error {
 			return err
 		}
 	}
-	db.Exec(`ALTER TABLE upvotes ADD COLUMN vote_type TEXT`)
 	return nil
 }

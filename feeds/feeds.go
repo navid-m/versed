@@ -179,7 +179,9 @@ func SaveFeedItems(db *sql.DB, items []FeedItem) error {
 	stmt, err := tx.Prepare(`
 		INSERT OR REPLACE INTO feed_items
 		(id, source_id, title, url, description, author, published_at, score, comments_count, created_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?, ?, ?, 
+			COALESCE((SELECT score FROM feed_items WHERE id = ?), ?), 
+			?, ?)
 	`)
 	if err != nil {
 		return err
@@ -195,7 +197,8 @@ func SaveFeedItems(db *sql.DB, items []FeedItem) error {
 			item.Description,
 			item.Author,
 			item.PublishedAt,
-			item.Score,
+			item.ID, // For COALESCE SELECT
+			item.Score, // Default score if not exists
 			item.CommentsCount,
 			item.CreatedAt,
 		)
@@ -410,7 +413,11 @@ func HandleVote(db *sql.DB, itemID string, userID int, voteType string) (int, er
 		return 0, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
-	defer tx.Rollback()
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
 
 	if existingVoteType.Valid {
 		if existingVoteType.String == voteType {
