@@ -288,8 +288,11 @@ func main() {
 		for rows.Next() {
 			var item feeds.FeedItem
 			var sourceName string
-			err := rows.Scan(&item.ID, &item.SourceID, &item.Title, &item.URL, &item.Description,
-				&item.Author, &item.PublishedAt, &item.Score, &item.CommentsCount, &item.CreatedAt, &sourceName)
+
+			err := rows.Scan(
+				&item.ID, &item.SourceID, &item.Title, &item.URL, &item.Description,
+				&item.Author, &item.PublishedAt, &item.Score, &item.CommentsCount, &item.CreatedAt, &sourceName,
+			)
 			if err != nil {
 				return c.Status(500).JSON(fiber.Map{
 					"error": "Failed to scan reading list item",
