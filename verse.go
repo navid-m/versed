@@ -6,6 +6,7 @@ import (
 	"strings"
 	"verse/database"
 	"verse/feeds"
+	"verse/handlers"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
@@ -47,6 +48,8 @@ func main() {
 		}
 		return c.Next()
 	})
+
+	app.Static("/static", "./static")
 
 	app.Get("/", func(c *fiber.Ctx) error {
 		userEmail := c.Locals("userEmail")
@@ -302,7 +305,7 @@ func main() {
 	})
 
 	app.Get("/api/reading-list/check/:itemId", func(c *fiber.Ctx) error {
-		userID, ok := c.Locals("userID").(int)
+		userID, ok := c.Locals("userID").([]int)
 		if !ok {
 			return c.Status(401).JSON(fiber.Map{
 				"error": "Unauthorized",
@@ -310,7 +313,7 @@ func main() {
 		}
 
 		itemID := c.Params("itemId")
-		saved, err := database.IsInReadingList(userID, itemID)
+		saved, err := database.IsInReadingList(userID[0], itemID)
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{
 				"error": "Failed to check reading list status",
@@ -321,6 +324,8 @@ func main() {
 			"saved": saved,
 		})
 	})
+
+	app.Get("/api/search", handlers.SearchFeedItems)
 
 	app.Get("/reading-list", func(c *fiber.Ctx) error {
 		userEmail := c.Locals("userEmail")
