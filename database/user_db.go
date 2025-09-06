@@ -3,8 +3,10 @@ package database
 import "verse/models"
 
 func CreateUser(email, password string) error {
-	query := `INSERT INTO users (email, password) VALUES (?, ?)`
-	_, err := db.Exec(query, email, password)
+	var (
+		query  = `INSERT INTO users (email, password) VALUES (?, ?)`
+		_, err = db.Exec(query, email, password)
+	)
 	return err
 }
 
