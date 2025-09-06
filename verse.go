@@ -269,14 +269,7 @@ func main() {
 			})
 		}
 
-		query := `SELECT fi.id, fi.source_id, fi.title, fi.url, fi.description, fi.author, fi.published_at, fi.score, fi.comments_count, fi.created_at, fs.name as source_name
-			FROM feed_items fi
-			JOIN reading_list rl ON fi.id = rl.item_id
-			JOIN feed_sources fs ON fi.source_id = fs.id
-			WHERE rl.user_id = ?
-			ORDER BY rl.created_at DESC`
-
-		rows, err := database.GetDB().Query(query, userID)
+		rows, err := database.RetrieveReadingList(userID)
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{
 				"error": "Failed to retrieve reading list",
@@ -335,15 +328,8 @@ func main() {
 			return c.Redirect("/signin")
 		}
 
-		query := `SELECT fi.id, fi.source_id, fi.title, fi.url, fi.description, fi.author, fi.published_at, fi.score, fi.comments_count, fi.created_at, fs.name as source_name
-			FROM feed_items fi
-			JOIN reading_list rl ON fi.id = rl.item_id
-			JOIN feed_sources fs ON fi.source_id = fs.id
-			WHERE rl.user_id = ?
-			ORDER BY rl.created_at DESC`
-
 		userID := c.Locals("userID").(int)
-		rows, err := database.GetDB().Query(query, userID)
+		rows, err := database.GetDB().Query(database.ReadingListQuery, userID)
 		if err != nil {
 			log.Printf("Failed to get reading list: %v", err)
 		}
