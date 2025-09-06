@@ -124,7 +124,6 @@ func (fs *FeedScheduler) updateFeed(source feeds.FeedSourceInterface) {
 	log.Printf("DB Source - ID: %d, LastUpdated: %v", dbSource.ID, dbSource.LastUpdated)
 	shouldUpdate := feeds.ShouldUpdateFeed(*dbSource)
 	log.Printf("Should update feed %s: %v", sourceName, shouldUpdate)
-
 	if !shouldUpdate {
 		log.Printf("SKIPPING: Feed %s is up to date (last updated: %v)", sourceName, dbSource.LastUpdated)
 		return
