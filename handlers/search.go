@@ -19,13 +19,15 @@ func SearchFeedItems(c *fiber.Ctx) error {
 		})
 	}
 
-	searchQuery := `%` + strings.ToLower(query) + `%`
-	sqlQuery := `SELECT fi.id, fi.source_id, fi.title, fi.url, fi.description, fi.author, fi.published_at, fi.score, fi.comments_count, fi.created_at, fs.name as source_name
-			FROM feed_items fi
-			JOIN feed_sources fs ON fi.source_id = fs.id
-			WHERE LOWER(fi.title) LIKE ? OR LOWER(fi.description) LIKE ? OR LOWER(fi.author) LIKE ?
-			ORDER BY fi.published_at DESC
-			LIMIT 50`
+	var (
+		searchQuery = `%` + strings.ToLower(query) + `%`
+		sqlQuery    = `SELECT fi.id, fi.source_id, fi.title, fi.url, fi.description, fi.author, fi.published_at, fi.score, fi.comments_count, fi.created_at, fs.name as source_name
+				FROM feed_items fi
+				JOIN feed_sources fs ON fi.source_id = fs.id
+				WHERE LOWER(fi.title) LIKE ? OR LOWER(fi.description) LIKE ? OR LOWER(fi.author) LIKE ?
+				ORDER BY fi.published_at DESC
+				LIMIT 50`
+	)
 
 	rows, err := database.GetDB().Query(sqlQuery, searchQuery, searchQuery, searchQuery)
 	if err != nil {
