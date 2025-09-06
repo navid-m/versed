@@ -28,7 +28,7 @@ type FeedItem struct {
 	URL           string    `json:"url"`
 	Description   string    `json:"description,omitempty"`
 	Author        string    `json:"author,omitempty"`
-	PublishedAt   time.Time `json:"published_at,omitempty"`
+	PublishedAt   time.Time `json:"published_at"`
 	Score         int       `json:"score,omitempty"`
 	CommentsCount int       `json:"comments_count,omitempty"`
 	CreatedAt     time.Time `json:"created_at"`

@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"path/filepath"
+	"strings"
 	"verse/database"
 	"verse/feeds"
 
@@ -22,13 +23,12 @@ func main() {
 	}
 	defer database.CloseConnection()
 	feeds.DebugFeeds(database.GetDB())
-	store := session.New(session.Config{
-		KeyLookup: "cookie:session_id",
-	})
-	viewsPath, _ := filepath.Abs("./views")
-	engine := mustache.New(viewsPath, ".mustache")
+
 	var (
-		app = fiber.New(fiber.Config{
+		store        = session.New(session.Config{KeyLookup: "cookie:session_id"})
+		viewsPath, _ = filepath.Abs("./views")
+		engine       = mustache.New(viewsPath, ".mustache")
+		app          = fiber.New(fiber.Config{
 			Views: engine,
 		})
 	)
@@ -58,9 +58,19 @@ func main() {
 			log.Printf("Failed to get feed items: %v", err)
 		}
 
+		for i, f := range feedItems {
+			if strings.TrimSpace(f.Description) == "" {
+				feedItems[i].Description = "No description."
+			}
+			if strings.TrimSpace(f.Description) == "Comments" {
+				feedItems[i].Description = "No description."
+			}
+		}
+
 		data := fiber.Map{
 			"FeedItems": feedItems,
 		}
+
 		if userEmail != nil {
 			data["Email"] = userEmail
 		}
