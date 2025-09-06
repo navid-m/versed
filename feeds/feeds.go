@@ -197,8 +197,8 @@ func SaveFeedItems(db *sql.DB, items []FeedItem) error {
 			item.Description,
 			item.Author,
 			item.PublishedAt,
-			item.ID, // For COALESCE SELECT
-			item.Score, // Default score if not exists
+			item.ID,
+			item.Score,
 			item.CommentsCount,
 			item.CreatedAt,
 		)
