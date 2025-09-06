@@ -132,8 +132,10 @@ func main() {
 	})
 
 	app.Get("/api/feeds", func(c *fiber.Ctx) error {
-		limit := min(c.QueryInt("limit", 50), 200)
-		items, err := feeds.GetAllFeedItems(database.GetDB(), limit)
+		page := c.QueryInt("page", 1)
+		limit := min(c.QueryInt("limit", 20), 50)
+		offset := (page - 1) * limit
+		items, err := feeds.GetAllFeedItemsWithPagination(database.GetDB(), limit, offset)
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{
 				"error": "Failed to retrieve feed items",

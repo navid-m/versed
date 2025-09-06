@@ -362,4 +362,33 @@ func GetAllFeedItems(db *sql.DB, limit int) ([]FeedItem, error) {
 		items = append(items, item)
 	}
 	return items, nil
+
+}
+
+// Gets all feed items with pagination support
+func GetAllFeedItemsWithPagination(db *sql.DB, limit, offset int) ([]FeedItem, error) {
+	query := `SELECT fi.id, fi.source_id, fi.title, fi.url, fi.description, fi.author, fi.published_at, fi.score, fi.comments_count, fi.created_at, fs.name as source_name
+			FROM feed_items fi
+			JOIN feed_sources fs ON fi.source_id = fs.id
+			ORDER BY fi.published_at DESC
+			LIMIT ? OFFSET ?`
+	rows, err := db.Query(query, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var items []FeedItem
+	for rows.Next() {
+		var item FeedItem
+		var sourceName string
+		err := rows.Scan(&item.ID, &item.SourceID, &item.Title, &item.URL, &item.Description,
+			&item.Author, &item.PublishedAt, &item.Score, &item.CommentsCount, &item.CreatedAt, &sourceName)
+		if err != nil {
+			return nil, err
+		}
+		item.SourceName = sourceName
+		items = append(items, item)
+	}
+	return items, nil
 }
