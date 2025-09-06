@@ -28,12 +28,10 @@ func main() {
 		store        = session.New(session.Config{KeyLookup: "cookie:session_id"})
 		viewsPath, _ = filepath.Abs("./views")
 		engine       = django.New(viewsPath, ".html")
-		app          = fiber.New(fiber.Config{
-			Views: engine,
-		})
+		app          = fiber.New(fiber.Config{Views: engine})
+		scheduler    = NewFeedScheduler(database.GetDB())
 	)
 
-	scheduler := NewFeedScheduler(database.GetDB())
 	scheduler.Start()
 	defer scheduler.Stop()
 
