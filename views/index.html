@@ -32,139 +32,7 @@
       <header
          class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10"
       >
-         <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
-            <div class="flex justify-between items-center h-12">
-               <div class="flex items-center">
-                  <a
-                     href="/"
-                     class="text-xl font-bold text-gray-900 dark:text-gray-100 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
-                  >
-                     Versed
-                  </a>
-               </div>
-               <nav class="hidden md:flex space-x-6">
-                  <a
-                     href="/"
-                     class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 font-medium transition-colors text-sm"
-                  >
-                     Home
-                  </a>
-                  <a
-                     href="/popular"
-                     class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 font-medium transition-colors text-sm"
-                  >
-                     Popular
-                  </a>
-                  <a
-                     href="/categories"
-                     class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 font-medium transition-colors text-sm"
-                  >
-                     Categories
-                  </a>
-                  <a
-                     href="/submit"
-                     class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 font-medium transition-colors text-sm"
-                  >
-                     Submit
-                  </a>
-               </nav>
-               <div class="flex items-center space-x-3">
-                  <button
-                     class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
-                  >
-                     <i class="fas fa-search"></i>
-                  </button>
-
-                  <div class="flex items-center">
-                     <button
-                        id="darkModeToggle"
-                        class="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-200 dark:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
-                     >
-                        <span
-                           id="toggleSlider"
-                           class="inline-block h-4 w-4 transform rounded-full bg-white dark:bg-gray-300 transition-transform translate-x-6 dark:translate-x-1"
-                        ></span>
-                     </button>
-                  </div>
-                  {% if Email %}
-                  <div class="relative">
-                     <button
-                        id="userMenuButton"
-                        class="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 rounded-md p-1"
-                     >
-                        <div
-                           class="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-semibold"
-                           data-email="{{ Email }}"
-                        ></div>
-                        <span class="text-sm font-medium hidden sm:block">
-                           {{ Email }}
-                        </span>
-                        <i class="fas fa-chevron-down text-xs"></i>
-                     </button>
-
-                     <div
-                        id="userDropdown"
-                        class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-50 hidden"
-                     >
-                        <div class="py-1">
-                           <div
-                              class="px-4 py-2 border-b border-gray-200 dark:border-gray-700"
-                           >
-                              <p
-                                 class="text-sm font-medium text-gray-900 dark:text-gray-100"
-                              >
-                                 {{ Email }}
-                              </p>
-                              <p
-                                 class="text-xs text-gray-500 dark:text-gray-400"
-                              >
-                                 Signed in
-                              </p>
-                           </div>
-                           <a
-                              href="/profile"
-                              class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
-                           >
-                              <i class="fas fa-user mr-2"></i>
-                              Profile
-                           </a>
-                           <a
-                              href="/settings"
-                              class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
-                           >
-                              <i class="fas fa-cog mr-2"></i>
-                              Settings
-                           </a>
-                           <div
-                              class="border-t border-gray-200 dark:border-gray-700"
-                           ></div>
-                           <a
-                              href="/signout"
-                              class="block px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-300 transition-colors"
-                           >
-                              <i class="fas fa-sign-out-alt mr-2"></i>
-                              Sign Out
-                           </a>
-                        </div>
-                     </div>
-                  </div>
-                  {% endif %} {% if not Email %}
-                  <a
-                     href="/signin"
-                     class="bg-gray-900 dark:bg-gray-700 text-white px-3 py-1.5 rounded-md hover:bg-gray-800 dark:hover:bg-gray-600 transition-colors font-medium text-sm"
-                  >
-                     Sign In
-                  </a>
-                  <a
-                     href="/signup"
-                     class="bg-gray-900 dark:bg-gray-700 text-white px-3 py-1.5 rounded-md hover:bg-gray-800 dark:hover:bg-gray-600 transition-colors font-medium text-sm"
-                  >
-                     Sign Up
-                  </a>
-                  {% endif %}
-               </div>
-            </div>
-         </div>
+         {% include "partials/navbar.html" %}
       </header>
 
       <main class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4">
@@ -320,160 +188,8 @@
             </button>
          </div>
       </main>
-      <footer
-         class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-8"
-      >
-         <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-8">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-               <div>
-                  <h3
-                     class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-3"
-                  >
-                     About Versed
-                  </h3>
-                  <p class="text-gray-600 dark:text-gray-400 mb-4 text-sm">
-                     Versed is a modern content aggregator that helps you
-                     discover and share the most interesting content from
-                     around the web.
-                  </p>
-                  <div class="flex space-x-3">
-                     <a
-                        href="#"
-                        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                     >
-                        <i class="fab fa-twitter"></i>
-                     </a>
-                     <a
-                        href="#"
-                        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                     >
-                        <i class="fab fa-facebook-f"></i>
-                     </a>
-                     <a
-                        href="#"
-                        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                     >
-                        <i class="fab fa-instagram"></i>
-                     </a>
-                     <a
-                        href="#"
-                        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                     >
-                        <i class="fab fa-linkedin-in"></i>
-                     </a>
-                  </div>
-               </div>
 
-               <div>
-                  <h3
-                     class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-3"
-                  >
-                     Quick Links
-                  </h3>
-                  <ul class="space-y-1">
-                     <li>
-                        <a
-                           href="/about"
-                           class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors text-sm"
-                        >
-                           About Us
-                        </a>
-                     </li>
-                     <li>
-                        <a
-                           href="/contact"
-                           class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors text-sm"
-                        >
-                           Contact
-                        </a>
-                     </li>
-                     <li>
-                        <a
-                           href="/privacy"
-                           class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors text-sm"
-                        >
-                           Privacy Policy
-                        </a>
-                     </li>
-                     <li>
-                        <a
-                           href="/terms"
-                           class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors text-sm"
-                        >
-                           Terms of Service
-                        </a>
-                     </li>
-                     <li>
-                        <a
-                           href="/faq"
-                           class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors text-sm"
-                        >
-                           FAQ
-                        </a>
-                     </li>
-                  </ul>
-               </div>
-
-               <div>
-                  <h3
-                     class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-3"
-                  >
-                     Categories
-                  </h3>
-                  <ul class="space-y-1">
-                     <li>
-                        <a
-                           href="/category/technology"
-                           class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors text-sm"
-                        >
-                           Technology
-                        </a>
-                     </li>
-                     <li>
-                        <a
-                           href="/category/science"
-                           class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors text-sm"
-                        >
-                           Science
-                        </a>
-                     </li>
-                     <li>
-                        <a
-                           href="/category/business"
-                           class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors text-sm"
-                        >
-                           Business
-                        </a>
-                     </li>
-                     <li>
-                        <a
-                           href="/category/design"
-                           class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors text-sm"
-                        >
-                           Design
-                        </a>
-                     </li>
-                     <li>
-                        <a
-                           href="/category/education"
-                           class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors text-sm"
-                        >
-                           Education
-                        </a>
-                     </li>
-                  </ul>
-               </div>
-            </div>
-
-            <div
-               class="border-t border-gray-200 dark:border-gray-700 mt-6 pt-6 text-center"
-            >
-               <p class="text-gray-500 dark:text-gray-400 text-sm">
-                  &copy; 2024 Versed. All rights reserved.
-               </p>
-            </div>
-         </div>
-      </footer>
+      {% include "partials/footer.html" %}
 
       <script>
          const darkModeToggle = document.getElementById("darkModeToggle");
@@ -661,6 +377,7 @@
       <style>
          .line-clamp-2 {
             display: -webkit-box;
+            line-clamp: 2;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
@@ -668,6 +385,7 @@
 
          .line-clamp-3 {
             display: -webkit-box;
+            line-clamp: 3;
             -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
             overflow: hidden;
@@ -706,6 +424,7 @@
             max-height: 4.5rem;
             overflow: hidden;
             display: -webkit-box;
+            line-clamp: 3;
             -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
          }
