@@ -7,8 +7,10 @@ require (
 	github.com/andybalholm/brotli v1.1.0 // indirect
 	github.com/andybalholm/cascadia v1.3.1 // indirect
 	github.com/cbroglie/mustache v1.4.0 // indirect
+	github.com/flosch/pongo2/v6 v6.0.0 // indirect
 	github.com/gofiber/fiber/v2 v2.52.9 // indirect
 	github.com/gofiber/template v1.8.3 // indirect
+	github.com/gofiber/template/django/v3 v3.1.14 // indirect
 	github.com/gofiber/template/mustache/v2 v2.0.14 // indirect
 	github.com/gofiber/utils v1.1.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect

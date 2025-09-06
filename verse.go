@@ -9,7 +9,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
-	"github.com/gofiber/template/mustache/v2"
+	"github.com/gofiber/template/django/v3"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -27,7 +27,7 @@ func main() {
 	var (
 		store        = session.New(session.Config{KeyLookup: "cookie:session_id"})
 		viewsPath, _ = filepath.Abs("./views")
-		engine       = mustache.New(viewsPath, ".mustache")
+		engine       = django.New(viewsPath, ".html")
 		app          = fiber.New(fiber.Config{
 			Views: engine,
 		})
