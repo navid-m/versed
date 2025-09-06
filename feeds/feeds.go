@@ -23,6 +23,7 @@ type FeedSource struct {
 type FeedItem struct {
 	ID            string    `json:"id"`
 	SourceID      int       `json:"source_id"`
+	SourceName    string    `json:"source_name"`
 	Title         string    `json:"title"`
 	URL           string    `json:"url"`
 	Description   string    `json:"description,omitempty"`
@@ -357,6 +358,7 @@ func GetAllFeedItems(db *sql.DB, limit int) ([]FeedItem, error) {
 		if err != nil {
 			return nil, err
 		}
+		item.SourceName = sourceName
 		items = append(items, item)
 	}
 	return items, nil
