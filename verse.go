@@ -358,6 +358,9 @@ func main() {
 			if err != nil {
 				log.Printf("Failed to scan reading list item: %v", err)
 			}
+			if strings.TrimSpace(item.Description) == "" {
+				item.Description = "No description."
+			}
 			item.SourceName = sourceName
 			feedItems = append(feedItems, item)
 		}
