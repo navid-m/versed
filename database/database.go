@@ -53,6 +53,7 @@ func createTables() error {
 		`CREATE TABLE IF NOT EXISTS upvotes (
 			user_id INTEGER NOT NULL,
 			item_id TEXT NOT NULL,
+			vote_type TEXT NOT NULL,
 			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 			PRIMARY KEY (user_id, item_id),
 			FOREIGN KEY (user_id) REFERENCES users(id),
@@ -65,5 +66,6 @@ func createTables() error {
 			return err
 		}
 	}
+	db.Exec(`ALTER TABLE upvotes ADD COLUMN vote_type TEXT`)
 	return nil
 }
