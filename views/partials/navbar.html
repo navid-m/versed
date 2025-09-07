@@ -37,8 +37,9 @@
                   class="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-semibold"
                   data-email="{{ Email }}"
                ></div>
-               <span class="text-sm font-medium hidden sm:block">
-                  {{ Email }}
+               <span class="text-sm font-medium hidden sm:block truncate max-w-32"
+                  >
+                     {{ Email }}
                </span>
                <i class="fas fa-chevron-down text-xs"></i>
             </button>
@@ -52,7 +53,7 @@
                      class="px-4 py-2 border-b border-gray-200 dark:border-gray-700"
                   >
                      <p
-                        class="text-sm font-medium text-gray-900 dark:text-gray-100"
+                        class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate max-w-40"
                      >
                         {{ Email }}
                      </p>
