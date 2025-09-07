@@ -10,6 +10,7 @@ import (
 	"verse/feeds"
 	"verse/handlers"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
 	"github.com/gofiber/template/django/v3"
@@ -290,7 +291,8 @@ func main() {
 		}
 
 		userID := c.Locals("userID").(int)
-		rows, err := database.GetDB().Query(database.ReadingListQuery, userID)
+		sqlQ, args, _ := database.ReadingListQueryBuilder.Where(squirrel.Eq{"rl.user_id": userID}).ToSql()
+		rows, err := database.GetDB().Query(sqlQ, args...)
 		if err != nil {
 			log.Printf("Failed to get reading list: %v", err)
 		}

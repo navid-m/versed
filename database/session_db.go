@@ -3,6 +3,8 @@ package database
 import (
 	"database/sql"
 	"time"
+
+	"github.com/Masterminds/squirrel"
 )
 
 // Implements database-backed session storage
@@ -19,10 +21,20 @@ func NewDBSessionStorage(db *sql.DB) *DBSessionStorage {
 func (s *DBSessionStorage) Get(key string) ([]byte, error) {
 	var data string
 	var expiresAt sql.NullTime
-	err := s.db.QueryRow(`
-		SELECT data, expires_at FROM sessions 
-		WHERE session_id = ? AND (expires_at IS NULL OR expires_at > datetime('now'))
-	`, key).Scan(&data, &expiresAt)
+
+	sqlQuery, args, err := squirrel.Select("data", "expires_at").
+		From("sessions").
+		Where(squirrel.Eq{"session_id": key}).
+		Where(squirrel.Or{
+			squirrel.Eq{"expires_at": nil},
+			squirrel.Expr("expires_at > datetime('now')"),
+		}).ToSql()
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.db.QueryRow(sqlQuery, args...).Scan(&data, &expiresAt)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
@@ -34,7 +46,7 @@ func (s *DBSessionStorage) Get(key string) ([]byte, error) {
 
 // Stores a session in the database
 func (s *DBSessionStorage) Set(key string, val []byte, exp time.Duration) error {
-	var expiresAt interface{}
+	var expiresAt any
 	if exp > 0 {
 		expiresAt = time.Now().Add(exp)
 	} else {
@@ -42,22 +54,40 @@ func (s *DBSessionStorage) Set(key string, val []byte, exp time.Duration) error 
 	}
 
 	data := string(val)
-	_, err := s.db.Exec(`
-		INSERT OR REPLACE INTO sessions (session_id, data, updated_at, expires_at) 
-		VALUES (?, ?, datetime('now'), ?)
-	`, key, data, expiresAt)
+
+	sqlQuery, args, err := squirrel.Insert("sessions").
+		Columns("session_id", "data", "updated_at", "expires_at").
+		Values(key, data, squirrel.Expr("datetime('now')"), expiresAt).
+		Suffix("ON CONFLICT(session_id) DO UPDATE SET data = EXCLUDED.data, updated_at = EXCLUDED.updated_at, expires_at = EXCLUDED.expires_at").
+		ToSql()
+
+	if err != nil {
+		return err
+	}
+
+	_, err = s.db.Exec(sqlQuery, args...)
 	return err
 }
 
 // Removes a session from the database
 func (s *DBSessionStorage) Delete(key string) error {
-	_, err := s.db.Exec(`DELETE FROM sessions WHERE session_id = ?`, key)
+	sqlQuery, args, err := squirrel.Delete("sessions").
+		Where(squirrel.Eq{"session_id": key}).
+		ToSql()
+	if err != nil {
+		return err
+	}
+	_, err = s.db.Exec(sqlQuery, args...)
 	return err
 }
 
 // Clears all sessions from the database
 func (s *DBSessionStorage) Reset() error {
-	_, err := s.db.Exec(`DELETE FROM sessions`)
+	sqlQuery, args, err := squirrel.Delete("sessions").ToSql()
+	if err != nil {
+		return err
+	}
+	_, err = s.db.Exec(sqlQuery, args...)
 	return err
 }
 

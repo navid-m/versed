@@ -1,24 +1,41 @@
 package database
 
-import "verse/models"
+import (
+	"verse/models"
+
+	"github.com/Masterminds/squirrel"
+)
 
 // Creates a new user in the database
 func CreateUser(email, username, password string) error {
-	var (
-		query  = `INSERT INTO users (email, username, password) VALUES (?, ?, ?)`
-		_, err = db.Exec(query, email, username, password)
-	)
+	// Build the query using Squirrel
+	sqlQuery, args, err := squirrel.Insert("users").
+		Columns("email", "username", "password").
+		Values(email, username, password).
+		ToSql()
+
+	if err != nil {
+		return err
+	}
+
+	_, err = db.Exec(sqlQuery, args...)
 	return err
 }
 
 // Retrieves the user object given some email address
 func GetUserByEmail(email string) (*models.User, error) {
-	var (
-		query = `SELECT id, email, username, password FROM users WHERE email = ?`
-		row   = db.QueryRow(query, email)
-		user  = &models.User{}
-		err   = row.Scan(&user.ID, &user.Email, &user.Username, &user.Password)
-	)
+	sqlQuery, args, err := squirrel.Select("id", "email", "username", "password").
+		From("users").
+		Where(squirrel.Eq{"email": email}).
+		ToSql()
+
+	if err != nil {
+		return nil, err
+	}
+
+	row := db.QueryRow(sqlQuery, args...)
+	user := &models.User{}
+	err = row.Scan(&user.ID, &user.Email, &user.Username, &user.Password)
 	if err != nil {
 		return nil, err
 	}
@@ -27,8 +44,18 @@ func GetUserByEmail(email string) (*models.User, error) {
 
 // Updates user information in the database
 func UpdateUser(userID int, email, username, password string) error {
-	query := `UPDATE users SET email = ?, username = ?, password = ? WHERE id = ?`
-	_, err := db.Exec(query, email, username, password, userID)
+	sqlQuery, args, err := squirrel.Update("users").
+		Set("email", email).
+		Set("username", username).
+		Set("password", password).
+		Where(squirrel.Eq{"id": userID}).
+		ToSql()
+
+	if err != nil {
+		return err
+	}
+
+	_, err = db.Exec(sqlQuery, args...)
 	return err
 }
 
@@ -43,8 +70,17 @@ func SaveToReadingList(userID int, itemID string) (bool, error) {
 	if exists {
 		return false, nil
 	}
-	query := `INSERT INTO reading_list (user_id, item_id) VALUES (?, ?)`
-	_, err = db.Exec(query, userID, itemID)
+
+	sqlQuery, args, err := squirrel.Insert("reading_list").
+		Columns("user_id", "item_id").
+		Values(userID, itemID).
+		ToSql()
+
+	if err != nil {
+		return false, err
+	}
+
+	_, err = db.Exec(sqlQuery, args...)
 	if err != nil {
 		return false, err
 	}
@@ -53,16 +89,32 @@ func SaveToReadingList(userID int, itemID string) (bool, error) {
 
 // Removes a feed item from user's reading list
 func RemoveFromReadingList(userID int, itemID string) error {
-	query := `DELETE FROM reading_list WHERE user_id = ? AND item_id = ?`
-	_, err := db.Exec(query, userID, itemID)
+	sqlQuery, args, err := squirrel.Delete("reading_list").
+		Where(squirrel.Eq{"user_id": userID, "item_id": itemID}).
+		ToSql()
+
+	if err != nil {
+		return err
+	}
+
+	_, err = db.Exec(sqlQuery, args...)
 	return err
 }
 
 // Checks if a feed item is in user's reading list
 func IsInReadingList(userID int, itemID string) (bool, error) {
 	var count int
-	query := `SELECT COUNT(*) FROM reading_list WHERE user_id = ? AND item_id = ?`
-	err := db.QueryRow(query, userID, itemID).Scan(&count)
+
+	sqlQuery, args, err := squirrel.Select("COUNT(*)").
+		From("reading_list").
+		Where(squirrel.Eq{"user_id": userID, "item_id": itemID}).
+		ToSql()
+
+	if err != nil {
+		return false, err
+	}
+
+	err = db.QueryRow(sqlQuery, args...).Scan(&count)
 	if err != nil {
 		return false, err
 	}

@@ -78,7 +78,8 @@ func CreateOrUpdateFeedSource(db *sql.DB, name, url string) (*feeds.FeedSource, 
 	}
 
 	log.Printf("Creating new feed source: %s", name)
-	result, err := db.Exec(database.FeedInsertionQuery, name, url)
+	val, args, _ := database.FeedInsertionBuilder.ToSql()
+	result, err := db.Exec(val, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to insert feed source: %w", err)
 	}
