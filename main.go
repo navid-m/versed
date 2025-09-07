@@ -77,6 +77,31 @@ func main() {
 		return c.Next()
 	})
 
+	app.Use("/static", func(c *fiber.Ctx) error {
+		path := c.Path()
+		if strings.HasPrefix(path, "/static/js/admin") ||
+			strings.HasPrefix(path, "/static/css/admin") ||
+			strings.Contains(path, "/admin/") {
+
+			userID := c.Locals("userID")
+			if userID == nil {
+				return c.Status(404).SendString("Cannot GET /static/js/")
+			}
+
+			isAdmin, err := database.IsUserAdmin(userID.(int))
+			if err != nil {
+				log.Printf("Error checking admin status for user %v: %v", userID, err)
+				return c.Status(404).SendString("Cannot GET /static/js/")
+			}
+
+			if !isAdmin {
+				return c.Status(404).SendString("Cannot GET /static/js/")
+			}
+		}
+
+		return c.Next()
+	})
+
 	app.Static("/static", "./static")
 
 	app.Get("/", func(c *fiber.Ctx) error {
