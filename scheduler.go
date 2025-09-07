@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"time"
+	"verse/database"
 	"verse/feeds"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -77,9 +78,7 @@ func CreateOrUpdateFeedSource(db *sql.DB, name, url string) (*feeds.FeedSource, 
 	}
 
 	log.Printf("Creating new feed source: %s", name)
-	query := `INSERT INTO feed_sources (name, url, last_updated, update_interval) 
-			VALUES (?, ?, datetime('2000-01-01 00:00:00'), 3600)`
-	result, err := db.Exec(query, name, url)
+	result, err := db.Exec(database.FeedInsertionQuery, name, url)
 	if err != nil {
 		return nil, fmt.Errorf("failed to insert feed source: %w", err)
 	}
