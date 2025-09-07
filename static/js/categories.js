@@ -685,6 +685,49 @@ class CategoryManager {
          );
 
          if (response.ok) {
+            const response2 = await fetch(
+               `/api/categories/${categoryId}/feeds`
+            );
+            if (response2.ok) {
+               const data = await response2.json();
+               const feeds = data.feeds || [];
+               const existingFeedsList =
+                  document.getElementById("existingFeedsList");
+               if (existingFeedsList) {
+                  existingFeedsList.innerHTML =
+                     feeds.length === 0
+                        ? '<p class="text-gray-500 italic">No feeds added yet</p>'
+                        : feeds
+                             .map(
+                                (feed) => `
+                        <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <div class="flex-1">
+                                <div class="font-medium text-gray-900 dark:text-gray-100">${
+                                   feed.name
+                                }</div>
+                                <div class="text-sm text-gray-500 dark:text-gray-400">${
+                                   feed.url
+                                }</div>
+                                <div class="text-xs text-gray-400">Last updated: ${
+                                   feed.last_updated
+                                      ? new Date(
+                                           feed.last_updated
+                                        ).toLocaleString()
+                                      : "Never"
+                                }</div>
+                            </div>
+                            <button onclick="categoryManager.removeFeedFromCategory(${categoryId}, ${
+                                   feed.id
+                                })"
+                                   class="text-red-500 hover:text-red-700 p-2">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `
+                             )
+                             .join("");
+               }
+            }
             this.loadCategoryFeeds(categoryId);
          } else {
             alert("Failed to remove feed from category");
@@ -697,8 +740,6 @@ class CategoryManager {
 
    showCategoryMenu(event, categoryId) {
       event.stopPropagation();
-
-      // Remove any existing menus
       document
          .querySelectorAll(".category-menu")
          .forEach((menu) => menu.remove());
