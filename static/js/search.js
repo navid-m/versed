@@ -281,13 +281,13 @@ document.addEventListener("DOMContentLoaded", function () {
             postsContainer.innerHTML = `
                     <div class="text-center py-12">
                         <div class="w-16 h-16 mx-auto mb-4 text-red-400">
-                            <i class="fas fa-exclamation-triangle text-4xl"></i>
+                            <i class="fas fa-ban text-4xl"></i>
                         </div>
                         <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
                             Search error
                         </h3>
                         <p class="text-gray-500 dark:text-gray-400">
-                            Please try again later.
+                            No results. Try again later.
                         </p>
                     </div>
                 `;
