@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -1022,5 +1023,9 @@ func main() {
 		})
 	})
 
-	log.Fatal(app.Listen(":3000"))
+	port := 3000
+	if os.Getenv("PRODUCTION") != "" {
+		port = 80
+	}
+	log.Fatal(app.Listen(fmt.Sprintf(":%d", port)))
 }
