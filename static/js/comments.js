@@ -64,6 +64,9 @@ class CommentsManager {
             return;
         }
 
+        // Get current user info from the page data
+        const currentUsername = document.body.dataset.username || 'Anonymous';
+
         submitButton.disabled = true;
         submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Posting...';
 
@@ -77,10 +80,32 @@ class CommentsManager {
             });
 
             if (response.ok) {
-                const newComment = await response.json();
-                this.addCommentToUI(newComment);
+                const serverComment = await response.json();
+
+                // Create optimistic comment using form data
+                const optimisticComment = {
+                    ID: serverComment.id || Date.now(), // Use server ID if available, otherwise temporary ID
+                    UserID: parseInt(document.body.dataset.userId) || 0,
+                    Username: currentUsername,
+                    Content: content,
+                    CreatedAt: new Date().toISOString(),
+                    ItemID: postId
+                };
+
+                // Add the comment to UI immediately
+                this.addCommentToUI(optimisticComment);
+
+                // Clear the form
                 document.getElementById('commentContent').value = '';
+
                 this.showMessage('Comment posted successfully', 'success');
+
+                // Optionally refresh the comment from server to get accurate data
+                if (serverComment.id) {
+                    setTimeout(() => {
+                        this.refreshCommentFromServer(serverComment.id, optimisticComment.ID);
+                    }, 1000);
+                }
             } else {
                 const error = await response.json();
                 this.showMessage(error.error || 'Failed to post comment', 'error');
@@ -92,6 +117,22 @@ class CommentsManager {
             submitButton.disabled = false;
             submitButton.innerHTML = '<i class="fas fa-paper-plane mr-2"></i>Post Comment';
         }
+    }
+
+    refreshCommentFromServer(serverId, tempId) {
+        // Fetch the updated comment from server and replace the optimistic one
+        fetch(`/api/comments/${serverId}`)
+            .then(response => response.json())
+            .then(updatedComment => {
+                // Find and replace the optimistic comment
+                const optimisticElement = document.querySelector(`[data-comment-id="${tempId}"]`);
+                if (optimisticElement) {
+                    optimisticElement.outerHTML = this.createCommentHTML(updatedComment);
+                }
+            })
+            .catch(error => {
+                console.error('Error refreshing comment:', error);
+            });
     }
 
     async editComment(commentId) {
@@ -255,6 +296,10 @@ class CommentsManager {
         const currentUserId = parseInt(document.body.dataset.userId) || 0;
         const isOwner = currentUserId === comment.UserID;
 
+        // Handle undefined/null values
+        const username = comment.Username || 'Anonymous';
+        const createdAt = comment.CreatedAt ? new Date(comment.CreatedAt) : new Date();
+
         return `
             <div class="border-l-2 border-gray-200 dark:border-gray-600 pl-4" data-comment-id="${comment.ID}">
                 <div class="flex items-start space-x-3">
@@ -265,8 +310,8 @@ class CommentsManager {
                     </div>
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center space-x-2 mb-1">
-                            <span class="text-sm font-medium text-gray-900 dark:text-gray-100">${comment.Username}</span>
-                            <span class="text-xs text-gray-500 dark:text-gray-400">${new Date(comment.CreatedAt).toLocaleDateString('en-US', {
+                            <span class="text-sm font-medium text-gray-900 dark:text-gray-100">${username}</span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">${createdAt.toLocaleDateString('en-US', {
                                 year: 'numeric',
                                 month: 'short',
                                 day: 'numeric',
