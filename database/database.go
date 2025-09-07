@@ -94,6 +94,17 @@ func createTables() error {
 			updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 			expires_at DATETIME
 		)`,
+		`CREATE TABLE IF NOT EXISTS comments (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			item_id TEXT NOT NULL,
+			user_id INTEGER NOT NULL,
+			username TEXT NOT NULL,
+			content TEXT NOT NULL,
+			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			FOREIGN KEY (item_id) REFERENCES feed_items(id),
+			FOREIGN KEY (user_id) REFERENCES users(id)
+		)`,
 	}
 
 	for _, query := range queries {

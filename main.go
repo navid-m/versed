@@ -613,7 +613,70 @@ func main() {
 	app.Get("/api/categories/:id/items", handlers.GetCategoryFeedItems)
 	app.Post("/api/categories/:id/feeds", handlers.AddFeedToCategory)
 	app.Delete("/api/categories/:categoryId/feeds/:feedId", handlers.RemoveFeedFromCategory)
-	app.Post("/api/categories/:id/feeds/create", handlers.CreateAndAddFeedToCategory)
+	app.Get("/api/categories/:id/feeds/create", handlers.CreateAndAddFeedToCategory)
+
+	// Post view route
+	app.Get("/post/:itemId", func(c *fiber.Ctx) error {
+		itemID := c.Params("itemId")
+		userEmail := c.Locals("userEmail")
+		userUsername := c.Locals("userUsername")
+		userID := c.Locals("userID")
+
+		// Get post data
+		db := database.GetDB()
+		var post feeds.FeedItem
+		var sourceName string
+
+		query := `
+			SELECT fi.id, fi.source_id, fi.title, fi.url, fi.description, fi.author,
+				   fi.published_at, fi.score, fi.comments_count, fi.created_at, fs.name as source_name
+			FROM feed_items fi
+			JOIN feed_sources fs ON fi.source_id = fs.id
+			WHERE fi.id = ?`
+
+		err := db.QueryRow(query, itemID).Scan(
+			&post.ID, &post.SourceID, &post.Title, &post.URL, &post.Description,
+			&post.Author, &post.PublishedAt, &post.Score, &post.CommentsCount,
+			&post.CreatedAt, &sourceName,
+		)
+
+		if err != nil {
+			return c.Status(404).SendString("Post not found")
+		}
+
+		post.SourceName = sourceName
+
+		// Get comments for this post
+		comments, err := database.GetCommentsByItemID(itemID)
+		if err != nil {
+			log.Printf("Failed to get comments: %v", err)
+			comments = []database.Comment{} // Empty slice instead of nil
+		}
+
+		data := fiber.Map{
+			"post":     post,
+			"comments": comments,
+		}
+
+		if userEmail != nil {
+			data["Email"] = userEmail
+		}
+		if userUsername != nil {
+			data["Username"] = userUsername
+		}
+		if userID != nil {
+			data["userID"] = userID
+		}
+
+		return c.Render("post", data)
+	})
+
+	// Comment routes
+	app.Get("/api/posts/:itemId", handlers.GetPostView)
+	app.Get("/api/posts/:itemId/comments", handlers.GetComments)
+	app.Post("/api/posts/:itemId/comments", handlers.CreateComment)
+	app.Put("/api/comments/:commentId", handlers.UpdateComment)
+	app.Delete("/api/comments/:commentId", handlers.DeleteComment)
 
 	app.Get("/profile", func(c *fiber.Ctx) error {
 		userID := c.Locals("userID")
