@@ -1,192 +1,152 @@
 <!DOCTYPE html>
 <html lang="en">
-   <head>
-      <title>Versed</title>
-      <meta charset="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <link
-         rel="stylesheet"
-         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
-      />
-      {% include "partials/icon.html" %}
-      <script src="https://cdn.tailwindcss.com"></script>
-      <script src="/static/js/tw-config.js"></script>
-   </head>
-   <body
-      class="bg-gray-50 dark:bg-gradient-to-br dark:from-neutral-900 dark:to-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200"
-      data-username="{{ Username }}"
-   >
-      <header
-         class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10"
-      >
-         {% include "partials/navbar.html" %}
-      </header>
 
-      <main class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4">
-         <div class="flex justify-between items-center mb-6">
-            <div class="flex-1 pr-5 relative">
-               <div
-                  class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
-               >
-                  <i class="fas fa-search text-gray-400 text-sm"></i>
-               </div>
-               <input
-                  type="text"
-                  class="block w-full pl-8 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-500 focus:border-transparent"
-                  placeholder="Search content..."
-               />
-            </div>
+<head>
+   <title>Versed</title>
+   <meta charset="UTF-8" />
+   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+   {% include "partials/icon.html" %}
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="/static/js/tw-config.js"></script>
+</head>
 
-            <div class="flex flex-wrap gap-2" id="categoryContainer">
-               <!-- Default content when no categories are loaded -->
-               <button
-                  class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gray-900 dark:bg-gray-700 text-white"
-               >
-                  All
-               </button>
-               <button
-                  class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-                  onclick="categoryManager.showAddCategoryModal()"
-               >
-                  <i class="fas fa-plus mr-1"></i>
-                  Add Category
-               </button>
+<body
+   class="bg-gray-50 dark:bg-gradient-to-br dark:from-neutral-900 dark:to-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200"
+   data-username="{{ Username }}">
+   <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
+      {% include "partials/navbar.html" %}
+   </header>
+
+   <main class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4">
+      <div class="flex justify-between items-center mb-6">
+         <div class="flex-1 pr-5 relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+               <i class="fas fa-search text-gray-400 text-sm"></i>
             </div>
+            <input type="text"
+               class="block w-full pl-8 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-500 focus:border-transparent"
+               placeholder="Search content..." />
          </div>
 
-         <div class="space-y-3" id="postsContainer">
-            {% for item in FeedItems %}
-            <article
-               class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md dark:hover:shadow-xl transition-shadow"
-            >
-               <div class="p-4">
-                  <div class="flex items-start space-x-3">
-                     <div
-                        class="flex flex-col items-center space-y-1 flex-shrink-0"
-                     >
-                        <button
-                           class="p-1 text-orange-500 hover:text-orange-600 transition-colors"
-                           data-feed-id="{{ item.ID }}"
-                           data-vote-type="upvote"
-                        >
-                           <i class="fas fa-chevron-up text-sm"></i>
-                        </button>
-                        <span class="text-xs font-medium text-orange-500">
-                           {{ item.Score }}
-                        </span>
-                        <button
-                           class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                           data-feed-id="{{ item.ID }}"
-                           data-vote-type="downvote"
-                        >
-                           <i class="fas fa-chevron-down text-sm"></i>
-                        </button>
-                     </div>
-
-                     <div class="flex-1 min-w-0">
-                        <h2
-                           class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 hover:text-gray-700 dark:hover:text-gray-300 transition-colors line-clamp-2"
-                        >
-                           <a
-                              href="{{ item.URL }}"
-                              target="_blank"
-                              class="hover:underline"
-                           >
-                              {{ item.Title }}
-                           </a>
-                        </h2>
-
-                        <div class="relative mb-4 modern-description">
-                           <div
-                              class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed line-height-6 font-medium tracking-wide line-clamp-3 bg-gradient-to-br from-gray-50/80 to-white/50 dark:from-gray-800/60 dark:to-gray-700/40 backdrop-blur-sm rounded-lg px-4 py-3 border-l-4 border-blue-500/30 dark:border-blue-400/40 shadow-sm"
-                           >
-                              <p>{{ item.Description|safe }}</p>
-                           </div>
-                           <div
-                              class="absolute inset-0 bg-gradient-to-r from-blue-50/20 to-indigo-50/20 dark:from-blue-900/10 dark:to-indigo-900/10 rounded-lg blur-xl transform scale-105 opacity-60"
-                           ></div>
-                        </div>
-
-                        <div
-                           class="flex items-center text-xs text-gray-500 dark:text-gray-400 space-x-3"
-                        >
-                           <span class="flex items-center">
-                              <i class="far fa-user mr-1"></i>
-                              {{ item.Author }}
-                           </span>
-                           <span class="flex items-center">
-                              <i class="far fa-clock mr-1"></i>
-                              {{ item.PublishedAt }}
-                           </span>
-                           <span
-                              class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200"
-                           >
-                              {{ item.SourceName }}
-                           </span>
-                           <button
-                              class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors view-comments-btn"
-                              data-post-id="{{ item.ID }}"
-                           >
-                              <i class="far fa-comments mr-1"></i>
-                              View comments ({{ item.CommentsCount }})
-                           </button>
-                        </div>
-                     </div>
-                     {% if Email %}
-                     <div
-                        class="flex flex-col items-center space-y-1 flex-shrink-0 ml-3"
-                     >
-                        <button
-                           class="p-1 text-gray-400 hover:text-blue-500 transition-colors save-button"
-                           data-feed-id="{{ item.ID }}"
-                           data-action="save"
-                           title="Save to reading list"
-                        >
-                           <i class="far fa-bookmark text-sm"></i>
-                        </button>
-                     </div>
-                     {% endif %}
-                  </div>
-               </div>
-            </article>
-            {% endfor %} {% if not FeedItems %}
-            <div class="text-center py-12">
-               <div
-                  class="w-16 h-16 mx-auto mb-4 text-gray-400 dark:text-gray-600"
-               >
-                  <i class="fas fa-rss text-4xl"></i>
-               </div>
-               <h3
-                  class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2"
-               >
-                  No feed items available
-               </h3>
-               <p class="text-gray-500 dark:text-gray-400">
-                  Check back later for new content updates.
-               </p>
-            </div>
-            {% endif %}
-         </div>
-
-         <div class="text-center py-6">
+         <div class="flex flex-wrap gap-2" id="categoryContainer">
             <button
-               class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium text-sm"
-            >
-               <i class="fas fa-plus mr-2"></i>
-               Load More Posts
+               class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gray-900 dark:bg-gray-700 text-white">
+               All
+            </button>
+            <button
+               class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+               onclick="categoryManager.showAddCategoryModal()">
+               <i class="fas fa-plus mr-1"></i>
+               Add Category
             </button>
          </div>
-      </main>
+      </div>
 
-      {% include "partials/footer.html" %}
+      <div class="space-y-3" id="postsContainer">
+         {% for item in FeedItems %}
+         <article
+            class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md dark:hover:shadow-xl transition-shadow">
+            <div class="p-4">
+               <div class="flex items-start space-x-3">
+                  <div class="flex flex-col items-center space-y-1 flex-shrink-0">
+                     <button class="p-1 text-orange-500 hover:text-orange-600 transition-colors"
+                        data-feed-id="{{ item.ID }}" data-vote-type="upvote">
+                        <i class="fas fa-chevron-up text-sm"></i>
+                     </button>
+                     <span class="text-xs font-medium text-orange-500">
+                        {{ item.Score }}
+                     </span>
+                     <button class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                        data-feed-id="{{ item.ID }}" data-vote-type="downvote">
+                        <i class="fas fa-chevron-down text-sm"></i>
+                     </button>
+                  </div>
 
-      <script src="/static/js/description-truncation.js"></script>
-      <script src="/static/js/index.js"></script>
-      <script src="/static/js/fetch-posts.js"></script>
-      <script src="/static/js/search.js"></script>
-      <script src="/static/js/categories.js"></script>
-      <script src="/static/js/comments.js"></script>
+                  <div class="flex-1 min-w-0">
+                     <h2
+                        class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 hover:text-gray-700 dark:hover:text-gray-300 transition-colors line-clamp-2">
+                        <a href="{{ item.URL }}" target="_blank" class="hover:underline">
+                           {{ item.Title }}
+                        </a>
+                     </h2>
 
-      <link rel="stylesheet" href="/static/css/index.css" />
-   </body>
+                     <div class="relative mb-4 modern-description">
+                        <div
+                           class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed line-height-6 font-medium tracking-wide line-clamp-3 bg-gradient-to-br from-gray-50/80 to-white/50 dark:from-gray-800/60 dark:to-gray-700/40 backdrop-blur-sm rounded-lg px-4 py-3 border-l-4 border-blue-500/30 dark:border-blue-400/40 shadow-sm">
+                           <p>{{ item.Description|safe }}</p>
+                        </div>
+                        <div
+                           class="absolute inset-0 bg-gradient-to-r from-blue-50/20 to-indigo-50/20 dark:from-blue-900/10 dark:to-indigo-900/10 rounded-lg blur-xl transform scale-105 opacity-60">
+                        </div>
+                     </div>
+
+                     <div class="flex items-center text-xs text-gray-500 dark:text-gray-400 space-x-3">
+                        <span class="flex items-center">
+                           <i class="far fa-user mr-1"></i>
+                           {{ item.Author }}
+                        </span>
+                        <span class="flex items-center">
+                           <i class="far fa-clock mr-1"></i>
+                           {{ item.PublishedAt }}
+                        </span>
+                        <span
+                           class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+                           {{ item.SourceName }}
+                        </span>
+                        <button
+                           class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors view-comments-btn"
+                           data-post-id="{{ item.ID }}">
+                           <i class="far fa-comments mr-1"></i>
+                           View comments ({{ item.CommentsCount }})
+                        </button>
+                     </div>
+                  </div>
+                  {% if Email %}
+                  <div class="flex flex-col items-center space-y-1 flex-shrink-0 ml-3">
+                     <button class="p-1 text-gray-400 hover:text-blue-500 transition-colors save-button"
+                        data-feed-id="{{ item.ID }}" data-action="save" title="Save to reading list">
+                        <i class="far fa-bookmark text-sm"></i>
+                     </button>
+                  </div>
+                  {% endif %}
+               </div>
+            </div>
+         </article>
+         {% endfor %} {% if not FeedItems %}
+         <div class="text-center py-12">
+            <div class="w-16 h-16 mx-auto mb-4 text-gray-400 dark:text-gray-600">
+               <i class="fas fa-rss text-4xl"></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+               No feed items available
+            </h3>
+            <p class="text-gray-500 dark:text-gray-400">
+               Check back later for new content updates.
+            </p>
+         </div>
+         {% endif %}
+      </div>
+
+      <div class="text-center py-6">
+         <button
+            class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium text-sm">
+            <i class="fas fa-plus mr-2"></i>
+            Load More Posts
+         </button>
+      </div>
+   </main>
+
+   {% include "partials/footer.html" %}
+
+   <script src="/static/js/description-truncation.js"></script>
+   <script src="/static/js/index.js"></script>
+   <script src="/static/js/fetch-posts.js"></script>
+   <script src="/static/js/search.js"></script>
+   <script src="/static/js/categories.js"></script>
+   <script src="/static/js/comments.js"></script>
+
+   <link rel="stylesheet" href="/static/css/index.css" />
+</body>
+
 </html>
