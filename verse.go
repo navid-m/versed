@@ -191,6 +191,8 @@ func main() {
 		})
 	})
 
+	app.Get("/api/search", handlers.SearchFeedItems)
+
 	app.Post("/api/vote", func(c *fiber.Ctx) error {
 		userID, ok := c.Locals("userID").(int)
 		if !ok {
