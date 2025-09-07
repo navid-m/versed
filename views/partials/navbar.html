@@ -20,7 +20,7 @@
                   class="inline-block h-4 w-4 transform rounded-full bg-white dark:bg-gray-300 transition-transform translate-x-6 dark:translate-x-1"></span>
             </button>
          </div>
-         {% if Email %}
+         {% if Username %}
          <div class="relative">
             <button id="userMenuButton"
                class="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 rounded-md p-1">
@@ -28,7 +28,7 @@
                   class="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-semibold"
                   data-email="{{ Email }}"></div>
                <span class="text-sm font-medium hidden sm:block truncate max-w-32">
-                  {{ Email }}
+                  {{ Username }}
                </span>
                <i class="fas fa-chevron-down text-xs"></i>
             </button>
@@ -38,7 +38,7 @@
                <div class="py-1">
                   <div class="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
                      <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate max-w-40">
-                        {{ Email }}
+                        {{ Username }}
                      </p>
                      <p class="text-xs text-gray-500 dark:text-gray-400">
                         Signed in
