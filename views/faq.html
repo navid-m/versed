@@ -10,8 +10,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="/static/js/tw-config.js"></script>
     <script>
-        // Apply theme before any content renders to prevent flash
-        (function() {
+        (function () {
             const theme = localStorage.getItem('theme');
             const html = document.documentElement;
             if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
