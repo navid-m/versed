@@ -89,20 +89,13 @@ document.addEventListener("DOMContentLoaded", function () {
                                     <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
                                         ${item.source_name || "Unknown source"}
                                     </span>
-                                    <button class="inline-flex items-center px-3 py-1 rounded-md text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors shadow-sm view-comments-btn" 
+                                    <button class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors view-comments-btn" 
                                             data-post-id="${item.id}"
-                                            onclick="window.location.href='/post/${
-                                               item.id
-                                            }'; return false;"
                                             title="View and post comments">
-                                        <i class="far fa-comment-dots mr-1.5"></i>
-                                        ${
-                                           item.comments_count > 0
-                                              ? item.comments_count + " "
-                                              : ""
-                                        }${
-            item.comments_count === 1 ? "Comment" : "Comments"
-         }
+                                        <i class="far fa-comments mr-1"></i>
+                                        View comments (${
+                                           item.comments_count || 0
+                                        })
                                     </button>
                                 </div>
                             </div>
