@@ -476,12 +476,13 @@ func main() {
 
 		log.Printf("Found %d feed items for category", len(items))
 		if len(items) > 0 {
-			log.Printf("Sample item: %s", items[0].Title)
+			log.Print("Sample item: %s", items[0].Title)
 		}
 
 		if feedCount > 0 && len(items) == 0 {
 			log.Printf("No feed items found, triggering feed processing for category feeds...")
 
+			// Reset timestamps for feeds in this category to force processing
 			resetQuery := `
 				UPDATE feed_sources
 				SET last_updated = datetime('2000-01-01 00:00:00')
@@ -491,11 +492,97 @@ func main() {
 					WHERE user_id = ? AND category_id = ?
 				)
 			`
-			_, err = db.Exec(resetQuery, userID, categoryID)
+			result, err := db.Exec(resetQuery, userID, categoryID)
 			if err != nil {
 				log.Printf("Failed to reset feed timestamps: %v", err)
 			} else {
-				log.Printf("Reset timestamps for %d feeds in category", feedCount)
+				rowsAffected, _ := result.RowsAffected()
+				log.Printf("Reset timestamps for %d feeds in category", rowsAffected)
+
+				// After resetting timestamps, try to immediately process the feeds
+				if rowsAffected > 0 {
+					log.Printf("Attempting immediate feed processing...")
+					var feedList []struct {
+						id   int
+						name string
+						url  string
+					}
+					feedsQuery := `
+						SELECT fs.id, fs.name, fs.url
+						FROM feed_sources fs
+						JOIN user_category_feeds ucf ON fs.id = ucf.feed_source_id
+						WHERE ucf.user_id = ? AND ucf.category_id = ?
+					`
+					feedRows, err := db.Query(feedsQuery, userID, categoryID)
+					if err != nil {
+						log.Printf("Failed to get category feeds: %v", err)
+					} else {
+						for feedRows.Next() {
+							var feed struct {
+								id   int
+								name string
+								url  string
+							}
+							err := feedRows.Scan(&feed.id, &feed.name, &feed.url)
+							if err != nil {
+								log.Printf("Feed row scan error: %v", err)
+								continue
+							}
+							feedList = append(feedList, feed)
+						}
+						feedRows.Close()
+					}
+
+					for _, feed := range feedList {
+						log.Printf("Processing feed: %s (%s)", feed.name, feed.url)
+
+						// Check if feed needs update (should be true after reset)
+						source := feeds.FeedSource{
+							ID:             feed.id,
+							Name:           feed.name,
+							URL:            feed.url,
+							LastUpdated:    time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
+							UpdateInterval: 3600,
+						}
+
+						if feeds.ShouldUpdateFeed(source) {
+							log.Printf("Feed needs update, fetching...")
+
+							// Fetch and process the feed
+							content, err := feeds.FetchFeed(feed.url)
+							if err != nil {
+								log.Printf("Failed to fetch feed %s: %v", feed.url, err)
+								continue
+							}
+
+							// Parse the feed
+							parsedItems, err := feeds.ParseFeedWithParser(content, feed.id, feed.name)
+							if err != nil {
+								log.Printf("Failed to parse feed %s: %v", feed.url, err)
+								continue
+							}
+
+							log.Printf("Parsed %d items from feed %s", len(parsedItems), feed.name)
+
+							// Save the items
+							if len(parsedItems) > 0 {
+								err = feeds.SaveFeedItems(db, parsedItems)
+								if err != nil {
+									log.Printf("Failed to save feed items for %s: %v", feed.name, err)
+									continue
+								}
+
+								// Update the feed timestamp
+								err = feeds.UpdateFeedSourceTimestamp(db, feed.id)
+								if err != nil {
+									log.Printf("Failed to update timestamp for feed %s: %v", feed.name, err)
+								} else {
+									log.Printf("Successfully processed and saved %d items for feed %s", len(parsedItems), feed.name)
+								}
+							}
+						}
+					}
+				}
 			}
 		}
 

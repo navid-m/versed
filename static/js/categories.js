@@ -434,69 +434,133 @@ class CategoryManager {
     }
 
     showAddFeedModal(categoryId) {
+        console.log('Showing feed management modal for category:', categoryId);
+
+        // First, fetch current feeds for this category
+        this.loadCategoryFeedsForManagement(categoryId);
+    }
+
+    async loadCategoryFeedsForManagement(categoryId) {
+        try {
+            console.log('Loading feeds for management, category:', categoryId);
+            const response = await fetch(`/api/categories/${categoryId}/feeds`);
+            console.log('Feeds API response status:', response.status);
+
+            if (!response.ok) {
+                console.error('Failed to load category feeds');
+                return;
+            }
+
+            const data = await response.json();
+            console.log('Category feeds data:', data);
+
+            // Create the comprehensive feed management modal
+            this.createFeedManagementModal(categoryId, data.feeds || []);
+        } catch (error) {
+            console.error('Error loading category feeds for management:', error);
+        }
+    }
+
+    createFeedManagementModal(categoryId, existingFeeds) {
+        console.log('Creating feed management modal with', existingFeeds.length, 'existing feeds');
+
         const modal = document.createElement('div');
         modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
         modal.innerHTML = `
-            <div class="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
-                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Add Feed to Category</h3>
-                <form id="addFeedForm">
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Feed Type
-                        </label>
-                        <select
-                            id="feedType"
-                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                        >
-                            <option value="reddit">Reddit Subreddit</option>
-                            <option value="rss">RSS Feed</option>
-                        </select>
+            <div class="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-medium text-gray-900 dark:text-gray-100">Manage Category Feeds</h3>
+                    <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <!-- Existing Feeds Section -->
+                <div class="mb-6">
+                    <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">Current Feeds (${existingFeeds.length})</h4>
+                    <div id="existingFeedsList" class="space-y-2">
+                        ${existingFeeds.length === 0 ?
+                            '<p class="text-gray-500 italic">No feeds added yet</p>' :
+                            existingFeeds.map(feed => `
+                                <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                    <div class="flex-1">
+                                        <div class="font-medium text-gray-900 dark:text-gray-100">${feed.name}</div>
+                                        <div class="text-sm text-gray-500 dark:text-gray-400">${feed.url}</div>
+                                        <div class="text-xs text-gray-400">Last updated: ${feed.last_updated ? new Date(feed.last_updated).toLocaleString() : 'Never'}</div>
+                                    </div>
+                                    <button onclick="categoryManager.removeFeedFromCategory(${categoryId}, ${feed.id})"
+                                            class="text-red-500 hover:text-red-700 p-2">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            `).join('')
+                        }
                     </div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Feed URL
-                        </label>
-                        <input
-                            type="url"
-                            id="feedUrl"
-                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                            placeholder="https://www.reddit.com/r/programming/ or RSS URL"
-                            required
-                        >
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Display Name
-                        </label>
-                        <input
-                            type="text"
-                            id="feedName"
-                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                            placeholder="Programming, TechCrunch, etc."
-                            required
-                        >
-                    </div>
-                    <div class="flex justify-end space-x-3">
-                        <button
-                            type="button"
-                            onclick="this.closest('.fixed').remove()"
-                            class="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            class="px-4 py-2 bg-gray-900 dark:bg-gray-700 text-white rounded-lg hover:bg-gray-800 dark:hover:bg-gray-600 transition-colors"
-                        >
-                            Add Feed
-                        </button>
-                    </div>
-                </form>
+                </div>
+
+                <!-- Add New Feed Section -->
+                <div class="border-t border-gray-200 dark:border-gray-600 pt-6">
+                    <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">Add New Feed</h4>
+                    <form id="addFeedForm">
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Feed Type
+                            </label>
+                            <select
+                                id="feedType"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                            >
+                                <option value="reddit">Reddit Subreddit</option>
+                                <option value="rss">RSS Feed</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Feed URL
+                            </label>
+                            <input
+                                type="text"
+                                id="feedUrl"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                                placeholder="https://example.com/feed.xml or r/subreddit"
+                                required
+                            >
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Feed Name
+                            </label>
+                            <input
+                                type="text"
+                                id="feedName"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                                placeholder="My Feed Name"
+                                required
+                            >
+                        </div>
+                        <div class="flex justify-end space-x-3">
+                            <button
+                                type="button"
+                                onclick="this.closest('.fixed').remove()"
+                                class="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                class="px-4 py-2 bg-gray-900 dark:bg-gray-700 text-white rounded-lg hover:bg-gray-800 dark:hover:bg-gray-600 transition-colors"
+                            >
+                                Add Feed
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         `;
 
         document.body.appendChild(modal);
 
+        // Set up form submission
         document.getElementById('addFeedForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             await this.addFeedToCategory(categoryId);

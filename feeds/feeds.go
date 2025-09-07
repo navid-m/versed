@@ -89,7 +89,8 @@ func DebugFeeds(db *sql.DB) {
 // Fetches RSS content from URL.
 func FetchFeed(url string) ([]byte, error) {
 	fmt.Println("REQUEST MADE!")
-	log.Printf("Making HTTP request to: %s", url)
+	log.Printf("=== FetchFeed called ===")
+	log.Printf("Fetching RSS content from: %s", url)
 	resp, err := client.Get(url)
 	if err != nil {
 		log.Printf("HTTP request failed for %s: %v", url, err)
@@ -268,14 +269,17 @@ func ShouldUpdateFeed(source FeedSource) bool {
 	timeSince := time.Since(source.LastUpdated)
 	threshold := time.Duration(source.UpdateInterval) * time.Second
 
-	log.Printf("DEBUG ShouldUpdateFeed - Source: %s", source.Name)
-	log.Printf("  LastUpdated: %v", source.LastUpdated)
-	log.Printf("  Time since: %v", timeSince)
-	log.Printf("  Threshold: %v", threshold)
-	log.Printf("  Should update: %v", timeSince > threshold)
-	log.Printf("  FORCING UPDATE FOR DEBUGGING")
+	log.Printf("=== ShouldUpdateFeed Check ===")
+	log.Printf("Source: %s (ID: %d)", source.Name, source.ID)
+	log.Printf("LastUpdated: %v", source.LastUpdated)
+	log.Printf("Time since: %v", timeSince)
+	log.Printf("Threshold: %v", threshold)
+	log.Printf("UpdateInterval: %d seconds", source.UpdateInterval)
+	shouldUpdate := timeSince > threshold
+	log.Printf("Should update: %v", shouldUpdate)
+	log.Printf("FORCING UPDATE FOR DEBUGGING")
 
-	return true
+	return true // Force update for debugging
 }
 
 func ShouldUpdateFeedNormal(source FeedSource) bool {
