@@ -141,7 +141,7 @@ func main() {
 	app.Get("/signup", func(c *fiber.Ctx) error {
 		return c.Render("signup", fiber.Map{})
 	})
-	app.Get("/faq", func(c *fiber.Ctx) error {
+	app.Get("/about", func(c *fiber.Ctx) error {
 		userEmail := c.Locals("userEmail")
 		userUsername := c.Locals("userUsername")
 
@@ -153,7 +153,7 @@ func main() {
 			data["Username"] = userUsername
 		}
 
-		return c.Render("faq", data)
+		return c.Render("about", data)
 	})
 
 	app.Post("/signup", func(c *fiber.Ctx) error {
