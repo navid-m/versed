@@ -657,14 +657,12 @@ func main() {
 	app.Delete("/api/categories/:categoryId/feeds/:feedId", handlers.RemoveFeedFromCategory)
 	app.Get("/api/categories/:id/feeds/create", handlers.CreateAndAddFeedToCategory)
 
-	// Post view route
 	app.Get("/post/:itemId", func(c *fiber.Ctx) error {
 		itemID := c.Params("itemId")
 		userEmail := c.Locals("userEmail")
 		userUsername := c.Locals("userUsername")
 		userID := c.Locals("userID")
 
-		// Get post data
 		db := database.GetDB()
 		var post feeds.FeedItem
 		var sourceName string
@@ -688,11 +686,10 @@ func main() {
 
 		post.SourceName = sourceName
 
-		// Get comments for this post
 		comments, err := database.GetCommentsByItemID(itemID)
 		if err != nil {
 			log.Printf("Failed to get comments: %v", err)
-			comments = []database.Comment{} // Empty slice instead of nil
+			comments = []database.Comment{}
 		}
 
 		data := fiber.Map{
@@ -713,7 +710,6 @@ func main() {
 		return c.Render("post", data)
 	})
 
-	// Comment routes
 	app.Get("/api/posts/:itemId", handlers.GetPostView)
 	app.Get("/api/posts/:itemId/comments", handlers.GetComments)
 	app.Post("/api/posts/:itemId/comments", handlers.CreateComment)
@@ -779,7 +775,6 @@ func main() {
 		return c.Redirect("/profile?success=1")
 	})
 
-	// Admin middleware - check if user is admin
 	adminMiddleware := func(c *fiber.Ctx) error {
 		userID := c.Locals("userID")
 		if userID == nil {
@@ -799,7 +794,6 @@ func main() {
 		return c.Next()
 	}
 
-	// Admin panel route
 	app.Get("/admin", adminMiddleware, func(c *fiber.Ctx) error {
 		userEmail := c.Locals("userEmail")
 		userUsername := c.Locals("userUsername")
@@ -815,7 +809,6 @@ func main() {
 		return c.Render("admin", data)
 	})
 
-	// Admin API endpoints
 	app.Get("/api/admin/banned-ips", adminMiddleware, func(c *fiber.Ctx) error {
 		bannedIPs, err := database.GetAllBannedIPs()
 		if err != nil {
