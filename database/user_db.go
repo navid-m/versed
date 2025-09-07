@@ -16,7 +16,87 @@ func CreateUser(email, username, password string) error {
 		return err
 	}
 	_, err = db.Exec(sqlQuery, args...)
-	return err
+	if err != nil {
+		return err
+	}
+	user, err := GetUserByEmail(email)
+	if err != nil {
+		return err
+	}
+
+	return CreateDefaultCategoriesForUser(user.ID)
+}
+
+// Creates default categories and adds popular feeds for a new user
+func CreateDefaultCategoriesForUser(userID int) error {
+	defaultCategories := map[string][]struct {
+		name string
+		url  string
+	}{
+		"Technology": {
+			{"Hacker News", "https://hnrss.org/frontpage"},
+			{"Reddit - Programming", "https://www.reddit.com/r/programming/.rss"},
+			{"Lobsters", "https://lobste.rs/rss"},
+		},
+		"News": {
+			{"Reddit - Technology", "https://www.reddit.com/r/technology/.rss"},
+			{"BBC News - Technology", "http://feeds.bbci.co.uk/news/technology/rss.xml"},
+		},
+		"Science": {
+			{"Reddit - Science", "https://www.reddit.com/r/science/.rss"},
+			{"Nature News", "https://www.nature.com/nature.rss"},
+		},
+	}
+
+	for categoryName, feeds := range defaultCategories {
+		category, err := CreateUserCategory(db, userID, categoryName, "Default "+categoryName+" feeds")
+		if err != nil {
+			continue
+		}
+
+		for _, feed := range feeds {
+			feedSourceID, err := EnsureFeedSourceExists(feed.name, feed.url)
+			if err != nil {
+				continue
+			}
+
+			err = AddFeedToUserCategory(db, userID, category.ID, feedSourceID)
+			if err != nil {
+				continue
+			}
+		}
+	}
+
+	return nil
+}
+
+// Creates a feed source if it doesn't exist and returns its ID
+func EnsureFeedSourceExists(name, url string) (int, error) {
+	var id int
+	err := db.QueryRow("SELECT id FROM feed_sources WHERE name = ?", name).Scan(&id)
+	if err == nil {
+		return id, nil
+	}
+
+	sqlQuery, args, err := squirrel.Insert("feed_sources").
+		Columns("name", "url", "last_updated", "update_interval").
+		Values(name, url, squirrel.Expr("datetime('2000-01-01 00:00:00')"), 3600).
+		ToSql()
+	if err != nil {
+		return 0, err
+	}
+
+	result, err := db.Exec(sqlQuery, args...)
+	if err != nil {
+		return 0, err
+	}
+
+	id64, err := result.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return int(id64), nil
 }
 
 // Retrieves the user object given some email address
