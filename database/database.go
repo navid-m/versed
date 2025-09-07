@@ -9,9 +9,14 @@ var db *sql.DB
 func InitDatabase() error {
 	var err error
 	db, err = sql.Open("sqlite3", "./data.db")
+
 	if err != nil {
 		return err
 	}
+	if _, err := db.Exec("PRAGMA journal_mode=WAL"); err != nil {
+		return err
+	}
+
 	return createTables()
 }
 
