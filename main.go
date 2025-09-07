@@ -165,12 +165,10 @@ func main() {
 			return c.Status(400).SendString("Email, username, and password are required")
 		}
 
-		// Validate email format
 		if !strings.Contains(email, "@") || !strings.Contains(email, ".") {
 			return c.Status(400).SendString("Please enter a valid email address")
 		}
 
-		// Validate username (alphanumeric and underscores only, 3-20 chars)
 		if len(username) < 3 || len(username) > 20 {
 			return c.Status(400).SendString("Username must be between 3 and 20 characters")
 		}
@@ -180,14 +178,12 @@ func main() {
 			}
 		}
 
-		// Validate password strength
 		if len(password) < 3 {
 			return c.Status(400).SendString("Password must be at least 3 characters long")
 		}
 
 		err := database.CreateUser(email, username, password)
 		if err != nil {
-			// Check for specific error messages to provide user-friendly responses
 			switch err.Error() {
 			case "email already in use":
 				return c.Status(400).SendString("This email is already registered")
