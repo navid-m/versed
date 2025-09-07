@@ -123,7 +123,6 @@ class GraphView {
          .append("text")
          .attr("dx", (d) => this.getNodeRadius(d) + 5)
          .attr("dy", 4)
-         .attr("fill", "#ffffff")
          .style("font-size", "12px")
          .style("font-family", "Arial, sans-serif")
          .style("font-weight", "bold")
