@@ -34,14 +34,28 @@ func GetComments(c *fiber.Ctx) error {
 
 // CreateComment adds a new comment to a feed item
 func CreateComment(c *fiber.Ctx) error {
-	userID, ok := c.Locals("userID").(int)
-	if !ok {
+	userIDLocal := c.Locals("userID")
+	if userIDLocal == nil {
 		return c.Status(401).JSON(fiber.Map{
 			"error": "Unauthorized",
 		})
 	}
 
-	username, ok := c.Locals("username").(string)
+	var userID int
+	switch v := userIDLocal.(type) {
+	case int:
+		userID = v
+	case int64:
+		userID = int(v)
+	case int32:
+		userID = int(v)
+	default:
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Unauthorized",
+		})
+	}
+
+	username, ok := c.Locals("userUsername").(string)
 	if !ok {
 		return c.Status(401).JSON(fiber.Map{
 			"error": "Unauthorized",
@@ -81,10 +95,24 @@ func CreateComment(c *fiber.Ctx) error {
 	return c.Status(201).JSON(comment)
 }
 
-// UpdateComment updates an existing comment
+// Updates an existing comment
 func UpdateComment(c *fiber.Ctx) error {
-	userID, ok := c.Locals("userID").(int)
-	if !ok {
+	userIDLocal := c.Locals("userID")
+	if userIDLocal == nil {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Unauthorized",
+		})
+	}
+
+	var userID int
+	switch v := userIDLocal.(type) {
+	case int:
+		userID = v
+	case int64:
+		userID = int(v)
+	case int32:
+		userID = int(v)
+	default:
 		return c.Status(401).JSON(fiber.Map{
 			"error": "Unauthorized",
 		})
@@ -114,7 +142,6 @@ func UpdateComment(c *fiber.Ctx) error {
 		})
 	}
 
-	// Check if the comment belongs to the user
 	comment, err := database.GetCommentByID(commentID)
 	if err != nil {
 		return c.Status(404).JSON(fiber.Map{
@@ -135,7 +162,6 @@ func UpdateComment(c *fiber.Ctx) error {
 		})
 	}
 
-	// Return the updated comment
 	updatedComment, err := database.GetCommentByID(commentID)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
@@ -146,10 +172,24 @@ func UpdateComment(c *fiber.Ctx) error {
 	return c.JSON(updatedComment)
 }
 
-// DeleteComment removes a comment
+// Removes a comment
 func DeleteComment(c *fiber.Ctx) error {
-	userID, ok := c.Locals("userID").(int)
-	if !ok {
+	userIDLocal := c.Locals("userID")
+	if userIDLocal == nil {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Unauthorized",
+		})
+	}
+
+	var userID int
+	switch v := userIDLocal.(type) {
+	case int:
+		userID = v
+	case int64:
+		userID = int(v)
+	case int32:
+		userID = int(v)
+	default:
 		return c.Status(401).JSON(fiber.Map{
 			"error": "Unauthorized",
 		})
@@ -163,7 +203,6 @@ func DeleteComment(c *fiber.Ctx) error {
 		})
 	}
 
-	// Check if the comment belongs to the user
 	comment, err := database.GetCommentByID(commentID)
 	if err != nil {
 		return c.Status(404).JSON(fiber.Map{
@@ -189,7 +228,7 @@ func DeleteComment(c *fiber.Ctx) error {
 	})
 }
 
-// GetPostView retrieves a single post with its comments for viewing
+// Retrieves a single post with its comments for viewing
 func GetPostView(c *fiber.Ctx) error {
 	itemID := c.Params("itemId")
 	if itemID == "" {
@@ -198,7 +237,6 @@ func GetPostView(c *fiber.Ctx) error {
 		})
 	}
 
-	// Get the feed item details
 	db := database.GetDB()
 	var item feeds.FeedItem
 	var sourceName string
@@ -224,7 +262,6 @@ func GetPostView(c *fiber.Ctx) error {
 
 	item.SourceName = sourceName
 
-	// Get comments for this item
 	comments, err := database.GetCommentsByItemID(itemID)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
