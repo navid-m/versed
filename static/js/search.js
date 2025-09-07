@@ -84,6 +84,17 @@ document.addEventListener('DOMContentLoaded', function() {
         attachEventListeners();
     }
 
+    function debounce(func) {
+        let timeoutId;
+        return function(...args) {
+            const context = this;
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => {
+                func.apply(context, args);
+            }, 1000);
+        };
+    }
+
     function attachEventListeners() {
         const voteButtons = document.querySelectorAll('[data-vote-type]');
         voteButtons.forEach(button => {
@@ -123,10 +134,12 @@ document.addEventListener('DOMContentLoaded', function() {
             saveButtons.forEach(button => {
                 const feedId = button.getAttribute('data-feed-id');
                 checkSaveStatus(button, feedId);
-
-                button.addEventListener('click', async function() {
+                button.addEventListener('click', debounce(async function() {
                     const action = this.getAttribute('data-action');
-
+                    this.disabled = true;
+                    const originalHTML = this.innerHTML;
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                    
                     try {
                         let response;
                         if (action === 'save') {
@@ -157,8 +170,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         toggleSaveButton(this);
                     } catch (error) {
                         console.error('Error updating reading list:', error);
+                    } finally {
+                        this.disabled = false;
+                        this.innerHTML = originalHTML;
                     }
-                });
+                }))
             });
         }
     }
