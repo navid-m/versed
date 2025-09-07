@@ -309,10 +309,13 @@ func RemoveFeedFromCategory(c *fiber.Ctx) error {
 
 // Creates a new feed source and adds it to a category
 func CreateAndAddFeedToCategory(c *fiber.Ctx) error {
+	// Debug logging at the very beginning
 	fmt.Printf("=== CreateAndAddFeedToCategory handler called ===\n")
 	fmt.Printf("Method: %s, Path: %s\n", c.Method(), c.Path())
 	fmt.Printf("Params: %v\n", c.AllParams())
-	fmt.Printf("Body: %s\n", string(c.Body()))
+	fmt.Printf("Headers: %v\n", c.GetReqHeaders())
+	rawBody := string(c.Body())
+	fmt.Printf("Raw Body: %s\n", rawBody)
 
 	userID := c.Locals("userID").(int)
 	categoryIDStr := c.Params("id")
@@ -329,24 +332,26 @@ func CreateAndAddFeedToCategory(c *fiber.Ctx) error {
 	}
 
 	var req struct {
-		Type string `json:"type"`
+		Type string `json:"type"` // "reddit" or "rss"
 		URL  string `json:"url"`
 		Name string `json:"name"`
 	}
 
 	if err := c.BodyParser(&req); err != nil {
 		fmt.Printf("Body parsing error: %v\n", err)
+		fmt.Printf("Failed to parse body: %s\n", rawBody)
 		return c.Status(400).JSON(fiber.Map{
 			"error": "Invalid request body",
 		})
 	}
 
-	fmt.Printf("Received request: type=%s, url=%s, name=%s\n", req.Type, req.URL, req.Name)
+	// Debug logging
+	fmt.Printf("Parsed request: type='%s', url='%s', name='%s'\n", req.Type, req.URL, req.Name)
 
 	req.URL = strings.TrimSpace(req.URL)
 	req.Name = strings.TrimSpace(req.Name)
 
-	fmt.Printf("After trimming: type=%s, url=%s, name=%s\n", req.Type, req.URL, req.Name)
+	fmt.Printf("After trimming: type='%s', url='%s', name='%s'\n", req.Type, req.URL, req.Name)
 
 	if req.URL == "" || req.Name == "" {
 		fmt.Printf("Validation failed: URL='%s', Name='%s'\n", req.URL, req.Name)
@@ -355,8 +360,17 @@ func CreateAndAddFeedToCategory(c *fiber.Ctx) error {
 		})
 	}
 
+	if req.Type == "" {
+		fmt.Printf("Validation failed: Type='%s'\n", req.Type)
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Feed type is required",
+		})
+	}
+
+	// Create the feed source
 	var source *feeds.FeedSource
 	if req.Type == "reddit" {
+		// Extract subreddit name from URL
 		if !strings.Contains(req.URL, "reddit.com/r/") {
 			fmt.Printf("Reddit validation failed: URL='%s' doesn't contain 'reddit.com/r/'\n", req.URL)
 			return c.Status(400).JSON(fiber.Map{
@@ -375,6 +389,7 @@ func CreateAndAddFeedToCategory(c *fiber.Ctx) error {
 		})
 	}
 
+	// Add to category
 	err = database.AddFeedToUserCategory(db, userID, categoryID, source.ID)
 	if err != nil {
 		fmt.Printf("Failed to add feed to category: %v\n", err)

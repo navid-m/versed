@@ -412,6 +412,35 @@ func main() {
 
 		log.Printf("Found category ID: %d", categoryID)
 
+		// Check what feeds are associated with this category
+		feedsQuery := `
+			SELECT fs.id, fs.name, fs.url, fs.last_updated
+			FROM feed_sources fs
+			JOIN user_category_feeds ucf ON fs.id = ucf.feed_source_id
+			WHERE ucf.user_id = ? AND ucf.category_id = ?
+		`
+		feedRows, err := db.Query(feedsQuery, userID, categoryID)
+		feedCount := 0
+		if err != nil {
+			log.Printf("Failed to get category feeds: %v", err)
+		} else {
+			log.Printf("Checking feeds associated with category...")
+			for feedRows.Next() {
+				var feedID int
+				var feedName, feedURL string
+				var lastUpdated time.Time
+				err := feedRows.Scan(&feedID, &feedName, &feedURL, &lastUpdated)
+				if err != nil {
+					log.Printf("Feed row scan error: %v", err)
+					continue
+				}
+				feedCount++
+				log.Printf("Feed %d: %s (%s) - Last updated: %v", feedID, feedName, feedURL, lastUpdated)
+			}
+			feedRows.Close()
+		}
+		log.Printf("Total feeds in category: %d", feedCount)
+
 		// Get feed items for this category - using direct database query for simplicity
 		query := `
 			SELECT fi.id, fi.source_id, fi.title, fi.url, fi.description, fi.author, fi.published_at, fi.score, fi.comments_count, fi.created_at, fs.name as source_name
@@ -454,6 +483,28 @@ func main() {
 		log.Printf("Found %d feed items for category", len(items))
 		if len(items) > 0 {
 			log.Printf("Sample item: %s", items[0].Title)
+		}
+
+		// If we have feeds but no items, try to trigger feed processing
+		if feedCount > 0 && len(items) == 0 {
+			log.Printf("No feed items found, triggering feed processing for category feeds...")
+
+			// Reset timestamps for feeds in this category to force processing
+			resetQuery := `
+				UPDATE feed_sources
+				SET last_updated = datetime('2000-01-01 00:00:00')
+				WHERE id IN (
+					SELECT feed_source_id
+					FROM user_category_feeds
+					WHERE user_id = ? AND category_id = ?
+				)
+			`
+			_, err = db.Exec(resetQuery, userID, categoryID)
+			if err != nil {
+				log.Printf("Failed to reset feed timestamps: %v", err)
+			} else {
+				log.Printf("Reset timestamps for %d feeds in category", feedCount)
+			}
 		}
 
 		// Format items for template

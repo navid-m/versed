@@ -562,13 +562,13 @@ class CategoryManager {
         menu.className = 'category-menu absolute bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 mt-1';
         menu.innerHTML = `
             <div class="py-1">
-                <button onclick="categoryManager.editCategory(${categoryId})" class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                <button onclick="event.stopPropagation(); categoryManager.editCategory(${categoryId})" class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
                     <i class="fas fa-edit mr-2"></i>Edit
                 </button>
-                <button onclick="categoryManager.showAddFeedModal(${categoryId})" class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                <button onclick="event.stopPropagation(); categoryManager.showAddFeedModal(${categoryId})" class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
                     <i class="fas fa-plus mr-2"></i>Amend items
                 </button>
-                <button onclick="categoryManager.deleteCategory(${categoryId})" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900">
+                <button onclick="event.stopPropagation(); categoryManager.deleteCategory(${categoryId})" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900">
                     <i class="fas fa-trash mr-2"></i>Delete
                 </button>
             </div>
