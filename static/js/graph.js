@@ -71,11 +71,11 @@ class GraphView {
                .id((d) => d.id)
                .distance(100)
          )
-         .force("charge", d3.forceManyBody().strength(-300))
+         .force("charge", d3.forceManyBody().strength(-50))
          .force("center", d3.forceCenter(this.width / 2, this.height / 2))
          .force(
             "collision",
-            d3.forceCollide().radius((d) => this.getNodeRadius(d) + 5)
+            d3.forceCollide().radius((d) => this.getNodeRadius(d) + 3)
          );
       const link = this.svg
          .select("g")
