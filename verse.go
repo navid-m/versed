@@ -390,19 +390,16 @@ func main() {
 
 		log.Printf("=== URL Route Handler: /u/%s/c/%s ===", username, categoryName)
 
-		// Get user information
 		userEmail := c.Locals("userEmail")
 		userUsername := c.Locals("userUsername")
 
 		log.Printf("User info - Email: %v, Username: %v", userEmail, userUsername)
 
-		// Check if the category belongs to the user
 		userID := c.Locals("userID").(int)
 		db := database.GetDB()
 
 		log.Printf("UserID: %d", userID)
 
-		// Get category by name and user ID
 		var categoryID int
 		err := db.QueryRow("SELECT id FROM user_categories WHERE user_id = ? AND LOWER(name) = LOWER(?)", userID, categoryName).Scan(&categoryID)
 		if err != nil {
@@ -412,7 +409,6 @@ func main() {
 
 		log.Printf("Found category ID: %d", categoryID)
 
-		// Check what feeds are associated with this category
 		feedsQuery := `
 			SELECT fs.id, fs.name, fs.url, fs.last_updated
 			FROM feed_sources fs
@@ -440,8 +436,6 @@ func main() {
 			feedRows.Close()
 		}
 		log.Printf("Total feeds in category: %d", feedCount)
-
-		// Get feed items for this category - using direct database query for simplicity
 		query := `
 			SELECT fi.id, fi.source_id, fi.title, fi.url, fi.description, fi.author, fi.published_at, fi.score, fi.comments_count, fi.created_at, fs.name as source_name
 			FROM feed_items fi
@@ -485,11 +479,9 @@ func main() {
 			log.Printf("Sample item: %s", items[0].Title)
 		}
 
-		// If we have feeds but no items, try to trigger feed processing
 		if feedCount > 0 && len(items) == 0 {
 			log.Printf("No feed items found, triggering feed processing for category feeds...")
 
-			// Reset timestamps for feeds in this category to force processing
 			resetQuery := `
 				UPDATE feed_sources
 				SET last_updated = datetime('2000-01-01 00:00:00')
@@ -507,7 +499,6 @@ func main() {
 			}
 		}
 
-		// Format items for template
 		for i, item := range items {
 			if strings.TrimSpace(item.Description) == "" {
 				items[i].Description = "No description."
@@ -533,6 +524,7 @@ func main() {
 		log.Printf("Rendering template with %d items, category: %s", len(items), categoryName)
 		return c.Render("index", data)
 	})
+
 	app.Get("/api/categories", handlers.GetUserCategories)
 	app.Post("/api/categories", handlers.CreateUserCategory)
 	app.Put("/api/categories/:id", handlers.UpdateUserCategory)
