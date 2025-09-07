@@ -13,11 +13,28 @@ class CategoryManager {
 
     async loadCategories() {
         try {
+            console.log('Loading categories from API...');
             const response = await fetch('/api/categories');
-            if (response.ok) {
-                const data = await response.json();
+            console.log('Categories API response status:', response.status);
+
+            if (!response.ok) {
+                console.error('Failed to load categories:', response.status);
+                return;
+            }
+
+            const data = await response.json();
+            console.log('Categories API response data:', data);
+            console.log('Categories array:', data.categories);
+
+            if (data.categories && Array.isArray(data.categories)) {
                 this.categories = data.categories;
+                console.log('Loaded', this.categories.length, 'categories');
+                this.categories.forEach((cat, index) => {
+                    console.log(`Category ${index}: id=${cat.id} (type: ${typeof cat.id}), name="${cat.name}"`);
+                });
                 this.renderCategories();
+            } else {
+                console.error('Invalid categories data structure:', data);
             }
         } catch (error) {
             console.error('Error loading categories:', error);
@@ -76,21 +93,111 @@ class CategoryManager {
     }
 
     selectCategory(categoryId) {
-        this.currentCategory = categoryId;
-        this.renderCategories();
-        this.loadCategoryFeeds(categoryId);
+        console.log('=== selectCategory called ===');
+        console.log('categoryId:', categoryId, '(type:', typeof categoryId, ')');
+
+        // For 'all' category, navigate directly
+        if (categoryId === 'all') {
+            console.log('Navigating to all category');
+            window.location.href = '/';
+            return;
+        }
+
+        // Check if categories are loaded
+        console.log('Current categories array:', this.categories);
+        console.log('Categories length:', this.categories ? this.categories.length : 'undefined');
+
+        if (!this.categories || this.categories.length === 0) {
+            console.log('Categories not loaded yet, loading first...');
+            this.loadCategories().then(() => {
+                console.log('Categories loaded, retrying selectCategory');
+                this.selectCategory(categoryId); // Retry after loading
+            }).catch(error => {
+                console.error('Failed to load categories:', error);
+            });
+            return;
+        }
+
+        // Find the category to get its name
+        console.log('Looking for category with id:', categoryId);
+        const categoryIdNum = parseInt(categoryId, 10);
+        console.log('Converted categoryId to number:', categoryIdNum);
+
+        const category = this.categories.find(cat => {
+            console.log(`Comparing cat.id=${cat.id} (type: ${typeof cat.id}) with categoryIdNum=${categoryIdNum} (type: ${typeof categoryIdNum})`);
+            return cat.id === categoryIdNum;
+        });
+
+        console.log('Found category:', category);
+
+        if (!category) {
+            console.error('Category not found after loading:', categoryId);
+            console.log('Available categories:');
+            this.categories.forEach((cat, index) => {
+                console.log(`  ${index}: id=${cat.id}, name="${cat.name}"`);
+            });
+            return;
+        }
+
+        // Navigate to the URL route
+        const username = this.getUsername();
+        console.log('Username for navigation:', username);
+
+        if (username) {
+            const categorySlug = category.name.toLowerCase().replace(/\s+/g, '-');
+            const url = `/u/${username}/c/${categorySlug}`;
+            console.log('Navigating to:', url);
+            window.location.href = url;
+        } else {
+            console.error('Username not found for navigation');
+        }
+    }
+
+    getUsername() {
+        // Try to get username from various sources
+        const usernameElement = document.querySelector('[data-username]');
+        if (usernameElement) {
+            return usernameElement.getAttribute('data-username');
+        }
+
+        // Try to get from localStorage if stored
+        const storedUsername = localStorage.getItem('verse_username');
+        if (storedUsername) {
+            return storedUsername;
+        }
+
+        // Extract from current URL if we're already on a user route
+        const urlMatch = window.location.pathname.match(/^\/u\/([^\/]+)\//);
+        if (urlMatch) {
+            return urlMatch[1];
+        }
+
+        return null;
     }
 
     async loadCategoryFeeds(categoryId) {
         console.log('Loading feeds for category:', categoryId);
         try {
+            // First check if the category has any feeds associated with it
+            let feedsResponse = await fetch(`/api/categories/${categoryId}/feeds`);
+            if (!feedsResponse.ok) {
+                console.error('Failed to get category feeds');
+                this.renderCategoryFeedItems([], categoryId, 0);
+                return;
+            }
+
+            let feedsData = await feedsResponse.json();
+            let feedsCount = feedsData.feeds ? feedsData.feeds.length : 0;
+            console.log('Category has', feedsCount, 'feeds');
+
+            // Now get the feed items
             let url;
             if (categoryId === 'all') {
                 url = '/api/feeds';
                 console.log('Loading all feeds from:', url);
             } else {
-                url = `/api/categories/${categoryId}/feeds`;
-                console.log('Loading category feeds from:', url);
+                url = `/api/categories/${categoryId}/items`;
+                console.log('Loading category feed items from:', url);
             }
 
             const response = await fetch(url);
@@ -98,34 +205,60 @@ class CategoryManager {
             if (response.ok) {
                 const data = await response.json();
                 console.log('API response data:', data);
-                this.renderCategoryFeeds(data.feeds || [], categoryId);
+                this.renderCategoryFeedItems(data.items || [], categoryId, feedsCount);
             } else {
                 console.error('Failed to load category feeds:', response.status);
-                this.renderCategoryFeeds([], categoryId);
+                this.renderCategoryFeedItems([], categoryId, feedsCount);
             }
         } catch (error) {
             console.error('Error loading category feeds:', error);
-            this.renderCategoryFeeds([], categoryId);
+            this.renderCategoryFeedItems([], categoryId, 0);
         }
     }
 
-    renderCategoryFeeds(feeds, categoryId) {
-        console.log('Rendering feeds for category:', categoryId, 'feeds count:', feeds.length);
+    renderCategoryFeedItems(feedItems, categoryId, feedsCount) {
+        console.log('Rendering feed items for category:', categoryId, 'items count:', feedItems.length, 'feeds count:', feedsCount);
         const container = document.getElementById('postsContainer');
         if (!container) {
             console.error('postsContainer not found!');
             return;
         }
 
-        if (feeds.length === 0) {
+        if (feedItems.length === 0) {
             if (categoryId === 'all') {
-                console.log('Category is "all", not rendering add feed button');
-                // For 'all' category, show the original feed items
-                // This should be handled by the existing feed loading logic
+                console.log('Category is "all", not rendering empty state');
                 return;
+            } else if (feedsCount > 0) {
+                // Category has feeds but no feed items yet
+                console.log('Category has feeds but no feed items yet');
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <div class="w-16 h-16 mx-auto mb-4 text-blue-400 dark:text-blue-600">
+                            <i class="fas fa-spinner fa-spin text-4xl"></i>
+                        </div>
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                            Loading feed items...
+                        </h3>
+                        <p class="text-gray-500 dark:text-gray-400 mb-4">
+                            This category has ${feedsCount} feed(s) but no items have been loaded yet.
+                        </p>
+                        <p class="text-sm text-gray-400 dark:text-gray-500">
+                            Items will appear once the feeds are processed.
+                        </p>
+                        <div class="mt-6">
+                            <button
+                                onclick="categoryManager.showAddFeedModal(${categoryId})"
+                                class="inline-flex items-center px-4 py-2 bg-gray-900 dark:bg-gray-700 text-white rounded-lg hover:bg-gray-800 dark:hover:bg-gray-600 transition-colors"
+                            >
+                                <i class="fas fa-plus mr-2"></i>
+                                Manage Feeds
+                            </button>
+                        </div>
+                    </div>
+                `;
             } else {
-                console.log('Category is empty, showing add feed button');
-                // For specific categories with no feeds
+                // Category has no feeds at all
+                console.log('Category has no feeds, showing add feed button');
                 container.innerHTML = `
                     <div class="text-center py-12">
                         <div class="w-16 h-16 mx-auto mb-4 text-gray-400 dark:text-gray-600">
@@ -148,8 +281,8 @@ class CategoryManager {
                 `;
             }
         } else {
-            console.log('Category has feeds, showing feed list with add button');
-            // Render feeds for this category with Add Feed button at the top
+            console.log('Category has feed items, rendering them');
+            // Render feed items in the same format as the main feed
             container.innerHTML = `
                 <div class="mb-6 text-center">
                     <button
@@ -160,28 +293,58 @@ class CategoryManager {
                         Add Feed to Category
                     </button>
                 </div>
-                <div class="space-y-4">
-                    ${feeds.map(feed => `
-                        <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
-                                    <div>
-                                        <h3 class="font-medium text-gray-900 dark:text-gray-100">${feed.name}</h3>
-                                        <p class="text-sm text-gray-500 dark:text-gray-400">${feed.url}</p>
+                <div class="space-y-3">
+                    ${feedItems.map(item => `
+                        <article class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md dark:hover:shadow-xl transition-shadow">
+                            <div class="p-4">
+                                <div class="flex items-start space-x-3">
+                                    <div class="flex flex-col items-center space-y-1 flex-shrink-0">
+                                        <button class="p-1 text-orange-500 hover:text-orange-600 transition-colors" data-feed-id="${item.ID}" data-vote-type="upvote">
+                                            <i class="fas fa-chevron-up text-sm"></i>
+                                        </button>
+                                        <span class="text-xs font-medium text-orange-500">${item.Score}</span>
+                                        <button class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" data-feed-id="${item.ID}" data-vote-type="downvote">
+                                            <i class="fas fa-chevron-down text-sm"></i>
+                                        </button>
+                                    </div>
+
+                                    <div class="flex-1 min-w-0">
+                                        <h2 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 hover:text-gray-700 dark:hover:text-gray-300 transition-colors line-clamp-2">
+                                            <a href="${item.URL}" target="_blank" class="hover:underline">
+                                                ${item.Title}
+                                            </a>
+                                        </h2>
+
+                                        <div class="relative mb-4 modern-description">
+                                            <div class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed line-height-6 font-medium tracking-wide line-clamp-3 bg-gradient-to-br from-gray-50/80 to-white/50 dark:from-gray-800/60 dark:to-gray-700/40 backdrop-blur-sm rounded-lg px-4 py-3 border-l-4 border-blue-500/30 dark:border-blue-400/40 shadow-sm">
+                                                <p>${item.Description || 'No description available.'}</p>
+                                            </div>
+                                            <div class="absolute inset-0 bg-gradient-to-r from-blue-50/20 to-indigo-50/20 dark:from-blue-900/10 dark:to-indigo-900/10 rounded-lg blur-xl transform scale-105 opacity-60"></div>
+                                        </div>
+
+                                        <div class="flex items-center text-xs text-gray-500 dark:text-gray-400 space-x-3">
+                                            <span class="flex items-center">
+                                                <i class="far fa-user mr-1"></i>
+                                                ${item.Author || 'Unknown'}
+                                            </span>
+                                            <span class="flex items-center">
+                                                <i class="far fa-clock mr-1"></i>
+                                                ${new Date(item.PublishedAt).toLocaleDateString()}
+                                            </span>
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+                                                ${item.SourceName || 'Unknown Source'}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex flex-col items-center space-y-1 flex-shrink-0 ml-3">
+                                        <button class="p-1 text-gray-400 hover:text-blue-500 transition-colors save-button" data-feed-id="${item.ID}" data-action="save" title="Save to reading list">
+                                            <i class="far fa-bookmark text-sm"></i>
+                                        </button>
                                     </div>
                                 </div>
-                                <div class="flex items-center space-x-2">
-                                    <button
-                                        onclick="categoryManager.removeFeedFromCategory(${categoryId}, ${feed.id})"
-                                        class="text-red-500 hover:text-red-600 transition-colors"
-                                        title="Remove from category"
-                                    >
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </div>
                             </div>
-                        </div>
+                        </article>
                     `).join('')}
                 </div>
             `;
@@ -402,6 +565,9 @@ class CategoryManager {
                 <button onclick="categoryManager.editCategory(${categoryId})" class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
                     <i class="fas fa-edit mr-2"></i>Edit
                 </button>
+                <button onclick="categoryManager.showAddFeedModal(${categoryId})" class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <i class="fas fa-plus mr-2"></i>Amend items
+                </button>
                 <button onclick="categoryManager.deleteCategory(${categoryId})" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900">
                     <i class="fas fa-trash mr-2"></i>Delete
                 </button>
@@ -542,3 +708,11 @@ class CategoryManager {
 
 // Initialize category manager
 const categoryManager = new CategoryManager();
+
+// Only initialize if we're not on a category URL route
+if (!window.location.pathname.match(/^\/u\/[^\/]+\/c\/[^\/]+$/)) {
+    console.log('Initializing category manager for dynamic loading');
+    categoryManager.init();
+} else {
+    console.log('On category URL route - skipping dynamic initialization');
+}

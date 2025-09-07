@@ -164,6 +164,65 @@ func GetCategoryFeeds(c *fiber.Ctx) error {
 	})
 }
 
+// GetCategoryFeedItems returns feed items from all feeds in a specific category
+func GetCategoryFeedItems(c *fiber.Ctx) error {
+	userID := c.Locals("userID").(int)
+	categoryIDStr := c.Params("id")
+	db := database.GetDB()
+
+	categoryID, err := strconv.Atoi(categoryIDStr)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Invalid category ID",
+		})
+	}
+
+	// Verify the category belongs to the user
+	_, err = database.GetUserCategoryByID(db, userID, categoryID)
+	if err != nil {
+		return c.Status(404).JSON(fiber.Map{
+			"error": "Category not found",
+		})
+	}
+
+	// Get feed items from all feeds in this category
+	query := `
+		SELECT fi.id, fi.source_id, fi.title, fi.url, fi.description, fi.author, fi.published_at, fi.score, fi.comments_count, fi.created_at, fs.name as source_name
+		FROM feed_items fi
+		JOIN feed_sources fs ON fi.source_id = fs.id
+		JOIN user_category_feeds ucf ON fs.id = ucf.feed_source_id
+		WHERE ucf.user_id = ? AND ucf.category_id = ?
+		ORDER BY fi.published_at DESC
+		LIMIT 50
+	`
+
+	rows, err := db.Query(query, userID, categoryID)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Failed to get category feed items",
+		})
+	}
+	defer rows.Close()
+
+	var items []feeds.FeedItem
+	for rows.Next() {
+		var item feeds.FeedItem
+		var sourceName string
+		err := rows.Scan(&item.ID, &item.SourceID, &item.Title, &item.URL, &item.Description,
+			&item.Author, &item.PublishedAt, &item.Score, &item.CommentsCount, &item.CreatedAt, &sourceName)
+		if err != nil {
+			continue
+		}
+		item.SourceName = sourceName
+		items = append(items, item)
+	}
+
+	return c.JSON(fiber.Map{
+		"items": items,
+		"count": len(items),
+	})
+}
+
 // AddFeedToCategory adds a feed source to a user's category
 func AddFeedToCategory(c *fiber.Ctx) error {
 	// Debug logging at the very beginning

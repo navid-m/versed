@@ -384,12 +384,110 @@ func main() {
 		})
 	})
 
-	app.Get("/api/search", handlers.SearchFeedItems)
+	app.Get("/u/:username/c/:categoryName", func(c *fiber.Ctx) error {
+		username := c.Params("username")
+		categoryName := c.Params("categoryName")
+
+		log.Printf("=== URL Route Handler: /u/%s/c/%s ===", username, categoryName)
+
+		// Get user information
+		userEmail := c.Locals("userEmail")
+		userUsername := c.Locals("userUsername")
+
+		log.Printf("User info - Email: %v, Username: %v", userEmail, userUsername)
+
+		// Check if the category belongs to the user
+		userID := c.Locals("userID").(int)
+		db := database.GetDB()
+
+		log.Printf("UserID: %d", userID)
+
+		// Get category by name and user ID
+		var categoryID int
+		err := db.QueryRow("SELECT id FROM user_categories WHERE user_id = ? AND LOWER(name) = LOWER(?)", userID, categoryName).Scan(&categoryID)
+		if err != nil {
+			log.Printf("Category not found: %v (user_id=%d, name='%s')", err, userID, categoryName)
+			return c.Status(404).SendString("Category not found")
+		}
+
+		log.Printf("Found category ID: %d", categoryID)
+
+		// Get feed items for this category - using direct database query for simplicity
+		query := `
+			SELECT fi.id, fi.source_id, fi.title, fi.url, fi.description, fi.author, fi.published_at, fi.score, fi.comments_count, fi.created_at, fs.name as source_name
+			FROM feed_items fi
+			JOIN feed_sources fs ON fi.source_id = fs.id
+			JOIN user_category_feeds ucf ON fs.id = ucf.feed_source_id
+			WHERE ucf.user_id = ? AND ucf.category_id = ?
+			ORDER BY fi.published_at DESC
+			LIMIT 50
+		`
+
+		rows, err := db.Query(query, userID, categoryID)
+		if err != nil {
+			log.Printf("Database query error: %v", err)
+		} else {
+			log.Printf("Database query executed successfully")
+		}
+		defer func() {
+			if rows != nil {
+				rows.Close()
+			}
+		}()
+
+		var items []feeds.FeedItem
+		if rows != nil {
+			for rows.Next() {
+				var item feeds.FeedItem
+				var sourceName string
+				err := rows.Scan(&item.ID, &item.SourceID, &item.Title, &item.URL, &item.Description,
+					&item.Author, &item.PublishedAt, &item.Score, &item.CommentsCount, &item.CreatedAt, &sourceName)
+				if err != nil {
+					log.Printf("Row scan error: %v", err)
+					continue
+				}
+				item.SourceName = sourceName
+				items = append(items, item)
+			}
+		}
+
+		log.Printf("Found %d feed items for category", len(items))
+		if len(items) > 0 {
+			log.Printf("Sample item: %s", items[0].Title)
+		}
+
+		// Format items for template
+		for i, item := range items {
+			if strings.TrimSpace(item.Description) == "" {
+				items[i].Description = "No description."
+			}
+			if strings.TrimSpace(item.Description) == "Comments" {
+				items[i].Description = "No description."
+			}
+		}
+
+		data := fiber.Map{
+			"FeedItems":    items,
+			"CategoryName": categoryName,
+			"Username":     username,
+		}
+
+		if userEmail != nil {
+			data["Email"] = userEmail
+		}
+		if userUsername != nil {
+			data["Username"] = userUsername
+		}
+
+		log.Printf("Rendering template with %d items, category: %s", len(items), categoryName)
+		return c.Render("index", data)
+	})
 	app.Get("/api/categories", handlers.GetUserCategories)
 	app.Post("/api/categories", handlers.CreateUserCategory)
 	app.Put("/api/categories/:id", handlers.UpdateUserCategory)
 	app.Delete("/api/categories/:id", handlers.DeleteUserCategory)
 	app.Get("/api/categories/:id/feeds", handlers.GetCategoryFeeds)
+	app.Get("/api/categories/:id/items", handlers.GetCategoryFeedItems)
 	app.Post("/api/categories/:id/feeds", handlers.AddFeedToCategory)
 	app.Delete("/api/categories/:categoryId/feeds/:feedId", handlers.RemoveFeedFromCategory)
 	app.Post("/api/categories/:id/feeds/create", handlers.CreateAndAddFeedToCategory)

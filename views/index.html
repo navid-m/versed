@@ -9,10 +9,11 @@
          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
       />
       <script src="https://cdn.tailwindcss.com"></script>
-      <script src="static/js/tw-config.js"></script>
+      <script src="/static/js/tw-config.js"></script>
    </head>
    <body
       class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200"
+      data-username="{{ Username }}"
    >
       <header
          class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10"
@@ -171,11 +172,11 @@
 
       {% include "partials/footer.html" %}
 
-      <script src="static/js/index.js"></script>
-      <script src="static/js/fetch-posts.js"></script>
-      <script src="static/js/search.js"></script>
-      <script src="static/js/categories.js"></script>
+      <script src="/static/js/index.js"></script>
+      <script src="/static/js/fetch-posts.js"></script>
+      <script src="/static/js/search.js"></script>
+      <script src="/static/js/categories.js"></script>
 
-      <link rel="stylesheet" href="static/css/index.css" />
+      <link rel="stylesheet" href="/static/css/index.css" />
    </body>
 </html>
