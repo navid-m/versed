@@ -420,7 +420,6 @@
                         postsContainer.appendChild(article);
                      });
 
-                     // Re-attach event listeners for new save buttons
                      const newSaveButtons = postsContainer.querySelectorAll(
                         ".save-button:not([data-listener-attached])"
                      );
@@ -428,76 +427,9 @@
                         button.setAttribute("data-listener-attached", "true");
                         const feedId = button.getAttribute("data-feed-id");
 
-                        button.addEventListener("click", async function () {
-                           const action = this.getAttribute("data-action");
+                        checkSaveStatus(button, feedId);
 
-                           try {
-                              let response;
-                              if (action === "save") {
-                                 response = await fetch(
-                                    "/api/reading-list/save",
-                                    {
-                                       method: "POST",
-                                       headers: {
-                                          "Content-Type": "application/json",
-                                       },
-                                       body: JSON.stringify({
-                                          item_id: feedId,
-                                       }),
-                                    }
-                                 );
-                              } else {
-                                 response = await fetch(
-                                    "/api/reading-list/remove",
-                                    {
-                                       method: "POST",
-                                       headers: {
-                                          "Content-Type": "application/json",
-                                       },
-                                       body: JSON.stringify({
-                                          item_id: feedId,
-                                       }),
-                                    }
-                                 );
-                              }
-
-                              if (!response.ok) {
-                                 throw new Error(
-                                    "Failed to update reading list"
-                                 );
-                              }
-
-                              // Toggle the button state
-                              const icon = this.querySelector("i");
-                              const currentAction =
-                                 this.getAttribute("data-action");
-
-                              if (currentAction === "save") {
-                                 this.setAttribute("data-action", "unsave");
-                                 icon.className = "fas fa-bookmark text-sm";
-                                 this.className =
-                                    "p-1 text-blue-500 hover:text-red-500 transition-colors save-button";
-                                 this.setAttribute(
-                                    "title",
-                                    "Remove from reading list"
-                                 );
-                              } else {
-                                 this.setAttribute("data-action", "save");
-                                 icon.className = "far fa-bookmark text-sm";
-                                 this.className =
-                                    "p-1 text-gray-400 hover:text-blue-500 transition-colors save-button";
-                                 this.setAttribute(
-                                    "title",
-                                    "Save to reading list"
-                                 );
-                              }
-                           } catch (error) {
-                              console.error(
-                                 "Error updating reading list:",
-                                 error
-                              );
-                           }
-                        });
+                        button.addEventListener("click", handleSaveClick);
                      });
 
                      currentPage++;
@@ -512,97 +444,94 @@
             });
          });
 
-         // Handle saving/unsaving to reading list
          document.addEventListener("DOMContentLoaded", function () {
             const saveButtons = document.querySelectorAll(".save-button");
 
             saveButtons.forEach((button) => {
                const feedId = button.getAttribute("data-feed-id");
-
-               // Check initial save status
                checkSaveStatus(button, feedId);
-
-               button.addEventListener("click", async function () {
-                  const action = this.getAttribute("data-action");
-
-                  try {
-                     let response;
-                     if (action === "save") {
-                        response = await fetch("/api/reading-list/save", {
-                           method: "POST",
-                           headers: {
-                              "Content-Type": "application/json",
-                           },
-                           body: JSON.stringify({
-                              item_id: feedId,
-                           }),
-                        });
-                     } else {
-                        response = await fetch("/api/reading-list/remove", {
-                           method: "POST",
-                           headers: {
-                              "Content-Type": "application/json",
-                           },
-                           body: JSON.stringify({
-                              item_id: feedId,
-                           }),
-                        });
-                     }
-
-                     if (!response.ok) {
-                        throw new Error("Failed to update reading list");
-                     }
-
-                     toggleSaveButton(this);
-                  } catch (error) {
-                     console.error("Error updating reading list:", error);
-                  }
-               });
+               button.addEventListener("click", handleSaveClick);
             });
-
-            async function checkSaveStatus(button, feedId) {
-               try {
-                  const response = await fetch(
-                     "/api/reading-list/check/" + feedId
-                  );
-                  if (response.ok) {
-                     const data = await response.json();
-                     if (data.saved) {
-                        button.setAttribute("data-action", "unsave");
-                        button.querySelector("i").className =
-                           "fas fa-bookmark text-sm";
-                        button.className =
-                           "p-1 text-blue-500 hover:text-red-500 transition-colors save-button";
-                        button.setAttribute(
-                           "title",
-                           "Remove from reading list"
-                        );
-                     }
-                  }
-               } catch (error) {
-                  console.error("Error checking save status:", error);
-               }
-            }
-
-            function toggleSaveButton(button) {
-               const icon = button.querySelector("i");
-               const currentAction = button.getAttribute("data-action");
-
-               if (currentAction === "save") {
-                  button.setAttribute("data-action", "unsave");
-                  icon.className = "fas fa-bookmark text-sm";
-                  button.className =
-                     "p-1 text-blue-500 hover:text-red-500 transition-colors save-button";
-                  button.setAttribute("title", "Remove from reading list");
-               } else {
-                  button.setAttribute("data-action", "save");
-                  icon.className = "far fa-bookmark text-sm";
-                  button.className =
-                     "p-1 text-gray-400 hover:text-blue-500 transition-colors save-button";
-                  button.setAttribute("title", "Save to reading list");
-               }
-            }
          });
+
+         async function handleSaveClick(event) {
+            const button = event.currentTarget;
+            const feedId = button.getAttribute("data-feed-id");
+            const action = button.getAttribute("data-action");
+
+            try {
+               let response;
+               if (action === "save") {
+                  response = await fetch("/api/reading-list/save", {
+                     method: "POST",
+                     headers: {
+                        "Content-Type": "application/json",
+                     },
+                     body: JSON.stringify({
+                        item_id: feedId,
+                     }),
+                  });
+               } else {
+                  response = await fetch("/api/reading-list/remove", {
+                     method: "POST",
+                     headers: {
+                        "Content-Type": "application/json",
+                     },
+                     body: JSON.stringify({
+                        item_id: feedId,
+                     }),
+                  });
+               }
+
+               if (!response.ok) {
+                  throw new Error("Failed to update reading list");
+               }
+
+               const result = await response.json();
+
+               if (result.success) {
+                  if (action === "save") {
+                     setSaveButtonState(button, true);
+                  } else {
+                     setSaveButtonState(button, false);
+                  }
+               }
+            } catch (error) {
+               console.error("Error updating reading list:", error);
+            }
+         }
+
+         async function checkSaveStatus(button, feedId) {
+            try {
+               const response = await fetch(
+                  "/api/reading-list/check/" + feedId
+               );
+               if (response.ok) {
+                  const data = await response.json();
+                  setSaveButtonState(button, data.saved);
+               }
+            } catch (error) {
+               console.error("Error checking save status:", error);
+            }
+         }
+
+         function setSaveButtonState(button, isSaved) {
+            const icon = button.querySelector("i");
+
+            if (isSaved) {
+               button.setAttribute("data-action", "unsave");
+               icon.className = "fas fa-bookmark text-sm";
+               button.className =
+                  "p-1 text-blue-500 hover:text-red-500 transition-colors save-button";
+               button.setAttribute("title", "Remove from reading list");
+            } else {
+               button.setAttribute("data-action", "save");
+               icon.className = "far fa-bookmark text-sm";
+               button.className =
+                  "p-1 text-gray-400 hover:text-blue-500 transition-colors save-button";
+               button.setAttribute("title", "Save to reading list");
+            }
+         }
       </script>
 
       <style>

@@ -33,10 +33,21 @@ func UpdateUser(userID int, email, username, password string) error {
 }
 
 // Adds a feed item to user's reading list
-func SaveToReadingList(userID int, itemID string) error {
-	query := `INSERT OR IGNORE INTO reading_list (user_id, item_id) VALUES (?, ?)`
-	_, err := db.Exec(query, userID, itemID)
-	return err
+// Returns (saved bool, error)
+func SaveToReadingList(userID int, itemID string) (bool, error) {
+	exists, err := IsInReadingList(userID, itemID)
+	if err != nil {
+		return false, err
+	}
+	if exists {
+		return false, nil
+	}
+	query := `INSERT INTO reading_list (user_id, item_id) VALUES (?, ?)`
+	_, err = db.Exec(query, userID, itemID)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
 // Removes a feed item from user's reading list

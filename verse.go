@@ -237,7 +237,7 @@ func main() {
 			})
 		}
 
-		err := database.SaveToReadingList(userID, saveRequest.ItemID)
+		saved, err := database.SaveToReadingList(userID, saveRequest.ItemID)
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{
 				"error": "Failed to save item to reading list",
@@ -246,6 +246,7 @@ func main() {
 
 		return c.JSON(fiber.Map{
 			"success": true,
+			"saved": saved,
 		})
 	})
 
@@ -359,7 +360,7 @@ func main() {
 	})
 
 	app.Get("/api/reading-list/check/:itemId", func(c *fiber.Ctx) error {
-		userID, ok := c.Locals("userID").([]int)
+		userID, ok := c.Locals("userID").(int)
 		if !ok {
 			return c.Status(401).JSON(fiber.Map{
 				"error": "Unauthorized",
@@ -367,7 +368,7 @@ func main() {
 		}
 
 		itemID := c.Params("itemId")
-		saved, err := database.IsInReadingList(userID[0], itemID)
+		saved, err := database.IsInReadingList(userID, itemID)
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{
 				"error": "Failed to check reading list status",
