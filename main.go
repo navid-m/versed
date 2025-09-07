@@ -982,7 +982,7 @@ func main() {
 	})
 
 	port := 3000
-	if os.Getenv("PRODUCTION") != "" {
+	if os.Getenv("PRODUCTION") == "true" {
 		port = 80
 	}
 	log.Fatal(app.Listen(fmt.Sprintf(":%d", port)))
