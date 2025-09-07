@@ -129,8 +129,6 @@
       const userMenuButton = document.getElementById("userMenuButton");
       const userDropdown = document.getElementById("userDropdown");
 
-      document.documentElement.classList.add("dark");
-
       function htmlDecode(input) {
          var doc = new DOMParser().parseFromString(input, "text/html");
          return doc.documentElement.textContent;
