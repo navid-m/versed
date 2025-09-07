@@ -284,10 +284,10 @@ document.addEventListener("DOMContentLoaded", function () {
                             <i class="fas fa-ban text-4xl"></i>
                         </div>
                         <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-                            Search error
+                            Tumbleweed...
                         </h3>
                         <p class="text-gray-500 dark:text-gray-400">
-                            No results. Try again later.
+                            No results.
                         </p>
                     </div>
                 `;

@@ -13,7 +13,12 @@ import (
 
 // Returns all categories for the authenticated user
 func GetUserCategories(c *fiber.Ctx) error {
-	userID := c.Locals("userID").(int)
+	userID, ok := c.Locals("userID").(int)
+	if !ok {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Unauthorized",
+		})
+	}
 	db := database.GetDB()
 
 	categories, err := database.GetUserCategories(db, userID)
