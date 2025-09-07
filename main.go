@@ -140,6 +140,20 @@ func main() {
 	app.Get("/signup", func(c *fiber.Ctx) error {
 		return c.Render("signup", fiber.Map{})
 	})
+	app.Get("/faq", func(c *fiber.Ctx) error {
+		userEmail := c.Locals("userEmail")
+		userUsername := c.Locals("userUsername")
+
+		data := fiber.Map{}
+		if userEmail != nil {
+			data["Email"] = userEmail
+		}
+		if userUsername != nil {
+			data["Username"] = userUsername
+		}
+
+		return c.Render("faq", data)
+	})
 
 	app.Post("/signup", func(c *fiber.Ctx) error {
 		email := c.FormValue("email")
