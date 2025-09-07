@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/navid-m/versed/database"
 	"github.com/navid-m/versed/feeds"
@@ -163,10 +164,63 @@ func main() {
 		if email == "" || username == "" || password == "" {
 			return c.Status(400).SendString("Email, username, and password are required")
 		}
-		if err := database.CreateUser(email, username, password); err != nil {
-			fmt.Println(err)
-			return c.Status(500).SendString("Failed to create user")
+
+		// Validate email format
+		if !strings.Contains(email, "@") || !strings.Contains(email, ".") {
+			return c.Status(400).SendString("Please enter a valid email address")
 		}
+
+		// Validate username (alphanumeric and underscores only, 3-20 chars)
+		if len(username) < 3 || len(username) > 20 {
+			return c.Status(400).SendString("Username must be between 3 and 20 characters")
+		}
+		for _, r := range username {
+			if !unicode.IsLetter(r) && !unicode.IsNumber(r) && r != '_' {
+				return c.Status(400).SendString("Username can only contain letters, numbers, and underscores")
+			}
+		}
+
+		// Validate password strength
+		if len(password) < 3 {
+			return c.Status(400).SendString("Password must be at least 3 characters long")
+		}
+
+		err := database.CreateUser(email, username, password)
+		if err != nil {
+			// Check for specific error messages to provide user-friendly responses
+			switch err.Error() {
+			case "email already in use":
+				return c.Status(400).SendString("This email is already registered")
+			case "username already taken":
+				return c.Status(400).SendString("This username is already taken")
+			default:
+				log.Printf("Error creating user: %v", err)
+				return c.Status(500).SendString("An error occurred while creating your account")
+			}
+		}
+
+		// Log the user in automatically after successful signup
+		user, err := database.GetUserByEmail(email)
+		if err != nil {
+			log.Printf("Error getting new user after signup: %v", err)
+			return c.Redirect("/signin")
+		}
+
+		sess, err := store.Get(c)
+		if err != nil {
+			log.Printf("Error getting session: %v", err)
+			return c.Redirect("/signin")
+		}
+
+		sess.Set("user_id", user.ID)
+		sess.Set("user_email", user.Email)
+		sess.Set("user_username", user.Username)
+
+		if err := sess.Save(); err != nil {
+			log.Printf("Error saving session: %v", err)
+			return c.Redirect("/signin")
+		}
+
 		return c.Redirect("/")
 	})
 

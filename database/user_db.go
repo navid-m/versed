@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/navid-m/versed/models"
 
@@ -11,10 +12,27 @@ import (
 
 // Creates a new user in the database with a hashed password
 func CreateUser(email, username, password string) error {
-	// Hash the password before storing
+	var emailCount int
+	err := db.QueryRow("SELECT COUNT(*) FROM users WHERE email = ?", email).Scan(&emailCount)
+	if err != nil {
+		return fmt.Errorf("error checking email: %v", err)
+	}
+	if emailCount > 0 {
+		return fmt.Errorf("email already in use")
+	}
+
+	var usernameCount int
+	err = db.QueryRow("SELECT COUNT(*) FROM users WHERE username = ?", username).Scan(&usernameCount)
+	if err != nil {
+		return fmt.Errorf("error checking username: %v", err)
+	}
+	if usernameCount > 0 {
+		return fmt.Errorf("username already taken")
+	}
+
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return err
+		return fmt.Errorf("error hashing password: %v", err)
 	}
 
 	sqlQuery, args, err := squirrel.Insert("users").
@@ -22,18 +40,24 @@ func CreateUser(email, username, password string) error {
 		Values(email, username, string(hashedPassword)).
 		ToSql()
 	if err != nil {
-		return err
-	}
-	_, err = db.Exec(sqlQuery, args...)
-	if err != nil {
-		return err
-	}
-	user, err := GetUserByEmail(email)
-	if err != nil {
-		return err
+		return fmt.Errorf("error preparing query: %v", err)
 	}
 
-	return CreateDefaultCategoriesForUser(user.ID)
+	_, err = db.Exec(sqlQuery, args...)
+	if err != nil {
+		return fmt.Errorf("error creating user: %v", err)
+	}
+
+	user, err := GetUserByEmail(email)
+	if err != nil {
+		return fmt.Errorf("error retrieving new user: %v", err)
+	}
+
+	if err := CreateDefaultCategoriesForUser(user.ID); err != nil {
+		return fmt.Errorf("error creating default categories: %v", err)
+	}
+
+	return nil
 }
 
 // Creates default categories and adds popular feeds for a new user
