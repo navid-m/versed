@@ -11,7 +11,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// GetUserCategories returns all categories for the authenticated user
+// Returns all categories for the authenticated user
 func GetUserCategories(c *fiber.Ctx) error {
 	userID := c.Locals("userID").(int)
 	db := database.GetDB()
@@ -29,7 +29,7 @@ func GetUserCategories(c *fiber.Ctx) error {
 	})
 }
 
-// CreateUserCategory creates a new category for the authenticated user
+// Creates a new category for the authenticated user
 func CreateUserCategory(c *fiber.Ctx) error {
 	userID := c.Locals("userID").(int)
 	db := database.GetDB()
@@ -62,7 +62,7 @@ func CreateUserCategory(c *fiber.Ctx) error {
 	return c.Status(201).JSON(category)
 }
 
-// UpdateUserCategory updates an existing category
+// Updates an existing category
 func UpdateUserCategory(c *fiber.Ctx) error {
 	userID := c.Locals("userID").(int)
 	categoryIDStr := c.Params("id")
@@ -105,7 +105,7 @@ func UpdateUserCategory(c *fiber.Ctx) error {
 	})
 }
 
-// DeleteUserCategory deletes a category and all its feed associations
+// Deletes a category and all its feed associations
 func DeleteUserCategory(c *fiber.Ctx) error {
 	userID := c.Locals("userID").(int)
 	categoryIDStr := c.Params("id")
@@ -130,7 +130,7 @@ func DeleteUserCategory(c *fiber.Ctx) error {
 	})
 }
 
-// GetCategoryFeeds returns all feeds in a specific category
+// Returns all feeds in a specific category
 func GetCategoryFeeds(c *fiber.Ctx) error {
 	userID := c.Locals("userID").(int)
 	categoryIDStr := c.Params("id")
@@ -143,7 +143,6 @@ func GetCategoryFeeds(c *fiber.Ctx) error {
 		})
 	}
 
-	// Verify the category belongs to the user
 	_, err = database.GetUserCategoryByID(db, userID, categoryID)
 	if err != nil {
 		return c.Status(404).JSON(fiber.Map{
@@ -164,7 +163,7 @@ func GetCategoryFeeds(c *fiber.Ctx) error {
 	})
 }
 
-// GetCategoryFeedItems returns feed items from all feeds in a specific category
+// Returns feed items from all feeds in a specific category
 func GetCategoryFeedItems(c *fiber.Ctx) error {
 	userID := c.Locals("userID").(int)
 	categoryIDStr := c.Params("id")
@@ -177,15 +176,12 @@ func GetCategoryFeedItems(c *fiber.Ctx) error {
 		})
 	}
 
-	// Verify the category belongs to the user
 	_, err = database.GetUserCategoryByID(db, userID, categoryID)
 	if err != nil {
 		return c.Status(404).JSON(fiber.Map{
 			"error": "Category not found",
 		})
 	}
-
-	// Get feed items from all feeds in this category
 	query := `
 		SELECT fi.id, fi.source_id, fi.title, fi.url, fi.description, fi.author, fi.published_at, fi.score, fi.comments_count, fi.created_at, fs.name as source_name
 		FROM feed_items fi
@@ -223,9 +219,8 @@ func GetCategoryFeedItems(c *fiber.Ctx) error {
 	})
 }
 
-// AddFeedToCategory adds a feed source to a user's category
+// Adds a feed source to a user's category
 func AddFeedToCategory(c *fiber.Ctx) error {
-	// Debug logging at the very beginning
 	fmt.Printf("=== AddFeedToCategory handler called ===\n")
 	fmt.Printf("Method: %s, Path: %s\n", c.Method(), c.Path())
 	fmt.Printf("Params: %v\n", c.AllParams())
@@ -279,7 +274,7 @@ func AddFeedToCategory(c *fiber.Ctx) error {
 	})
 }
 
-// RemoveFeedFromCategory removes a feed source from a user's category
+// Removes a feed source from a user's category
 func RemoveFeedFromCategory(c *fiber.Ctx) error {
 	userID := c.Locals("userID").(int)
 	categoryIDStr := c.Params("categoryId")
@@ -312,9 +307,8 @@ func RemoveFeedFromCategory(c *fiber.Ctx) error {
 	})
 }
 
-// CreateAndAddFeedToCategory creates a new feed source and adds it to a category
+// Creates a new feed source and adds it to a category
 func CreateAndAddFeedToCategory(c *fiber.Ctx) error {
-	// Debug logging at the very beginning
 	fmt.Printf("=== CreateAndAddFeedToCategory handler called ===\n")
 	fmt.Printf("Method: %s, Path: %s\n", c.Method(), c.Path())
 	fmt.Printf("Params: %v\n", c.AllParams())
@@ -335,7 +329,7 @@ func CreateAndAddFeedToCategory(c *fiber.Ctx) error {
 	}
 
 	var req struct {
-		Type string `json:"type"` // "reddit" or "rss"
+		Type string `json:"type"`
 		URL  string `json:"url"`
 		Name string `json:"name"`
 	}
@@ -347,7 +341,6 @@ func CreateAndAddFeedToCategory(c *fiber.Ctx) error {
 		})
 	}
 
-	// Debug logging
 	fmt.Printf("Received request: type=%s, url=%s, name=%s\n", req.Type, req.URL, req.Name)
 
 	req.URL = strings.TrimSpace(req.URL)
@@ -362,10 +355,8 @@ func CreateAndAddFeedToCategory(c *fiber.Ctx) error {
 		})
 	}
 
-	// Create the feed source
 	var source *feeds.FeedSource
 	if req.Type == "reddit" {
-		// Extract subreddit name from URL
 		if !strings.Contains(req.URL, "reddit.com/r/") {
 			fmt.Printf("Reddit validation failed: URL='%s' doesn't contain 'reddit.com/r/'\n", req.URL)
 			return c.Status(400).JSON(fiber.Map{
@@ -384,7 +375,6 @@ func CreateAndAddFeedToCategory(c *fiber.Ctx) error {
 		})
 	}
 
-	// Add to category
 	err = database.AddFeedToUserCategory(db, userID, categoryID, source.ID)
 	if err != nil {
 		fmt.Printf("Failed to add feed to category: %v\n", err)
