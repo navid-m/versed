@@ -8,16 +8,13 @@ import (
 
 // Creates a new user in the database
 func CreateUser(email, username, password string) error {
-	// Build the query using Squirrel
 	sqlQuery, args, err := squirrel.Insert("users").
 		Columns("email", "username", "password").
 		Values(email, username, password).
 		ToSql()
-
 	if err != nil {
 		return err
 	}
-
 	_, err = db.Exec(sqlQuery, args...)
 	return err
 }
