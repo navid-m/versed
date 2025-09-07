@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"verse/database"
-	"verse/feeds"
+	"github.com/navid-m/versed/database"
+	"github.com/navid-m/versed/feeds"
 
 	"strings"
 

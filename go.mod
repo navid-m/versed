@@ -1,4 +1,4 @@
-module verse
+module github.com/navid-m/versed
 
 go 1.24.5
 

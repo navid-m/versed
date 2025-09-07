@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"strings"
 
-	"verse/database"
-	"verse/feeds"
+	"github.com/navid-m/versed/database"
+	"github.com/navid-m/versed/feeds"
 
 	"github.com/gofiber/fiber/v2"
 )

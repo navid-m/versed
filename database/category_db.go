@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"verse/models"
-	"verse/feeds"
+	"github.com/navid-m/versed/feeds"
+	"github.com/navid-m/versed/models"
 )
 
 // CreateUserCategory creates a new category for a user

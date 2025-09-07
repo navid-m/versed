@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"log"
 	"time"
-	"verse/database"
-	"verse/feeds"
+
+	"github.com/navid-m/versed/database"
+	"github.com/navid-m/versed/feeds"
 
 	_ "github.com/mattn/go-sqlite3"
 )

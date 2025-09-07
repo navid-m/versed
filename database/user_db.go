@@ -1,7 +1,7 @@
 package database
 
 import (
-	"verse/models"
+	"github.com/navid-m/versed/models"
 
 	"github.com/Masterminds/squirrel"
 )

@@ -6,9 +6,10 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
-	"verse/database"
-	"verse/feeds"
-	"verse/handlers"
+
+	"github.com/navid-m/versed/database"
+	"github.com/navid-m/versed/feeds"
+	"github.com/navid-m/versed/handlers"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/gofiber/fiber/v2"
