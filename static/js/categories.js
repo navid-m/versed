@@ -348,7 +348,7 @@ class CategoryManager {
         if (!feedUrl || !feedName) return;
 
         try {
-            const response = await fetch(`/api/categories/${categoryId}/feeds`, {
+            const response = await fetch(`/api/categories/${categoryId}/feeds/create`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
