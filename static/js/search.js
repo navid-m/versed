@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", function () {
    let searchTimeout;
 
    function renderSearchResults(results) {
-      console.log('Rendering search results:', results);
+      console.log("Rendering search results:", results);
       if (results.length === 0) {
          postsContainer.innerHTML = `
                 <div class="text-center py-12">
@@ -24,14 +24,13 @@ document.addEventListener("DOMContentLoaded", function () {
             `;
          return;
       }
-      
-      // Make sure comments are clickable
-      document.addEventListener('click', function(e) {
-         const commentBtn = e.target.closest('.view-comments-btn');
+
+      document.addEventListener("click", function (e) {
+         const commentBtn = e.target.closest(".view-comments-btn");
          if (commentBtn) {
             e.preventDefault();
             const postId = commentBtn.dataset.postId;
-            console.log('View comments clicked for post:', postId);
+            console.log("View comments clicked for post:", postId);
             window.location.href = `/post/${postId}`;
          }
       });
@@ -92,10 +91,18 @@ document.addEventListener("DOMContentLoaded", function () {
                                     </span>
                                     <button class="inline-flex items-center px-3 py-1 rounded-md text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors shadow-sm view-comments-btn" 
                                             data-post-id="${item.id}"
-                                            onclick="window.location.href='/post/${item.id}'; return false;"
+                                            onclick="window.location.href='/post/${
+                                               item.id
+                                            }'; return false;"
                                             title="View and post comments">
                                         <i class="far fa-comment-dots mr-1.5"></i>
-                                        ${item.comments_count > 0 ? item.comments_count + ' ' : ''}${item.comments_count === 1 ? 'Comment' : 'Comments'}
+                                        ${
+                                           item.comments_count > 0
+                                              ? item.comments_count + " "
+                                              : ""
+                                        }${
+            item.comments_count === 1 ? "Comment" : "Comments"
+         }
                                     </button>
                                 </div>
                             </div>
