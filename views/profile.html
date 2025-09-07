@@ -157,6 +157,21 @@
 
          html.classList.add("dark");
 
+         function htmlDecode(input) {
+            var doc = new DOMParser().parseFromString(input, "text/html");
+            return doc.documentElement.textContent;
+         }
+
+         document.addEventListener("DOMContentLoaded", function () {
+            const avatarElement = document.querySelector("[data-email]");
+            if (avatarElement) {
+               const email = avatarElement.getAttribute("data-email");
+               if (email && email.length > 0) {
+                  avatarElement.textContent = email.charAt(0).toUpperCase();
+               }
+            }
+         });
+
          darkModeToggle.addEventListener("click", () => {
             html.classList.toggle("dark");
             if (html.classList.contains("dark")) {
