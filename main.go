@@ -440,6 +440,10 @@ func main() {
 
 		log.Printf("User info - Email: %v, Username: %v", userEmail, userUsername)
 
+		if userEmail == nil {
+			return c.Redirect("/signin")
+		}
+
 		userID := c.Locals("userID").(int)
 		db := database.GetDB()
 
@@ -636,9 +640,7 @@ func main() {
 			"Username":     username,
 		}
 
-		if userEmail != nil {
-			data["Email"] = userEmail
-		}
+		data["Email"] = userEmail
 		if userUsername != nil {
 			data["Username"] = userUsername
 		}
@@ -655,7 +657,7 @@ func main() {
 	app.Get("/api/categories/:id/items", handlers.GetCategoryFeedItems)
 	app.Post("/api/categories/:id/feeds", handlers.AddFeedToCategory)
 	app.Delete("/api/categories/:categoryId/feeds/:feedId", handlers.RemoveFeedFromCategory)
-	app.Get("/api/categories/:id/feeds/create", handlers.CreateAndAddFeedToCategory)
+	app.Post("/api/categories/:id/feeds/create", handlers.CreateAndAddFeedToCategory)
 
 	app.Get("/post/:itemId", func(c *fiber.Ctx) error {
 		itemID := c.Params("itemId")

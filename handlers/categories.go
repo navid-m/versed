@@ -36,7 +36,12 @@ func GetUserCategories(c *fiber.Ctx) error {
 
 // Creates a new category for the authenticated user
 func CreateUserCategory(c *fiber.Ctx) error {
-	userID := c.Locals("userID").(int)
+	userID, ok := c.Locals("userID").(int)
+	if !ok {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Unauthorized",
+		})
+	}
 	db := database.GetDB()
 
 	var req struct {
@@ -69,7 +74,12 @@ func CreateUserCategory(c *fiber.Ctx) error {
 
 // Updates an existing category
 func UpdateUserCategory(c *fiber.Ctx) error {
-	userID := c.Locals("userID").(int)
+	userID, ok := c.Locals("userID").(int)
+	if !ok {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Unauthorized",
+		})
+	}
 	categoryIDStr := c.Params("id")
 	db := database.GetDB()
 
@@ -112,7 +122,12 @@ func UpdateUserCategory(c *fiber.Ctx) error {
 
 // Deletes a category and all its feed associations
 func DeleteUserCategory(c *fiber.Ctx) error {
-	userID := c.Locals("userID").(int)
+	userID, ok := c.Locals("userID").(int)
+	if !ok {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Unauthorized",
+		})
+	}
 	categoryIDStr := c.Params("id")
 	db := database.GetDB()
 
@@ -137,7 +152,12 @@ func DeleteUserCategory(c *fiber.Ctx) error {
 
 // Returns all feeds in a specific category
 func GetCategoryFeeds(c *fiber.Ctx) error {
-	userID := c.Locals("userID").(int)
+	userID, ok := c.Locals("userID").(int)
+	if !ok {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Unauthorized",
+		})
+	}
 	categoryIDStr := c.Params("id")
 	db := database.GetDB()
 
@@ -170,7 +190,12 @@ func GetCategoryFeeds(c *fiber.Ctx) error {
 
 // Returns feed items from all feeds in a specific category
 func GetCategoryFeedItems(c *fiber.Ctx) error {
-	userID := c.Locals("userID").(int)
+	userID, ok := c.Locals("userID").(int)
+	if !ok {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Unauthorized",
+		})
+	}
 	categoryIDStr := c.Params("id")
 	db := database.GetDB()
 
@@ -226,8 +251,14 @@ func AddFeedToCategory(c *fiber.Ctx) error {
 	fmt.Printf("Params: %v\n", c.AllParams())
 	fmt.Printf("Body: %s\n", string(c.Body()))
 
+	userID, ok := c.Locals("userID").(int)
+	if !ok {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Unauthorized",
+		})
+	}
+
 	var (
-		userID        = c.Locals("userID").(int)
 		categoryIDStr = c.Params("id")
 		db            = database.GetDB()
 	)
@@ -278,7 +309,12 @@ func AddFeedToCategory(c *fiber.Ctx) error {
 
 // Removes a feed source from a user's category
 func RemoveFeedFromCategory(c *fiber.Ctx) error {
-	userID := c.Locals("userID").(int)
+	userID, ok := c.Locals("userID").(int)
+	if !ok {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Unauthorized",
+		})
+	}
 	categoryIDStr := c.Params("categoryId")
 	feedSourceIDStr := c.Params("feedId")
 	db := database.GetDB()
@@ -318,7 +354,13 @@ func CreateAndAddFeedToCategory(c *fiber.Ctx) error {
 	rawBody := string(c.Body())
 	fmt.Printf("Raw Body: %s\n", rawBody)
 
-	userID := c.Locals("userID").(int)
+	userID, ok := c.Locals("userID").(int)
+	if !ok {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Unauthorized",
+		})
+	}
+
 	categoryIDStr := c.Params("id")
 	db := database.GetDB()
 
