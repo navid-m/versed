@@ -448,9 +448,12 @@
             const saveButtons = document.querySelectorAll(".save-button");
 
             saveButtons.forEach((button) => {
-               const feedId = button.getAttribute("data-feed-id");
-               checkSaveStatus(button, feedId);
-               button.addEventListener("click", handleSaveClick);
+               if (!button.hasAttribute('data-listener-attached')) {
+                  button.setAttribute("data-listener-attached", "true");
+                  const feedId = button.getAttribute("data-feed-id");
+                  checkSaveStatus(button, feedId);
+                  button.addEventListener("click", handleSaveClick);
+               }
             });
          });
 

@@ -130,15 +130,17 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         if (document.querySelector('[data-email]')) {
-            const saveButtons = document.querySelectorAll('.save-button');
+            const saveButtons = document.querySelectorAll('.save-button:not([data-listener-attached])');
             saveButtons.forEach(button => {
+                button.setAttribute("data-listener-attached", "true");
                 const feedId = button.getAttribute('data-feed-id');
                 checkSaveStatus(button, feedId);
                 button.addEventListener('click', debounce(async function() {
                     const action = this.getAttribute('data-action');
                     this.disabled = true;
-                    const originalHTML = this.innerHTML;
-                    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                    const icon = this.querySelector('i');
+                    const originalIconClass = icon.className;
+                    icon.className = 'fas fa-spinner fa-spin text-sm';
                     
                     try {
                         let response;
@@ -170,9 +172,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         toggleSaveButton(this);
                     } catch (error) {
                         console.error('Error updating reading list:', error);
+                        icon.className = originalIconClass;
                     } finally {
                         this.disabled = false;
-                        this.innerHTML = originalHTML;
                     }
                 }))
             });
@@ -183,15 +185,26 @@ document.addEventListener('DOMContentLoaded', function() {
             const response = await fetch(`/api/reading-list/check/${feedId}`);
             if (response.ok) {
                 const data = await response.json();
-                if (data.saved) {
-                    button.setAttribute('data-action', 'unsave');
-                    button.querySelector('i').className = 'fas fa-bookmark text-sm';
-                    button.className = 'p-1 text-blue-500 hover:text-red-500 transition-colors save-button';
-                    button.setAttribute('title', 'Remove from reading list');
-                }
+                setSaveButtonState(button, data.saved);
             }
         } catch (error) {
             console.error('Error checking save status:', error);
+        }
+    }
+    
+    function setSaveButtonState(button, isSaved) {
+        const icon = button.querySelector('i');
+
+        if (isSaved) {
+            button.setAttribute('data-action', 'unsave');
+            icon.className = 'fas fa-bookmark text-sm';
+            button.className = 'p-1 text-blue-500 hover:text-red-500 transition-colors save-button';
+            button.setAttribute('title', 'Remove from reading list');
+        } else {
+            button.setAttribute('data-action', 'save');
+            icon.className = 'far fa-bookmark text-sm';
+            button.className = 'p-1 text-gray-400 hover:text-blue-500 transition-colors save-button';
+            button.setAttribute('title', 'Save to reading list');
         }
     }
     function toggleSaveButton(button) {
