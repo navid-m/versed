@@ -88,3 +88,37 @@ SELECT fi.id, fi.source_id, fi.title, fi.url, fi.description, fi.author,
 FROM feed_items fi
 JOIN feed_sources fs ON fi.source_id = fs.id
 WHERE fi.id = ?`
+
+var FeedsQuery = `
+SELECT fs.id, fs.name, fs.url, fs.last_updated
+FROM feed_sources fs
+JOIN user_category_feeds ucf ON fs.id = ucf.feed_source_id
+WHERE ucf.user_id = ? AND ucf.category_id = ?
+`
+
+var SurpFeedsQuery = `
+SELECT fs.id, fs.name, fs.url
+FROM feed_sources fs
+JOIN user_category_feeds ucf ON fs.id = ucf.feed_source_id
+WHERE ucf.user_id = ? AND ucf.category_id = ?
+`
+
+var PostFeedNextQuery = `
+SELECT fi.id, fi.source_id, fi.title, fi.url, fi.description, fi.author, fi.published_at, fi.score, fi.comments_count, fi.created_at, fs.name as source_name
+FROM feed_items fi
+JOIN feed_sources fs ON fi.source_id = fs.id
+JOIN user_category_feeds ucf ON fs.id = ucf.feed_source_id
+WHERE ucf.user_id = ? AND ucf.category_id = ?
+ORDER BY fi.published_at DESC
+LIMIT 50
+`
+
+var ResetQuery = `
+UPDATE feed_sources
+SET last_updated = datetime('2000-01-01 00:00:00')
+WHERE id IN (
+	SELECT feed_source_id
+	FROM user_category_feeds
+	WHERE user_id = ? AND category_id = ?
+)
+`

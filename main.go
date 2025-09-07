@@ -476,13 +476,7 @@ func main() {
 
 		log.Printf("Found category ID: %d", categoryID)
 
-		feedsQuery := `
-			SELECT fs.id, fs.name, fs.url, fs.last_updated
-			FROM feed_sources fs
-			JOIN user_category_feeds ucf ON fs.id = ucf.feed_source_id
-			WHERE ucf.user_id = ? AND ucf.category_id = ?
-		`
-		feedRows, err := db.Query(feedsQuery, userID, categoryID)
+		feedRows, err := db.Query(database.FeedsQuery, userID, categoryID)
 		feedCount := 0
 		if err != nil {
 			log.Printf("Failed to get category feeds: %v", err)
@@ -503,17 +497,8 @@ func main() {
 			feedRows.Close()
 		}
 		log.Printf("Total feeds in category: %d", feedCount)
-		query := `
-			SELECT fi.id, fi.source_id, fi.title, fi.url, fi.description, fi.author, fi.published_at, fi.score, fi.comments_count, fi.created_at, fs.name as source_name
-			FROM feed_items fi
-			JOIN feed_sources fs ON fi.source_id = fs.id
-			JOIN user_category_feeds ucf ON fs.id = ucf.feed_source_id
-			WHERE ucf.user_id = ? AND ucf.category_id = ?
-			ORDER BY fi.published_at DESC
-			LIMIT 50
-		`
 
-		rows, err := db.Query(query, userID, categoryID)
+		rows, err := db.Query(database.PostFeedNextQuery, userID, categoryID)
 		if err != nil {
 			log.Printf("Database query error: %v", err)
 		} else {
@@ -549,16 +534,7 @@ func main() {
 		if feedCount > 0 && len(items) == 0 {
 			log.Printf("No feed items found, triggering feed processing for category feeds...")
 
-			resetQuery := `
-				UPDATE feed_sources
-				SET last_updated = datetime('2000-01-01 00:00:00')
-				WHERE id IN (
-					SELECT feed_source_id
-					FROM user_category_feeds
-					WHERE user_id = ? AND category_id = ?
-				)
-			`
-			result, err := db.Exec(resetQuery, userID, categoryID)
+			result, err := db.Exec(database.ResetQuery, userID, categoryID)
 			if err != nil {
 				log.Printf("Failed to reset feed timestamps: %v", err)
 			} else {
@@ -571,13 +547,8 @@ func main() {
 						name string
 						url  string
 					}
-					feedsQuery := `
-						SELECT fs.id, fs.name, fs.url
-						FROM feed_sources fs
-						JOIN user_category_feeds ucf ON fs.id = ucf.feed_source_id
-						WHERE ucf.user_id = ? AND ucf.category_id = ?
-					`
-					feedRows, err := db.Query(feedsQuery, userID, categoryID)
+
+					feedRows, err := db.Query(database.SurpFeedsQuery, userID, categoryID)
 					if err != nil {
 						log.Printf("Failed to get category feeds: %v", err)
 					} else {
