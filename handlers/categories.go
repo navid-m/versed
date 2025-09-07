@@ -187,17 +187,12 @@ func GetCategoryFeedItems(c *fiber.Ctx) error {
 			"error": "Category not found",
 		})
 	}
-	query := `
-		SELECT fi.id, fi.source_id, fi.title, fi.url, fi.description, fi.author, fi.published_at, fi.score, fi.comments_count, fi.created_at, fs.name as source_name
-		FROM feed_items fi
-		JOIN feed_sources fs ON fi.source_id = fs.id
-		JOIN user_category_feeds ucf ON fs.id = ucf.feed_source_id
-		WHERE ucf.user_id = ? AND ucf.category_id = ?
-		ORDER BY fi.published_at DESC
-		LIMIT 50
-	`
+	sql, args, err := database.BuildFiQuery(userID, categoryID, c)
+	if err != nil {
+		return err
+	}
 
-	rows, err := db.Query(query, userID, categoryID)
+	rows, err := db.Query(sql, args...)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": "Failed to get category feed items",
@@ -314,7 +309,6 @@ func RemoveFeedFromCategory(c *fiber.Ctx) error {
 
 // Creates a new feed source and adds it to a category
 func CreateAndAddFeedToCategory(c *fiber.Ctx) error {
-	// Debug logging at the very beginning
 	fmt.Printf("=== CreateAndAddFeedToCategory handler called ===\n")
 	fmt.Printf("Method: %s, Path: %s\n", c.Method(), c.Path())
 	fmt.Printf("Params: %v\n", c.AllParams())
@@ -337,7 +331,7 @@ func CreateAndAddFeedToCategory(c *fiber.Ctx) error {
 	}
 
 	var req struct {
-		Type string `json:"type"` // "reddit" or "rss"
+		Type string `json:"type"`
 		URL  string `json:"url"`
 		Name string `json:"name"`
 	}
@@ -350,7 +344,6 @@ func CreateAndAddFeedToCategory(c *fiber.Ctx) error {
 		})
 	}
 
-	// Debug logging
 	fmt.Printf("Parsed request: type='%s', url='%s', name='%s'\n", req.Type, req.URL, req.Name)
 
 	req.URL = strings.TrimSpace(req.URL)
@@ -372,10 +365,8 @@ func CreateAndAddFeedToCategory(c *fiber.Ctx) error {
 		})
 	}
 
-	// Create the feed source
 	var source *feeds.FeedSource
 	if req.Type == "reddit" {
-		// Extract subreddit name from URL
 		if !strings.Contains(req.URL, "reddit.com/r/") {
 			fmt.Printf("Reddit validation failed: URL='%s' doesn't contain 'reddit.com/r/'\n", req.URL)
 			return c.Status(400).JSON(fiber.Map{
@@ -394,7 +385,6 @@ func CreateAndAddFeedToCategory(c *fiber.Ctx) error {
 		})
 	}
 
-	// Add to category
 	err = database.AddFeedToUserCategory(db, userID, categoryID, source.ID)
 	if err != nil {
 		fmt.Printf("Failed to add feed to category: %v\n", err)
