@@ -6,3 +6,5 @@ vendor/
 *.db
 tmp
 .db-journal
+.data.db-shm
+.data.db-wal
