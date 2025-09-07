@@ -3,10 +3,10 @@ package database
 import "verse/models"
 
 // Creates a new user in the database
-func CreateUser(email, password string) error {
+func CreateUser(email, username, password string) error {
 	var (
-		query  = `INSERT INTO users (email, password) VALUES (?, ?)`
-		_, err = db.Exec(query, email, password)
+		query  = `INSERT INTO users (email, username, password) VALUES (?, ?, ?)`
+		_, err = db.Exec(query, email, username, password)
 	)
 	return err
 }
@@ -14,15 +14,22 @@ func CreateUser(email, password string) error {
 // Retrieves the user object given some email address
 func GetUserByEmail(email string) (*models.User, error) {
 	var (
-		query = `SELECT id, email, password FROM users WHERE email = ?`
+		query = `SELECT id, email, username, password FROM users WHERE email = ?`
 		row   = db.QueryRow(query, email)
 		user  = &models.User{}
-		err   = row.Scan(&user.ID, &user.Email, &user.Password)
+		err   = row.Scan(&user.ID, &user.Email, &user.Username, &user.Password)
 	)
 	if err != nil {
 		return nil, err
 	}
 	return user, nil
+}
+
+// Updates user information in the database
+func UpdateUser(userID int, email, username, password string) error {
+	query := `UPDATE users SET email = ?, username = ?, password = ? WHERE id = ?`
+	_, err := db.Exec(query, email, username, password, userID)
+	return err
 }
 
 // Adds a feed item to user's reading list

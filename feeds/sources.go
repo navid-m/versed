@@ -86,8 +86,10 @@ func cleanRedditTitle(title string) string {
 	return re.ReplaceAllString(title, "")
 }
 
+// HN feed structure.
 type HackerNewsFeed struct{}
 
+// Get the feed URL for HN.
 func (h *HackerNewsFeed) GetFeedURL() string {
 	return "https://hnrss.org/frontpage"
 }
@@ -97,6 +99,7 @@ func (h *HackerNewsFeed) GetSourceName() string {
 	return "Hacker News"
 }
 
+// Parses the HN RSS feed.
 func (h *HackerNewsFeed) ParseFeed(content []byte, sourceID int) ([]FeedItem, error) {
 	parser := gofeed.NewParser()
 	feed, err := parser.ParseString(string(content))
@@ -205,6 +208,7 @@ func (l *LobsterFeed) ParseFeed(content []byte, sourceID int) ([]FeedItem, error
 	return items, nil
 }
 
+// Extracts score from Lobster's HTML description.
 func extractLobsterScore(description string) int {
 	re := regexp.MustCompile(`(\d+)\s*points?`)
 	matches := re.FindStringSubmatch(description)

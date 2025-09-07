@@ -47,9 +47,11 @@ func main() {
 		if err == nil {
 			userID := sess.Get("user_id")
 			userEmail := sess.Get("user_email")
+			userUsername := sess.Get("user_username")
 			if userID != nil && userEmail != nil {
 				c.Locals("userID", userID)
 				c.Locals("userEmail", userEmail)
+				c.Locals("userUsername", userUsername)
 			}
 		}
 		return c.Next()
@@ -59,6 +61,7 @@ func main() {
 
 	app.Get("/", func(c *fiber.Ctx) error {
 		userEmail := c.Locals("userEmail")
+		userUsername := c.Locals("userUsername")
 
 		feedItems, err := feeds.GetAllFeedItems(database.GetDB(), 20)
 		if err != nil {
@@ -81,6 +84,9 @@ func main() {
 		if userEmail != nil {
 			data["Email"] = userEmail
 		}
+		if userUsername != nil {
+			data["Username"] = userUsername
+		}
 		return c.Render("index", data)
 	})
 	app.Get("/signin", func(c *fiber.Ctx) error {
@@ -92,11 +98,12 @@ func main() {
 
 	app.Post("/signup", func(c *fiber.Ctx) error {
 		email := c.FormValue("email")
+		username := c.FormValue("username")
 		password := c.FormValue("password")
-		if email == "" || password == "" {
-			return c.Status(400).SendString("Email and password are required")
+		if email == "" || username == "" || password == "" {
+			return c.Status(400).SendString("Email, username, and password are required")
 		}
-		if err := database.CreateUser(email, password); err != nil {
+		if err := database.CreateUser(email, username, password); err != nil {
 			return c.Status(500).SendString("Failed to create user")
 		}
 		return c.Redirect("/")
@@ -121,6 +128,7 @@ func main() {
 		}
 		sess.Set("user_id", user.ID)
 		sess.Set("user_email", user.Email)
+		sess.Set("user_username", user.Username)
 		if err := sess.Save(); err != nil {
 			return c.Status(500).SendString("Failed to save session")
 		}
@@ -133,6 +141,7 @@ func main() {
 		if err == nil {
 			sess.Delete("user_id")
 			sess.Delete("user_email")
+			sess.Delete("user_username")
 			sess.Save()
 		}
 		return c.Redirect("/")
@@ -270,6 +279,45 @@ func main() {
 		})
 	})
 
+	app.Get("/reading-list", func(c *fiber.Ctx) error {
+		userEmail := c.Locals("userEmail")
+		userUsername := c.Locals("userUsername")
+		if userEmail == nil {
+			return c.Redirect("/signin")
+		}
+
+		userID := c.Locals("userID").(int)
+		rows, err := database.GetDB().Query(database.ReadingListQuery, userID)
+		if err != nil {
+			log.Printf("Failed to get reading list: %v", err)
+		}
+		defer rows.Close()
+
+		var feedItems []feeds.FeedItem
+		for rows.Next() {
+			var item feeds.FeedItem
+			var sourceName string
+			err := rows.Scan(&item.ID, &item.SourceID, &item.Title, &item.URL, &item.Description,
+				&item.Author, &item.PublishedAt, &item.Score, &item.CommentsCount, &item.CreatedAt, &sourceName)
+			if err != nil {
+				log.Printf("Failed to scan reading list item: %v", err)
+			}
+			if strings.TrimSpace(item.Description) == "" {
+				item.Description = "No description."
+			}
+			item.SourceName = sourceName
+			feedItems = append(feedItems, item)
+		}
+
+		data := fiber.Map{
+			"FeedItems": feedItems,
+			"Email":     userEmail,
+			"Username":  userUsername,
+		}
+
+		return c.Render("reading-list", data)
+	})
+
 	app.Get("/api/reading-list", func(c *fiber.Ctx) error {
 		userID, ok := c.Locals("userID").(int)
 		if !ok {
@@ -333,41 +381,63 @@ func main() {
 
 	app.Get("/api/search", handlers.SearchFeedItems)
 
-	app.Get("/reading-list", func(c *fiber.Ctx) error {
+	app.Get("/profile", func(c *fiber.Ctx) error {
+		userID := c.Locals("userID")
 		userEmail := c.Locals("userEmail")
-		if userEmail == nil {
+		userUsername := c.Locals("userUsername")
+
+		if userID == nil || userEmail == nil {
 			return c.Redirect("/signin")
 		}
 
-		userID := c.Locals("userID").(int)
-		rows, err := database.GetDB().Query(database.ReadingListQuery, userID)
-		if err != nil {
-			log.Printf("Failed to get reading list: %v", err)
-		}
-		defer rows.Close()
-
-		var feedItems []feeds.FeedItem
-		for rows.Next() {
-			var item feeds.FeedItem
-			var sourceName string
-			err := rows.Scan(&item.ID, &item.SourceID, &item.Title, &item.URL, &item.Description,
-				&item.Author, &item.PublishedAt, &item.Score, &item.CommentsCount, &item.CreatedAt, &sourceName)
-			if err != nil {
-				log.Printf("Failed to scan reading list item: %v", err)
-			}
-			if strings.TrimSpace(item.Description) == "" {
-				item.Description = "No description."
-			}
-			item.SourceName = sourceName
-			feedItems = append(feedItems, item)
-		}
-
 		data := fiber.Map{
-			"FeedItems": feedItems,
-			"Email":     userEmail,
+			"Email":    userEmail,
+			"Username": userUsername,
 		}
 
-		return c.Render("reading-list", data)
+		return c.Render("profile", data)
+	})
+
+	app.Post("/profile/update", func(c *fiber.Ctx) error {
+		userID := c.Locals("userID")
+		if userID == nil {
+			return c.Redirect("/signin")
+		}
+
+		var (
+			email           = c.FormValue("email")
+			username        = c.FormValue("username")
+			currentPassword = c.FormValue("current_password")
+			newPassword     = c.FormValue("new_password")
+			confirmPassword = c.FormValue("confirm_password")
+		)
+
+		if email == "" || username == "" || currentPassword == "" {
+			return c.Status(400).SendString("Email, username, and current password are required")
+		}
+		user, err := database.GetUserByEmail(c.Locals("userEmail").(string))
+		if err != nil || user.Password != currentPassword {
+			return c.Status(401).SendString("Invalid current password")
+		}
+		password := user.Password
+		if newPassword != "" {
+			if newPassword != confirmPassword {
+				return c.Status(400).SendString("New passwords do not match")
+			}
+			password = newPassword
+		}
+		err = database.UpdateUser(userID.(int), email, username, password)
+		if err != nil {
+			return c.Status(500).SendString("Failed to update profile")
+		}
+		sess, err := store.Get(c)
+		if err == nil {
+			sess.Set("user_email", email)
+			sess.Set("user_username", username)
+			sess.Save()
+		}
+
+		return c.Redirect("/profile?success=1")
 	})
 
 	log.Fatal(app.Listen(":3000"))

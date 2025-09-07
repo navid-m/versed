@@ -28,6 +28,7 @@ func createTables() error {
 		`CREATE TABLE IF NOT EXISTS users (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			email TEXT UNIQUE NOT NULL,
+			username TEXT,
 			password TEXT NOT NULL
 		)`,
 		`CREATE TABLE IF NOT EXISTS feed_sources (
