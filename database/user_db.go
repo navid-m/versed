@@ -1,16 +1,25 @@
 package database
 
 import (
+	"database/sql"
+
 	"github.com/navid-m/versed/models"
 
 	"github.com/Masterminds/squirrel"
+	"golang.org/x/crypto/bcrypt"
 )
 
-// Creates a new user in the database
+// Creates a new user in the database with a hashed password
 func CreateUser(email, username, password string) error {
+	// Hash the password before storing
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
 	sqlQuery, args, err := squirrel.Insert("users").
 		Columns("email", "username", "password").
-		Values(email, username, password).
+		Values(email, username, string(hashedPassword)).
 		ToSql()
 	if err != nil {
 		return err
@@ -101,33 +110,44 @@ func EnsureFeedSourceExists(name, url string) (int, error) {
 
 // Retrieves the user object given some email address
 func GetUserByEmail(email string) (*models.User, error) {
-	sqlQuery, args, err := squirrel.Select("id", "email", "username", "password").
-		From("users").
-		Where(squirrel.Eq{"email": email}).
-		ToSql()
+	var user models.User
+	var isAdmin sql.NullBool
+
+	err := db.QueryRow("SELECT id, email, username, password, is_admin FROM users WHERE email = ?", email).
+		Scan(&user.ID, &user.Email, &user.Username, &user.Password, &isAdmin)
 
 	if err != nil {
 		return nil, err
 	}
 
-	row := db.QueryRow(sqlQuery, args...)
-	user := &models.User{}
-	err = row.Scan(&user.ID, &user.Email, &user.Username, &user.Password)
-	if err != nil {
-		return nil, err
-	}
-	return user, nil
+	// Convert sql.NullBool to bool with false as default
+	user.IsAdmin = isAdmin.Bool
+
+	return &user, nil
+}
+
+// VerifyPassword checks if the provided password matches the hashed password
+func VerifyPassword(hashedPassword, password string) error {
+	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 }
 
 // Updates user information in the database
 func UpdateUser(userID int, email, username, password string) error {
-	sqlQuery, args, err := squirrel.Update("users").
+	update := squirrel.Update("users").
 		Set("email", email).
 		Set("username", username).
-		Set("password", password).
-		Where(squirrel.Eq{"id": userID}).
-		ToSql()
+		Where(squirrel.Eq{"id": userID})
 
+	// Only update password if it's not empty
+	if password != "" {
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+		if err != nil {
+			return err
+		}
+		update = update.Set("password", string(hashedPassword))
+	}
+
+	sqlQuery, args, err := update.ToSql()
 	if err != nil {
 		return err
 	}

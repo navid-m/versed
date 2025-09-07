@@ -179,7 +179,17 @@ func main() {
 			return c.Status(400).SendString("Email and password are required")
 		}
 		user, err := database.GetUserByEmail(email)
-		if err != nil || user.Password != password {
+		if err != nil {
+			// Log the error but don't reveal that the email doesn't exist
+			log.Printf("Login failed for email %s: %v", email, err)
+			return c.Status(401).SendString("Invalid credentials")
+		}
+
+		// Verify the password using bcrypt
+		err = database.VerifyPassword(user.Password, password)
+		if err != nil {
+			// Password doesn't match
+			log.Printf("Invalid password attempt for user %s", email)
 			return c.Status(401).SendString("Invalid credentials")
 		}
 
