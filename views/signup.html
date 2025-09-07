@@ -1,30 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
    <head>
-      <title>Versed - Content Aggregator</title>
+      <title>Versed</title>
       <meta charset="UTF-8" />
-      <meta
-         name="viewport"
-         content="width=device-width, initial-scale=1.0"
-      />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link
          rel="stylesheet"
          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
       />
       <script src="https://cdn.tailwindcss.com"></script>
-      <script>
-         tailwind.config = {
-            darkMode: "class",
-            theme: {
-               extend: {
-                  colors: {
-                     brand: "#1f2937",
-                     "brand-light": "#374151",
-                  },
-               },
-            },
-         };
-      </script>
+      <script src="static/js/tw-config-alt.js"></script>
    </head>
    <body
       class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200"
@@ -61,9 +46,7 @@
                <form class="mt-8 space-y-6" action="/signup" method="POST">
                   <div class="rounded-md shadow-sm -space-y-px">
                      <div>
-                        <label for="username" class="sr-only">
-                           Username
-                        </label>
+                        <label for="username" class="sr-only"> Username </label>
                         <input
                            id="username"
                            name="username"
@@ -89,9 +72,7 @@
                         />
                      </div>
                      <div>
-                        <label for="password" class="sr-only">
-                           Password
-                        </label>
+                        <label for="password" class="sr-only"> Password </label>
                         <input
                            id="password"
                            name="password"
@@ -133,28 +114,12 @@
 
       {% include "partials/footer.html" %}
 
-      <script>
-         const darkModeToggle = document.getElementById("darkModeToggle");
-         const toggleSlider = document.getElementById("toggleSlider");
-         const html = document.documentElement;
-
-         html.classList.add("dark");
-
-         darkModeToggle.addEventListener("click", () => {
-            html.classList.toggle("dark");
-            if (html.classList.contains("dark")) {
-               toggleSlider.classList.remove("translate-x-6");
-               toggleSlider.classList.add("translate-x-1");
-            } else {
-               toggleSlider.classList.remove("translate-x-1");
-               toggleSlider.classList.add("translate-x-6");
-            }
-         });
-      </script>
+      <script src="static/js/sign-up.js"></script>
 
       <style>
          .line-clamp-2 {
             display: -webkit-box;
+            line-clamp: 2;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
