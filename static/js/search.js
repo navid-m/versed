@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", function () {
    let searchTimeout;
 
    function renderSearchResults(results) {
+      console.log('Rendering search results:', results);
       if (results.length === 0) {
          postsContainer.innerHTML = `
                 <div class="text-center py-12">
@@ -23,6 +24,17 @@ document.addEventListener("DOMContentLoaded", function () {
             `;
          return;
       }
+      
+      // Make sure comments are clickable
+      document.addEventListener('click', function(e) {
+         const commentBtn = e.target.closest('.view-comments-btn');
+         if (commentBtn) {
+            e.preventDefault();
+            const postId = commentBtn.dataset.postId;
+            console.log('View comments clicked for post:', postId);
+            window.location.href = `/post/${postId}`;
+         }
+      });
 
       let html = "";
       results.forEach((item) => {
@@ -58,8 +70,7 @@ document.addEventListener("DOMContentLoaded", function () {
                                 <div class="relative mb-4 modern-description">
                                     <div class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed line-height-6 font-medium tracking-wide line-clamp-3 bg-gradient-to-br from-gray-50/80 to-white/50 dark:from-gray-800/60 dark:to-gray-700/40 backdrop-blur-sm rounded-lg px-4 py-3 border-l-4 border-blue-500/30 dark:border-blue-400/40 shadow-sm">
                                         <p>${
-                                           item.description ||
-                                           "No description available"
+                                           item.description || "No description."
                                         }</p>
                                     </div>
                                     <div class="absolute inset-0 bg-gradient-to-r from-blue-50/20 to-indigo-50/20 dark:from-blue-900/10 dark:to-indigo-900/10 rounded-lg blur-xl transform scale-105 opacity-60"></div>
@@ -79,9 +90,12 @@ document.addEventListener("DOMContentLoaded", function () {
                                     <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
                                         ${item.source_name || "Unknown source"}
                                     </span>
-                                    <button class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors view-comments-btn" data-post-id="${item.id}">
-                                        <i class="far fa-comments mr-1"></i>
-                                        View comments (${item.comments_count || 0})
+                                    <button class="inline-flex items-center px-3 py-1 rounded-md text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors shadow-sm view-comments-btn" 
+                                            data-post-id="${item.id}"
+                                            onclick="window.location.href='/post/${item.id}'; return false;"
+                                            title="View and post comments">
+                                        <i class="far fa-comment-dots mr-1.5"></i>
+                                        ${item.comments_count > 0 ? item.comments_count + ' ' : ''}${item.comments_count === 1 ? 'Comment' : 'Comments'}
                                     </button>
                                 </div>
                             </div>
