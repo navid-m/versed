@@ -281,7 +281,7 @@ document.addEventListener("DOMContentLoaded", function () {
             postsContainer.innerHTML = `
                     <div class="text-center py-12">
                         <div class="w-16 h-16 mx-auto mb-4 text-red-400">
-                            <i class="fas fa-ban text-4xl"></i>
+                            <img src="/static/img/tumbleweed.png" alt="Tumbleweed" class="w-16 h-16 object-contain">
                         </div>
                         <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
                             Tumbleweed...
