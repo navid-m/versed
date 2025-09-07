@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"path/filepath"
 	"strings"
@@ -104,6 +105,7 @@ func main() {
 			return c.Status(400).SendString("Email, username, and password are required")
 		}
 		if err := database.CreateUser(email, username, password); err != nil {
+			fmt.Println(err)
 			return c.Status(500).SendString("Failed to create user")
 		}
 		return c.Redirect("/")
@@ -246,7 +248,7 @@ func main() {
 
 		return c.JSON(fiber.Map{
 			"success": true,
-			"saved": saved,
+			"saved":   saved,
 		})
 	})
 
