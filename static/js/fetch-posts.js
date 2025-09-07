@@ -87,6 +87,15 @@ document.addEventListener("DOMContentLoaded", function () {
                button.addEventListener("click", handleSaveClick);
             });
 
+            // Attach voting listeners to new posts
+            const newVoteButtons = postsContainer.querySelectorAll(
+               "[data-vote-type]:not([data-vote-listener-attached])"
+            );
+            newVoteButtons.forEach((button) => {
+               button.setAttribute("data-vote-listener-attached", "true");
+               button.addEventListener("click", handleVoteClick);
+            });
+
             currentPage++;
          } else {
             loadMoreButton.textContent = "No more posts to load";
@@ -186,5 +195,39 @@ function setSaveButtonState(button, isSaved) {
       button.className =
          "p-1 text-gray-400 hover:text-blue-500 transition-colors save-button";
       button.setAttribute("title", "Save to reading list");
+   }
+}
+
+// Voting handler
+async function handleVoteClick(event) {
+   const button = event.currentTarget;
+   const feedId = button.getAttribute("data-feed-id");
+   const voteType = button.getAttribute("data-vote-type");
+
+   try {
+      const response = await fetch("/api/vote", {
+         method: "POST",
+         headers: {
+            "Content-Type": "application/json",
+         },
+         body: JSON.stringify({
+            feed_id: feedId,
+            vote_type: voteType,
+         }),
+      });
+
+      if (!response.ok) {
+         throw new Error("Failed to submit vote");
+      }
+
+      const data = await response.json();
+      const scoreElement = button.parentElement.querySelector(
+         ".text-xs.font-medium.text-orange-500"
+      );
+      if (scoreElement) {
+         scoreElement.textContent = data.new_score;
+      }
+   } catch (error) {
+      console.error("Error submitting vote:", error);
    }
 }
