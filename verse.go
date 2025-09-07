@@ -476,13 +476,12 @@ func main() {
 
 		log.Printf("Found %d feed items for category", len(items))
 		if len(items) > 0 {
-			log.Print("Sample item: %s", items[0].Title)
+			log.Printf("Sample item: %s", items[0].Title)
 		}
 
 		if feedCount > 0 && len(items) == 0 {
 			log.Printf("No feed items found, triggering feed processing for category feeds...")
 
-			// Reset timestamps for feeds in this category to force processing
 			resetQuery := `
 				UPDATE feed_sources
 				SET last_updated = datetime('2000-01-01 00:00:00')
@@ -498,8 +497,6 @@ func main() {
 			} else {
 				rowsAffected, _ := result.RowsAffected()
 				log.Printf("Reset timestamps for %d feeds in category", rowsAffected)
-
-				// After resetting timestamps, try to immediately process the feeds
 				if rowsAffected > 0 {
 					log.Printf("Attempting immediate feed processing...")
 					var feedList []struct {
@@ -536,7 +533,6 @@ func main() {
 					for _, feed := range feedList {
 						log.Printf("Processing feed: %s (%s)", feed.name, feed.url)
 
-						// Check if feed needs update (should be true after reset)
 						source := feeds.FeedSource{
 							ID:             feed.id,
 							Name:           feed.name,
@@ -548,14 +544,12 @@ func main() {
 						if feeds.ShouldUpdateFeed(source) {
 							log.Printf("Feed needs update, fetching...")
 
-							// Fetch and process the feed
 							content, err := feeds.FetchFeed(feed.url)
 							if err != nil {
 								log.Printf("Failed to fetch feed %s: %v", feed.url, err)
 								continue
 							}
 
-							// Parse the feed
 							parsedItems, err := feeds.ParseFeedWithParser(content, feed.id, feed.name)
 							if err != nil {
 								log.Printf("Failed to parse feed %s: %v", feed.url, err)
@@ -563,16 +557,12 @@ func main() {
 							}
 
 							log.Printf("Parsed %d items from feed %s", len(parsedItems), feed.name)
-
-							// Save the items
 							if len(parsedItems) > 0 {
 								err = feeds.SaveFeedItems(db, parsedItems)
 								if err != nil {
 									log.Printf("Failed to save feed items for %s: %v", feed.name, err)
 									continue
 								}
-
-								// Update the feed timestamp
 								err = feeds.UpdateFeedSourceTimestamp(db, feed.id)
 								if err != nil {
 									log.Printf("Failed to update timestamp for feed %s: %v", feed.name, err)
