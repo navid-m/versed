@@ -86,8 +86,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
                button.addEventListener("click", handleSaveClick);
             });
-
-            // Attach voting listeners to new posts
             const newVoteButtons = postsContainer.querySelectorAll(
                "[data-vote-type]:not([data-vote-listener-attached])"
             );
