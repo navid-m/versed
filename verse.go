@@ -4,6 +4,7 @@ import (
 	"log"
 	"path/filepath"
 	"strings"
+	"time"
 	"verse/database"
 	"verse/feeds"
 	"verse/handlers"
@@ -26,7 +27,12 @@ func main() {
 	feeds.DebugFeeds(database.GetDB())
 
 	var (
-		store        = session.New(session.Config{KeyLookup: "cookie:session_id"})
+		customStorage = database.NewDBSessionStorage(database.GetDB())
+		store         = session.New(session.Config{
+			Storage:    customStorage,
+			KeyLookup:  "cookie:session_id",
+			Expiration: 24 * time.Hour,
+		})
 		viewsPath, _ = filepath.Abs("./views")
 		engine       = django.New(viewsPath, ".html")
 		app          = fiber.New(fiber.Config{Views: engine})

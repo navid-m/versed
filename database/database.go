@@ -67,6 +67,13 @@ func createTables() error {
 			FOREIGN KEY (user_id) REFERENCES users(id),
 			FOREIGN KEY (item_id) REFERENCES feed_items(id)
 		)`,
+		`CREATE TABLE IF NOT EXISTS sessions (
+			session_id TEXT PRIMARY KEY,
+			data TEXT NOT NULL,
+			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			expires_at DATETIME
+		)`,
 	}
 
 	for _, query := range queries {
