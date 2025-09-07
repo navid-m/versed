@@ -670,6 +670,8 @@ func main() {
 			})
 		}
 
+		log.Printf("Graph API called for user %d", userID)
+
 		db := database.GetDB()
 		categoryRows, err := db.Query("SELECT id, name FROM user_categories WHERE user_id = ?", userID)
 		if err != nil {
@@ -707,30 +709,37 @@ func main() {
 				LIMIT 50
 			`, userID, catID)
 			if err != nil {
+				log.Printf("Error querying posts for category %d: %v", catID, err)
 				continue
 			}
 
+			postCount := 0
 			for postRows.Next() {
-				var postID int
+				var postID string
 				var postTitle string
 				err := postRows.Scan(&postID, &postTitle)
 				if err != nil {
+					log.Printf("Error scanning post row: %v", err)
 					continue
 				}
+				postCount++
 
 				nodes = append(nodes, fiber.Map{
-					"id":   fmt.Sprintf("post_%d", postID),
+					"id":   fmt.Sprintf("post_%s", postID),
 					"name": postTitle,
 					"type": "post",
 				})
 
 				links = append(links, fiber.Map{
 					"source": fmt.Sprintf("cat_%d", catID),
-					"target": fmt.Sprintf("post_%d", postID),
+					"target": fmt.Sprintf("post_%s", postID),
 				})
 			}
 			postRows.Close()
+			log.Printf("Category %d (%s): %d posts", catID, catName, postCount)
 		}
+
+		log.Printf("Graph API returning %d nodes, %d links", len(nodes), len(links))
 
 		return c.JSON(fiber.Map{
 			"nodes": nodes,
