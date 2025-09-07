@@ -232,6 +232,27 @@ type FeedSourceInterface interface {
 	ParseFeed(content []byte, sourceID int) ([]FeedItem, error)
 }
 
+// GenericRSSFeed represents a generic RSS feed from any URL
+type GenericRSSFeed struct {
+	URL  string
+	Name string
+}
+
+// GetFeedURL returns the RSS URL for the generic feed
+func (g *GenericRSSFeed) GetFeedURL() string {
+	return g.URL
+}
+
+// GetSourceName returns the source name for the generic feed
+func (g *GenericRSSFeed) GetSourceName() string {
+	return g.Name
+}
+
+// ParseFeed parses the RSS feed using the generic parser
+func (g *GenericRSSFeed) ParseFeed(content []byte, sourceID int) ([]FeedItem, error) {
+	return ParseFeedWithParser(content, sourceID, g.Name)
+}
+
 // Creates a new feed manager with default sources.
 func NewFeedManager() *FeedManager {
 	return &FeedManager{
@@ -241,5 +262,18 @@ func NewFeedManager() *FeedManager {
 			&HackerNewsFeed{},
 			&LobsterFeed{},
 		},
+	}
+}
+
+// CreateRedditFeed creates a new Reddit feed for a given subreddit
+func CreateRedditFeed(subreddit string) FeedSourceInterface {
+	return &RedditFeed{Subreddit: subreddit}
+}
+
+// CreateGenericRSSFeed creates a generic RSS feed from a URL
+func CreateGenericRSSFeed(url, name string) *GenericRSSFeed {
+	return &GenericRSSFeed{
+		URL:  url,
+		Name: name,
 	}
 }

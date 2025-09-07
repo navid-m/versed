@@ -386,6 +386,16 @@ func main() {
 
 	app.Get("/api/search", handlers.SearchFeedItems)
 
+	// Category routes
+	app.Get("/api/categories", handlers.GetUserCategories)
+	app.Post("/api/categories", handlers.CreateUserCategory)
+	app.Put("/api/categories/:id", handlers.UpdateUserCategory)
+	app.Delete("/api/categories/:id", handlers.DeleteUserCategory)
+	app.Get("/api/categories/:id/feeds", handlers.GetCategoryFeeds)
+	app.Post("/api/categories/:id/feeds", handlers.AddFeedToCategory)
+	app.Delete("/api/categories/:categoryId/feeds/:feedId", handlers.RemoveFeedFromCategory)
+	app.Post("/api/categories/:id/feeds/create", handlers.CreateAndAddFeedToCategory)
+
 	app.Get("/profile", func(c *fiber.Ctx) error {
 		userID := c.Locals("userID")
 		userEmail := c.Locals("userEmail")

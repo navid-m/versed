@@ -35,47 +35,24 @@
                />
             </div>
 
-            <div class="flex flex-wrap gap-2">
-               <a
-                  href="#"
+            <div class="flex flex-wrap gap-2" id="categoryContainer">
+               <!-- Default content when no categories are loaded -->
+               <button
                   class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gray-900 dark:bg-gray-700 text-white"
                >
                   All
-               </a>
-               <a
-                  href="#"
-                  class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+               </button>
+               <button
+                  class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                  onclick="categoryManager.showAddCategoryModal()"
                >
-                  Technology
-               </a>
-               <a
-                  href="#"
-                  class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-               >
-                  Science
-               </a>
-               <a
-                  href="#"
-                  class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-               >
-                  Business
-               </a>
-               <a
-                  href="#"
-                  class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-               >
-                  Design
-               </a>
-               <a
-                  href="#"
-                  class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-               >
-                  Education
-               </a>
+                  <i class="fas fa-plus mr-1"></i>
+                  Add Category
+               </button>
             </div>
          </div>
 
-         <div class="space-y-3">
+         <div class="space-y-3" id="postsContainer">
             {% for item in FeedItems %}
             <article
                class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md dark:hover:shadow-xl transition-shadow"
@@ -197,6 +174,7 @@
       <script src="static/js/index.js"></script>
       <script src="static/js/fetch-posts.js"></script>
       <script src="static/js/search.js"></script>
+      <script src="static/js/categories.js"></script>
 
       <link rel="stylesheet" href="static/css/index.css" />
    </body>

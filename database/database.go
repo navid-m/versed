@@ -68,6 +68,25 @@ func createTables() error {
 			FOREIGN KEY (user_id) REFERENCES users(id),
 			FOREIGN KEY (item_id) REFERENCES feed_items(id)
 		)`,
+		`CREATE TABLE IF NOT EXISTS user_categories (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			user_id INTEGER NOT NULL,
+			name TEXT NOT NULL,
+			description TEXT,
+			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			UNIQUE(user_id, name),
+			FOREIGN KEY (user_id) REFERENCES users(id)
+		)`,
+		`CREATE TABLE IF NOT EXISTS user_category_feeds (
+			user_id INTEGER NOT NULL,
+			category_id INTEGER NOT NULL,
+			feed_source_id INTEGER NOT NULL,
+			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (user_id, category_id, feed_source_id),
+			FOREIGN KEY (user_id) REFERENCES users(id),
+			FOREIGN KEY (category_id) REFERENCES user_categories(id),
+			FOREIGN KEY (feed_source_id) REFERENCES feed_sources(id)
+		)`,
 		`CREATE TABLE IF NOT EXISTS sessions (
 			session_id TEXT PRIMARY KEY,
 			data TEXT NOT NULL,
