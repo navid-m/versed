@@ -60,6 +60,10 @@ document.addEventListener("DOMContentLoaded", function () {
                     <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
                       ${item.source_name || "Unknown source"}
                     </span>
+                    <button class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors view-comments-btn" data-post-id="${item.id}">
+                      <i class="far fa-comments mr-1"></i>
+                      View comments (${item.comments_count || 0})
+                    </button>
                   </div>
                 </div>
                 <div class="flex flex-col items-center space-y-1 flex-shrink-0 ml-3">
