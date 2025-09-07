@@ -15,6 +15,7 @@
    <body
       class="bg-gray-50 dark:bg-gradient-to-br dark:from-neutral-900 dark:to-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200"
       data-username="{{ Username }}"
+      data-user-id="{{ userID }}"
    >
       <header
          class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10"
@@ -23,20 +24,24 @@
       </header>
 
       <main class="max-w-4xl mx-auto px-3 sm:px-4 lg:px-6 py-4">
-         <!-- Back to home link -->
          <div class="mb-4">
-            <a href="/" class="inline-flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
+            <a
+               href="/"
+               class="inline-flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+            >
                <i class="fas fa-arrow-left mr-2"></i>
                Back to Feed
             </a>
          </div>
 
-         <!-- Post content -->
-         <article class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm mb-6">
+         <article
+            class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm mb-6"
+         >
             <div class="p-6">
                <div class="flex items-start space-x-4">
-                  <!-- Voting section -->
-                  <div class="flex flex-col items-center space-y-1 flex-shrink-0">
+                  <div
+                     class="flex flex-col items-center space-y-1 flex-shrink-0"
+                  >
                      <button
                         class="p-1 text-orange-500 hover:text-orange-600 transition-colors"
                         data-feed-id="{{ post.ID }}"
@@ -56,21 +61,30 @@
                      </button>
                   </div>
 
-                  <!-- Post content -->
                   <div class="flex-1 min-w-0">
-                     <h1 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-3 leading-tight">
-                        <a href="{{ post.URL }}" target="_blank" class="hover:underline">
+                     <h1
+                        class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-3 leading-tight"
+                     >
+                        <a
+                           href="{{ post.URL }}"
+                           target="_blank"
+                           class="hover:underline"
+                        >
                            {{ post.Title }}
                         </a>
                      </h1>
 
                      <div class="mb-4">
-                        <div class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
+                        <div
+                           class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed"
+                        >
                            {{ post.Description|safe }}
                         </div>
                      </div>
 
-                     <div class="flex items-center text-xs text-gray-500 dark:text-gray-400 space-x-3 mb-4">
+                     <div
+                        class="flex items-center text-xs text-gray-500 dark:text-gray-400 space-x-3 mb-4"
+                     >
                         <span class="flex items-center">
                            <i class="far fa-user mr-1"></i>
                            {{ post.Author }}
@@ -79,7 +93,9 @@
                            <i class="far fa-clock mr-1"></i>
                            {{ post.PublishedAt }}
                         </span>
-                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+                        <span
+                           class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200"
+                        >
                            {{ post.SourceName }}
                         </span>
                         <span class="flex items-center">
@@ -88,7 +104,6 @@
                         </span>
                      </div>
 
-                     <!-- Action buttons -->
                      {% if Email %}
                      <div class="flex items-center space-x-2">
                         <button
@@ -107,16 +122,23 @@
          </article>
 
          <!-- Comments section -->
-         <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+         <div
+            class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm"
+         >
             <div class="p-6">
-               <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+               <h2
+                  class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4"
+               >
                   Comments ({{ comments|length }})
                </h2>
 
-               <!-- Add comment form (only for logged in users) -->
                {% if Email %}
                <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                  <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">Add a comment</h3>
+                  <h3
+                     class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3"
+                  >
+                     Add a comment
+                  </h3>
                   <textarea
                      id="commentContent"
                      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 resize-vertical"
@@ -135,37 +157,65 @@
                   </div>
                </div>
                {% else %}
-               <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg text-center">
+               <div
+                  class="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg text-center"
+               >
                   <p class="text-gray-600 dark:text-gray-400">
-                     <a href="/signin" class="text-blue-600 dark:text-blue-400 hover:underline">Sign in</a> to join the discussion
+                     <a
+                        href="/signin"
+                        class="text-blue-600 dark:text-blue-400 hover:underline"
+                        >Sign in</a
+                     >
+                     to join the discussion
                   </p>
                </div>
                {% endif %}
 
-               <!-- Comments list -->
                <div id="commentsList" class="space-y-4">
                   {% for comment in comments %}
-                  <div class="border-l-2 border-gray-200 dark:border-gray-600 pl-4" data-comment-id="{{ comment.ID }}">
+                  <div
+                     class="border-l-2 border-gray-200 dark:border-gray-600 pl-4"
+                     data-comment-id="{{ comment.ID }}"
+                  >
                      <div class="flex items-start space-x-3">
                         <div class="flex-shrink-0">
-                           <div class="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
-                              <i class="fas fa-user text-gray-600 dark:text-gray-400 text-xs"></i>
+                           <div
+                              class="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center"
+                           >
+                              <i
+                                 class="fas fa-user text-gray-600 dark:text-gray-400 text-xs"
+                              ></i>
                            </div>
                         </div>
                         <div class="flex-1 min-w-0">
                            <div class="flex items-center space-x-2 mb-1">
-                              <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ comment.Username }}</span>
-                              <span class="text-xs text-gray-500 dark:text-gray-400">{{ comment.CreatedAt.Format("Jan 2, 2006 at 3:04 PM") }}</span>
+                              <span
+                                 class="text-sm font-medium text-gray-900 dark:text-gray-100"
+                                 >{{ comment.Username }}</span
+                              >
+                              <span
+                                 class="text-xs text-gray-500 dark:text-gray-400"
+                                 >{{ comment.CreatedAt.Format("Jan 2, 2006 at
+                                 3:04 PM") }}</span
+                              >
                            </div>
-                           <div class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
+                           <div
+                              class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed"
+                           >
                               {{ comment.Content }}
                            </div>
                            {% if Email and comment.UserID == userID %}
                            <div class="flex items-center space-x-2 mt-2">
-                              <button class="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 edit-comment-btn" data-comment-id="{{ comment.ID }}">
+                              <button
+                                 class="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 edit-comment-btn"
+                                 data-comment-id="{{ comment.ID }}"
+                              >
                                  <i class="fas fa-edit mr-1"></i>Edit
                               </button>
-                              <button class="text-xs text-red-500 hover:text-red-700 delete-comment-btn" data-comment-id="{{ comment.ID }}">
+                              <button
+                                 class="text-xs text-red-500 hover:text-red-700 delete-comment-btn"
+                                 data-comment-id="{{ comment.ID }}"
+                              >
                                  <i class="fas fa-trash mr-1"></i>Delete
                               </button>
                            </div>
@@ -173,12 +223,14 @@
                         </div>
                      </div>
                   </div>
-                  {% endfor %}
-
-                  {% if not comments %}
-                  <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+                  {% endfor %} {% if not comments %}
+                  <div
+                     class="text-center py-8 text-gray-500 dark:text-gray-400"
+                  >
                      <i class="fas fa-comments text-2xl mb-2 block"></i>
-                     <p>No comments yet. Be the first to share your thoughts!</p>
+                     <p>
+                        No comments yet. Be the first to share your thoughts!
+                     </p>
                   </div>
                   {% endif %}
                </div>

@@ -6,7 +6,7 @@ class CommentsManager {
 
    init() {
       this.initializeCommentCount();
-
+      this.setupIndexPageListener();
       document.addEventListener("click", (e) => {
          if (e.target.closest(".view-comments-btn")) {
             e.preventDefault();
@@ -53,6 +53,38 @@ class CommentsManager {
             commentsList.querySelectorAll("[data-comment-id]").length;
          this.updateCommentCountDisplay();
       }
+
+      this.updateCommentButtonsFromStorage();
+   }
+
+   updateCommentButtonsFromStorage() {
+      const commentButtons = document.querySelectorAll(".view-comments-btn");
+      if (commentButtons.length === 0) return;
+
+      console.log("Updating comment buttons from localStorage");
+
+      const storedCounts = JSON.parse(
+         localStorage.getItem("commentCounts") || "{}"
+      );
+      console.log("Stored comment counts:", storedCounts);
+
+      commentButtons.forEach((button) => {
+         const postId = button.dataset.postId;
+         const storedCount = storedCounts[postId];
+
+         if (storedCount !== undefined) {
+            console.log(
+               "Updating button for post:",
+               postId,
+               "to count:",
+               storedCount
+            );
+            button.innerHTML = `
+               <i class="far fa-comments mr-1"></i>
+               View comments (${storedCount})
+            `;
+         }
+      });
    }
 
    viewPostComments(postId) {
@@ -97,9 +129,10 @@ class CommentsManager {
             };
 
             this.addCommentToUI(optimisticComment);
-
             this.currentCommentCount++;
             this.updateCommentCountDisplay();
+            this.updateIndexPageCommentCount(postId, this.currentCommentCount);
+
             document.getElementById("commentContent").value = "";
 
             this.showMessage("Comment posted successfully", "success");
@@ -141,6 +174,59 @@ class CommentsManager {
          .catch((error) => {
             console.error("Error refreshing comment:", error);
          });
+   }
+
+   updateIndexPageCommentCount(postId, newCount) {
+      console.log("Updating comment count for post:", postId, "to:", newCount);
+
+      const commentCounts = JSON.parse(
+         localStorage.getItem("commentCounts") || "{}"
+      );
+      commentCounts[postId] = newCount;
+      localStorage.setItem("commentCounts", JSON.stringify(commentCounts));
+
+      console.log("Stored comment counts:", commentCounts);
+      this.updateLocalCommentCount(postId, newCount);
+   }
+
+   setupIndexPageListener() {
+      if (this.indexPageListenerSet) return;
+      this.indexPageListenerSet = true;
+
+      console.log("Setting up comment count listener");
+
+      window.addEventListener("message", (event) => {
+         console.log("Received message:", event.data);
+
+         if (event.data.type === "updateCommentCount") {
+            const { postId, newCount } = event.data;
+            console.log(
+               "Updating comment count for post:",
+               postId,
+               "to:",
+               newCount
+            );
+            this.updateLocalCommentCount(postId, newCount);
+         }
+      });
+   }
+
+   updateLocalCommentCount(postId, newCount) {
+      const commentButtons = document.querySelectorAll(".view-comments-btn");
+      console.log("Found comment buttons:", commentButtons.length);
+
+      commentButtons.forEach((button) => {
+         const buttonPostId = button.dataset.postId;
+         console.log("Checking button with postId:", buttonPostId);
+
+         if (buttonPostId === postId) {
+            console.log("Updating button for post:", postId);
+            button.innerHTML = `
+               <i class="far fa-comments mr-1"></i>
+               View comments (${newCount})
+            `;
+         }
+      });
    }
 
    async editComment(commentId) {
@@ -242,6 +328,16 @@ class CommentsManager {
             this.removeCommentFromUI(commentId);
             this.currentCommentCount--;
             this.updateCommentCountDisplay();
+
+            const postId =
+               document.querySelector("[data-post-id]")?.dataset.postId;
+            if (postId) {
+               this.updateIndexPageCommentCount(
+                  postId,
+                  this.currentCommentCount
+               );
+            }
+
             this.showMessage("Comment deleted successfully", "success");
          } else {
             const error = await response.json();
