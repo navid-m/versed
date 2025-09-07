@@ -60,6 +60,23 @@ func main() {
 		return c.Next()
 	})
 
+	app.Use(func(c *fiber.Ctx) error {
+		clientIP := c.IP()
+
+		isBanned, err := database.IsIPBanned(clientIP)
+		if err != nil {
+			log.Printf("Error checking IP ban status for %s: %v", clientIP, err)
+			return c.Next()
+		}
+
+		if isBanned {
+			log.Printf("Blocked access from banned IP: %s", clientIP)
+			return c.Status(403).SendString("Access denied. Your IP address has been banned.")
+		}
+
+		return c.Next()
+	})
+
 	app.Static("/static", "./static")
 
 	app.Get("/", func(c *fiber.Ctx) error {
@@ -735,6 +752,126 @@ func main() {
 		}
 
 		return c.Redirect("/profile?success=1")
+	})
+
+	// Admin middleware - check if user is admin
+	adminMiddleware := func(c *fiber.Ctx) error {
+		userID := c.Locals("userID")
+		if userID == nil {
+			return c.Status(401).Redirect("/signin")
+		}
+
+		isAdmin, err := database.IsUserAdmin(userID.(int))
+		if err != nil {
+			log.Printf("Error checking admin status for user %v: %v", userID, err)
+			return c.Status(500).SendString("Internal server error")
+		}
+
+		if !isAdmin {
+			return c.Status(403).SendString("Access denied. Admin privileges required.")
+		}
+
+		return c.Next()
+	}
+
+	// Admin panel route
+	app.Get("/admin", adminMiddleware, func(c *fiber.Ctx) error {
+		userEmail := c.Locals("userEmail")
+		userUsername := c.Locals("userUsername")
+
+		data := fiber.Map{}
+		if userEmail != nil {
+			data["Email"] = userEmail
+		}
+		if userUsername != nil {
+			data["Username"] = userUsername
+		}
+
+		return c.Render("admin", data)
+	})
+
+	// Admin API endpoints
+	app.Get("/api/admin/banned-ips", adminMiddleware, func(c *fiber.Ctx) error {
+		bannedIPs, err := database.GetAllBannedIPs()
+		if err != nil {
+			log.Printf("Error getting banned IPs: %v", err)
+			return c.Status(500).JSON(fiber.Map{
+				"error": "Failed to retrieve banned IPs",
+			})
+		}
+
+		return c.JSON(fiber.Map{
+			"bannedIPs": bannedIPs,
+		})
+	})
+
+	app.Post("/api/admin/ban-ip", adminMiddleware, func(c *fiber.Ctx) error {
+		userID := c.Locals("userID").(int)
+
+		var banRequest struct {
+			IPAddress string `json:"ipAddress"`
+			Reason    string `json:"reason"`
+		}
+
+		if err := c.BodyParser(&banRequest); err != nil {
+			return c.Status(400).JSON(fiber.Map{
+				"error": "Invalid request body",
+			})
+		}
+
+		if banRequest.IPAddress == "" {
+			return c.Status(400).JSON(fiber.Map{
+				"error": "IP address is required",
+			})
+		}
+
+		err := database.BanIP(banRequest.IPAddress, banRequest.Reason, userID)
+		if err != nil {
+			log.Printf("Error banning IP %s: %v", banRequest.IPAddress, err)
+			return c.Status(500).JSON(fiber.Map{
+				"error": "Failed to ban IP address",
+			})
+		}
+
+		log.Printf("Admin %d banned IP: %s (reason: %s)", userID, banRequest.IPAddress, banRequest.Reason)
+		return c.JSON(fiber.Map{
+			"success": true,
+			"message": "IP address banned successfully",
+		})
+	})
+
+	app.Post("/api/admin/unban-ip", adminMiddleware, func(c *fiber.Ctx) error {
+		userID := c.Locals("userID").(int)
+
+		var unbanRequest struct {
+			IPAddress string `json:"ipAddress"`
+		}
+
+		if err := c.BodyParser(&unbanRequest); err != nil {
+			return c.Status(400).JSON(fiber.Map{
+				"error": "Invalid request body",
+			})
+		}
+
+		if unbanRequest.IPAddress == "" {
+			return c.Status(400).JSON(fiber.Map{
+				"error": "IP address is required",
+			})
+		}
+
+		err := database.UnbanIP(unbanRequest.IPAddress, userID)
+		if err != nil {
+			log.Printf("Error unbanning IP %s: %v", unbanRequest.IPAddress, err)
+			return c.Status(500).JSON(fiber.Map{
+				"error": "Failed to unban IP address",
+			})
+		}
+
+		log.Printf("Admin %d unbanned IP: %s", userID, unbanRequest.IPAddress)
+		return c.JSON(fiber.Map{
+			"success": true,
+			"message": "IP address unbanned successfully",
+		})
 	})
 
 	log.Fatal(app.Listen(":3000"))

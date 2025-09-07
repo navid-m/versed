@@ -29,7 +29,8 @@ func createTables() error {
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			email TEXT UNIQUE NOT NULL,
 			username TEXT,
-			password TEXT NOT NULL
+			password TEXT NOT NULL,
+			is_admin BOOLEAN DEFAULT 0
 		)`,
 		`CREATE TABLE IF NOT EXISTS feed_sources (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -104,6 +105,18 @@ func createTables() error {
 			updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 			FOREIGN KEY (item_id) REFERENCES feed_items(id),
 			FOREIGN KEY (user_id) REFERENCES users(id)
+		)`,
+		`CREATE TABLE IF NOT EXISTS banned_ips (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			ip_address TEXT NOT NULL UNIQUE,
+			banned_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			banned_by INTEGER NOT NULL,
+			reason TEXT,
+			is_active BOOLEAN DEFAULT 1,
+			unbanned_at DATETIME,
+			unbanned_by INTEGER,
+			FOREIGN KEY (banned_by) REFERENCES users(id),
+			FOREIGN KEY (unbanned_by) REFERENCES users(id)
 		)`,
 	}
 

@@ -8,9 +8,28 @@ type User struct {
 	Email    string `json:"email"`
 	Username string `json:"username"`
 	Password string `json:"password"`
+	IsAdmin  bool   `json:"is_admin"`
 }
 
-// UserCategory represents a user-created category for organizing feeds
+// BannedIP represents a banned IP address
+type BannedIP struct {
+	ID          int       `json:"id"`
+	IPAddress   string    `json:"ip_address"`
+	BannedAt    time.Time `json:"banned_at"`
+	BannedBy    int       `json:"banned_by"` // User ID of admin who banned
+	Reason      string    `json:"reason,omitempty"`
+	IsActive    bool      `json:"is_active"`
+	UnbannedAt  *time.Time `json:"unbanned_at,omitempty"`
+	UnbannedBy  *int      `json:"unbanned_by,omitempty"`
+}
+
+// AdminUser represents an admin user for management
+type AdminUser struct {
+	ID       int    `json:"id"`
+	Email    string `json:"email"`
+	Username string `json:"username"`
+	IsAdmin  bool   `json:"is_admin"`
+}
 type UserCategory struct {
 	ID          int       `json:"id"`
 	UserID      int       `json:"user_id"`
