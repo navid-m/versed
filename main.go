@@ -662,6 +662,82 @@ func main() {
 	app.Delete("/api/categories/:categoryId/feeds/:feedId", handlers.RemoveFeedFromCategory)
 	app.Post("/api/categories/:id/feeds/create", handlers.CreateAndAddFeedToCategory)
 
+	app.Get("/api/graph", func(c *fiber.Ctx) error {
+		userID, ok := c.Locals("userID").(int)
+		if !ok {
+			return c.Status(401).JSON(fiber.Map{
+				"error": "Unauthorized",
+			})
+		}
+
+		db := database.GetDB()
+		categoryRows, err := db.Query("SELECT id, name FROM user_categories WHERE user_id = ?", userID)
+		if err != nil {
+			return c.Status(500).JSON(fiber.Map{
+				"error": "Failed to get categories",
+			})
+		}
+		defer categoryRows.Close()
+
+		var nodes []fiber.Map
+		var links []fiber.Map
+		categoryMap := make(map[int]string) // categoryID to name
+
+		for categoryRows.Next() {
+			var catID int
+			var catName string
+			err := categoryRows.Scan(&catID, &catName)
+			if err != nil {
+				continue
+			}
+
+			nodes = append(nodes, fiber.Map{
+				"id":   fmt.Sprintf("cat_%d", catID),
+				"name": catName,
+				"type": "category",
+			})
+			categoryMap[catID] = catName
+
+			// Get posts for this category
+			postRows, err := db.Query(`
+				SELECT fi.id, fi.title
+				FROM feed_items fi
+				JOIN user_category_feeds ucf ON fi.source_id = ucf.feed_source_id
+				WHERE ucf.user_id = ? AND ucf.category_id = ?
+				LIMIT 50
+			`, userID, catID)
+			if err != nil {
+				continue
+			}
+
+			for postRows.Next() {
+				var postID int
+				var postTitle string
+				err := postRows.Scan(&postID, &postTitle)
+				if err != nil {
+					continue
+				}
+
+				nodes = append(nodes, fiber.Map{
+					"id":   fmt.Sprintf("post_%d", postID),
+					"name": postTitle,
+					"type": "post",
+				})
+
+				links = append(links, fiber.Map{
+					"source": fmt.Sprintf("cat_%d", catID),
+					"target": fmt.Sprintf("post_%d", postID),
+				})
+			}
+			postRows.Close()
+		}
+
+		return c.JSON(fiber.Map{
+			"nodes": nodes,
+			"links": links,
+		})
+	})
+
 	app.Get("/post/:itemId", func(c *fiber.Ctx) error {
 		itemID := c.Params("itemId")
 		userEmail := c.Locals("userEmail")
@@ -736,6 +812,22 @@ func main() {
 		}
 
 		return c.Render("profile", data)
+	})
+
+	app.Get("/graph", func(c *fiber.Ctx) error {
+		userEmail := c.Locals("userEmail")
+		userUsername := c.Locals("userUsername")
+
+		if userEmail == nil {
+			return c.Redirect("/signin")
+		}
+
+		data := fiber.Map{
+			"Email":    userEmail,
+			"Username": userUsername,
+		}
+
+		return c.Render("graph", data)
 	})
 
 	app.Post("/profile/update", func(c *fiber.Ctx) error {
