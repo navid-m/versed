@@ -385,8 +385,6 @@ func main() {
 	})
 
 	app.Get("/api/search", handlers.SearchFeedItems)
-
-	// Category routes
 	app.Get("/api/categories", handlers.GetUserCategories)
 	app.Post("/api/categories", handlers.CreateUserCategory)
 	app.Put("/api/categories/:id", handlers.UpdateUserCategory)
