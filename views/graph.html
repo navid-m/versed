@@ -9,7 +9,11 @@
     {% include "partials/icon.html" %}
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script src="/static/js/tw-config.js"></script>
+    <style>
+        #graphContainer svg text {
+            fill: #ffffff !important;
+        }
+    </style>
 </head>
 
 <body
@@ -39,6 +43,7 @@
     </main>
 
     <script src="/static/js/graph.js"></script>
+    <script src="/static/js/index.js"></script>
 
     <link rel="stylesheet" href="/static/css/index.css" />
     {% include "partials/footer.html" %}
