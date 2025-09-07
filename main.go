@@ -449,6 +449,9 @@ func main() {
 
 		log.Printf("UserID: %d", userID)
 
+		categoryName = strings.TrimSpace(categoryName)
+		categoryName = strings.ReplaceAll(categoryName, "-", " ")
+
 		var categoryID int
 		err := db.QueryRow("SELECT id FROM user_categories WHERE user_id = ? AND LOWER(name) = LOWER(?)", userID, categoryName).Scan(&categoryID)
 		if err != nil {
