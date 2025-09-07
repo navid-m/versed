@@ -33,7 +33,7 @@ func UpdateUser(userID int, email, username, password string) error {
 }
 
 // Adds a feed item to user's reading list
-// Returns (saved bool, error)
+// Returns (saved or not -> bool, error)
 func SaveToReadingList(userID int, itemID string) (bool, error) {
 	exists, err := IsInReadingList(userID, itemID)
 	if err != nil {
