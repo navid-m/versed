@@ -139,11 +139,19 @@ class GraphView {
    }
 
    getNodeRadius(d) {
-      return d.type === "category" ? 15 : 8;
+      if (d.type === "root") {
+         return 20;
+      } else if (d.type === "category") {
+         return 15;
+      } else {
+         return 8;
+      }
    }
 
    getNodeColor(d) {
-      if (d.type === "category") {
+      if (d.type === "root") {
+         return "#1f2937";
+      } else if (d.type === "category") {
          return "#4f46e5";
       } else {
          return "#10b981";

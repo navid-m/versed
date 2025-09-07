@@ -683,7 +683,13 @@ func main() {
 
 		var nodes []fiber.Map
 		var links []fiber.Map
-		categoryMap := make(map[int]string) // categoryID to name
+		categoryMap := make(map[int]string)
+
+		nodes = append(nodes, fiber.Map{
+			"id":   "root",
+			"name": "Categories",
+			"type": "root",
+		})
 
 		for categoryRows.Next() {
 			var catID int
@@ -700,7 +706,11 @@ func main() {
 			})
 			categoryMap[catID] = catName
 
-			// Get posts for this category
+			links = append(links, fiber.Map{
+				"source": "root",
+				"target": fmt.Sprintf("cat_%d", catID),
+			})
+
 			postRows, err := db.Query(`
 				SELECT fi.id, fi.title
 				FROM feed_items fi
