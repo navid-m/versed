@@ -1,13 +1,6 @@
 const darkModeToggle = document.getElementById("darkModeToggle");
 const toggleSlider = document.getElementById("toggleSlider");
 const html = document.documentElement;
-const listViewBtn = document.getElementById("listView");
-const gridViewBtn = document.getElementById("gridView");
-const postsContainer = document.getElementById("postsContainer");
-const userMenuButton = document.getElementById("userMenuButton");
-const userDropdown = document.getElementById("userDropdown");
-
-html.classList.add("dark");
 
 function htmlDecode(input) {
    var doc = new DOMParser().parseFromString(input, "text/html");
@@ -38,7 +31,8 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 darkModeToggle.addEventListener("click", () => {
-   html.classList.toggle("dark");
+   const isDark = html.classList.toggle("dark");
+   localStorage.setItem('theme', isDark ? 'dark' : 'light');
    if (html.classList.contains("dark")) {
       toggleSlider.classList.remove("translate-x-6");
       toggleSlider.classList.add("translate-x-1");
