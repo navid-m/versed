@@ -226,9 +226,11 @@ func AddFeedToCategory(c *fiber.Ctx) error {
 	fmt.Printf("Params: %v\n", c.AllParams())
 	fmt.Printf("Body: %s\n", string(c.Body()))
 
-	userID := c.Locals("userID").(int)
-	categoryIDStr := c.Params("id")
-	db := database.GetDB()
+	var (
+		userID        = c.Locals("userID").(int)
+		categoryIDStr = c.Params("id")
+		db            = database.GetDB()
+	)
 
 	fmt.Printf("UserID: %d, CategoryIDStr: %s\n", userID, categoryIDStr)
 
