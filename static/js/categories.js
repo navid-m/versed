@@ -501,7 +501,6 @@ class CategoryManager {
          const data = await response.json();
          console.log("Category feeds data:", data);
 
-         // Create the comprehensive feed management modal
          this.createFeedManagementModal(categoryId, data.feeds || []);
       } catch (error) {
          console.error("Error loading category feeds for management:", error);
@@ -630,8 +629,6 @@ class CategoryManager {
         `;
 
       document.body.appendChild(modal);
-
-      // Set up form submission
       document
          .getElementById("addFeedForm")
          .addEventListener("submit", async (e) => {
@@ -763,7 +760,6 @@ class CategoryManager {
 
       event.target.closest(".category-btn").appendChild(menu);
 
-      // Close menu when clicking outside
       setTimeout(() => {
          document.addEventListener("click", function closeMenu() {
             menu.remove();
@@ -773,7 +769,6 @@ class CategoryManager {
    }
 
    async editCategory(categoryId) {
-      // Find the category in our local array
       const category = this.categories.find((cat) => cat.id === categoryId);
       if (!category) {
          alert("Category not found");
