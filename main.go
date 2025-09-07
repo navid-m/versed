@@ -726,13 +726,7 @@ func main() {
 				"target": fmt.Sprintf("cat_%d", catID),
 			})
 
-			postRows, err := db.Query(`
-				SELECT fi.id, fi.title
-				FROM feed_items fi
-				JOIN user_category_feeds ucf ON fi.source_id = ucf.feed_source_id
-				WHERE ucf.user_id = ? AND ucf.category_id = ?
-				LIMIT 50
-			`, userID, catID)
+			postRows, err := database.GraphFeedQuery(db, userID, catID)
 			if err != nil {
 				log.Printf("Error querying posts for category %d: %v", catID, err)
 				continue
@@ -782,14 +776,7 @@ func main() {
 		var post feeds.FeedItem
 		var sourceName string
 
-		query := `
-			SELECT fi.id, fi.source_id, fi.title, fi.url, fi.description, fi.author,
-				   fi.published_at, fi.score, fi.comments_count, fi.created_at, fs.name as source_name
-			FROM feed_items fi
-			JOIN feed_sources fs ON fi.source_id = fs.id
-			WHERE fi.id = ?`
-
-		err := db.QueryRow(query, itemID).Scan(
+		err := db.QueryRow(database.PostFeedQuery, itemID).Scan(
 			&post.ID, &post.SourceID, &post.Title, &post.URL, &post.Description,
 			&post.Author, &post.PublishedAt, &post.Score, &post.CommentsCount,
 			&post.CreatedAt, &sourceName,

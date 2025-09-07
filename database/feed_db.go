@@ -70,3 +70,21 @@ func BuildFiQuery(userID int, categoryID int, c *fiber.Ctx) (string, []interface
 	}
 	return sql, args, nil
 }
+
+func GraphFeedQuery(db *sql.DB, userID int, catID int) (*sql.Rows, error) {
+	postRows, err := db.Query(`
+				SELECT fi.id, fi.title
+				FROM feed_items fi
+				JOIN user_category_feeds ucf ON fi.source_id = ucf.feed_source_id
+				WHERE ucf.user_id = ? AND ucf.category_id = ?
+				LIMIT 50
+			`, userID, catID)
+	return postRows, err
+}
+
+var PostFeedQuery = `
+SELECT fi.id, fi.source_id, fi.title, fi.url, fi.description, fi.author,
+	   fi.published_at, fi.score, fi.comments_count, fi.created_at, fs.name as source_name
+FROM feed_items fi
+JOIN feed_sources fs ON fi.source_id = fs.id
+WHERE fi.id = ?`
