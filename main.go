@@ -115,10 +115,8 @@ func main() {
 		var err error
 
 		if userID != nil {
-			// User is logged in, get feed items excluding hidden ones
 			feedItems, err = feeds.GetAllFeedItemsForUser(database.GetDB(), userID.(int), 20)
 		} else {
-			// User not logged in, get all feed items
 			feedItems, err = feeds.GetAllFeedItems(database.GetDB(), 20)
 		}
 
@@ -286,10 +284,8 @@ func main() {
 		var err error
 
 		if userID != nil {
-			// User is logged in, get feed items excluding hidden ones
 			items, err = feeds.GetAllFeedItemsWithPaginationForUser(database.GetDB(), userID.(int), limit, offset)
 		} else {
-			// User not logged in, get all feed items
 			items, err = feeds.GetAllFeedItemsWithPagination(database.GetDB(), limit, offset)
 		}
 
@@ -393,6 +389,37 @@ func main() {
 		})
 	})
 
+	app.Post("/api/reading-list/remove", func(c *fiber.Ctx) error {
+		userID, ok := c.Locals("userID").(int)
+		if !ok {
+			return c.Status(401).JSON(fiber.Map{
+				"error": "Unauthorized",
+			})
+		}
+
+		var removeRequest struct {
+			ItemID string `json:"item_id"`
+		}
+
+		if err := c.BodyParser(&removeRequest); err != nil {
+			return c.Status(400).JSON(fiber.Map{
+				"error": "Invalid request body",
+			})
+		}
+
+		err = database.RemoveFromReadingList(userID, removeRequest.ItemID)
+		if err != nil {
+			return c.Status(500).JSON(fiber.Map{
+				"error": "Failed to remove item from reading list",
+			})
+		}
+
+		return c.JSON(fiber.Map{
+			"success": true,
+			"removed": true,
+		})
+	})
+
 	app.Post("/api/posts/:itemId/hide", func(c *fiber.Ctx) error {
 		userID, ok := c.Locals("userID").(int)
 		if !ok {
@@ -491,7 +518,6 @@ func main() {
 			})
 		}
 
-		// Get full feed item details for hidden posts
 		var hiddenItems []feeds.FeedItem
 		for _, itemID := range itemIDs {
 			query := `SELECT fi.id, fi.source_id, fi.title, fi.url, fi.description, fi.author, fi.published_at, fi.score, fi.comments_count, fi.created_at, fs.name as source_name
@@ -504,7 +530,7 @@ func main() {
 				&item.ID, &item.SourceID, &item.Title, &item.URL, &item.Description,
 				&item.Author, &item.PublishedAt, &item.Score, &item.CommentsCount, &item.CreatedAt, &sourceName)
 			if err != nil {
-				continue // Skip if item doesn't exist
+				continue
 			}
 			item.SourceName = sourceName
 			hiddenItems = append(hiddenItems, item)
