@@ -128,6 +128,14 @@ func createTables() error {
 			name TEXT UNIQUE NOT NULL,
 			created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 		)`,
+		`CREATE TABLE IF NOT EXISTS subverse_feeds (
+			subverse_id INTEGER NOT NULL,
+			feed_source_id INTEGER NOT NULL,
+			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (subverse_id, feed_source_id),
+			FOREIGN KEY (subverse_id) REFERENCES subverses(id),
+			FOREIGN KEY (feed_source_id) REFERENCES feed_sources(id)
+		)`,
 	}
 
 	for _, query := range queries {

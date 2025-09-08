@@ -1044,7 +1044,11 @@ func main() {
 
 	app.Post("/api/admin/subverses", adminMiddleware, handlers.CreateSubverse)
 	app.Get("/api/subverses", handlers.GetSubverses)
+	app.Get("/s/:subverseName", handlers.ViewSubverse)
 
+	app.Get("/api/admin/subverses/:subverseId/feeds", adminMiddleware, handlers.GetSubverseFeeds)
+	app.Post("/api/admin/subverses/:subverseId/feeds", adminMiddleware, handlers.AddFeedToSubverse)
+	app.Delete("/api/admin/subverses/:subverseId/feeds/:feedId", adminMiddleware, handlers.RemoveFeedFromSubverse)
 
 	port := 3000
 	if len(os.Args) > 1 {
