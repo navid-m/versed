@@ -5,6 +5,7 @@ class AdminPanel {
 
    init() {
       this.loadBannedIPs();
+      this.loadSubverses();
       this.setupEventListeners();
    }
 
@@ -13,6 +14,104 @@ class AdminPanel {
       if (banIPBtn) {
          banIPBtn.addEventListener("click", () => this.banIP());
       }
+
+      const createSubverseBtn = document.getElementById("createSubverseBtn");
+      if (createSubverseBtn) {
+         createSubverseBtn.addEventListener("click", () => this.createSubverse());
+      }
+   }
+
+   async createSubverse() {
+      const subverseName = document.getElementById("subverseName").value.trim();
+      const createSubverseBtn = document.getElementById("createSubverseBtn");
+
+      if (!subverseName) {
+         this.showMessage("Please enter a subverse name", "error");
+         return;
+      }
+
+      createSubverseBtn.disabled = true;
+      createSubverseBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Creating...';
+
+      try {
+         const response = await fetch("/api/admin/subverses", {
+            method: "POST",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ name: subverseName }),
+         });
+
+         if (response.ok) {
+            this.showMessage("Subverse created successfully", "success");
+            document.getElementById("subverseName").value = "";
+            this.loadSubverses();
+         } else {
+            const error = await response.json();
+            this.showMessage(error.error || "Failed to create subverse", "error");
+         }
+      } catch (error) {
+         console.error("Error creating subverse:", error);
+         this.showMessage("Failed to create subverse", "error");
+      } finally {
+         createSubverseBtn.disabled = false;
+         createSubverseBtn.innerHTML = '<i class="fas fa-plus mr-2"></i>Create Subverse';
+      }
+   }
+
+   async loadSubverses() {
+      try {
+         const response = await fetch("/api/subverses");
+         if (response.ok) {
+            const data = await response.json();
+            this.renderSubverses(data.subverses || []);
+         } else {
+            console.error("Failed to load subverses");
+            this.renderSubverses([]);
+         }
+      } catch (error) {
+         console.error("Error loading subverses:", error);
+         this.renderSubverses([]);
+      }
+   }
+
+   renderSubverses(subverses) {
+      const container = document.getElementById("subversesList");
+      const noSubverses = document.getElementById("noSubverses");
+
+      if (!container) return;
+
+      if (subverses.length === 0) {
+         container.innerHTML = "";
+         if (noSubverses) noSubverses.style.display = "block";
+         return;
+      }
+
+      if (noSubverses) noSubverses.style.display = "none";
+
+      container.innerHTML = subverses
+         .map(
+            (subverse) => `
+            <div class="border border-gray-200 dark:border-gray-600 rounded-lg p-4" data-subverse-id="${
+               subverse.ID
+            }">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="flex items-center space-x-3">
+                            <i class="fas fa-folder text-purple-500"></i>
+                            <span class="font-medium text-gray-900 dark:text-gray-100">/s/${subverse.Name}</span>
+                        </div>
+                        <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                            <div>Created: ${new Date(
+                               subverse.created_at
+                            ).toLocaleString()}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `
+         )
+         .join("");
    }
 
    async banIP() {

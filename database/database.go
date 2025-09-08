@@ -121,7 +121,12 @@ func createTables() error {
 			unbanned_at DATETIME,
 			unbanned_by INTEGER,
 			FOREIGN KEY (banned_by) REFERENCES users(id),
-			FOREIGN KEY (unbanned_by) REFERENCES users(id)
+						FOREIGN KEY (unbanned_by) REFERENCES users(id)
+		)`,
+		`CREATE TABLE IF NOT EXISTS subverses (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			name TEXT UNIQUE NOT NULL,
+			created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 		)`,
 	}
 

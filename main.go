@@ -940,6 +940,7 @@ func main() {
 			return c.Status(403).SendString("Access denied. Admin privileges required.")
 		}
 
+		c.Locals("isAdmin", isAdmin)
 		return c.Next()
 	}
 
@@ -1007,7 +1008,7 @@ func main() {
 		})
 	})
 
-	app.Post("/api/admin/unban-ip", adminMiddleware, func(c *fiber.Ctx) error {
+		app.Post("/api/admin/unban-ip", adminMiddleware, func(c *fiber.Ctx) error {
 		userID := c.Locals("userID").(int)
 
 		var unbanRequest struct {
@@ -1040,6 +1041,10 @@ func main() {
 			"message": "IP address unbanned successfully",
 		})
 	})
+
+	app.Post("/api/admin/subverses", adminMiddleware, handlers.CreateSubverse)
+	app.Get("/api/subverses", handlers.GetSubverses)
+
 
 	port := 3000
 	if len(os.Args) > 1 {

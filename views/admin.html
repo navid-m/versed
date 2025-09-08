@@ -75,6 +75,46 @@
             </div>
          </div>
       </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm mt-8">
+        <div class="p-6">
+           <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+              <i class="fas fa-plus-circle text-green-500 mr-2"></i>
+              Create Subverse
+           </h2>
+
+           <div class="max-w-md">
+              <label for="subverseName" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                 Subverse Name
+              </label>
+              <input type="text" id="subverseName" placeholder="e.g., news, programming, etc."
+                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 mb-4" />
+
+              <button id="createSubverseBtn"
+                 class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                 <i class="fas fa-plus mr-2"></i>
+                 Create Subverse
+              </button>
+           </div>
+        </div>
+     </div>
+
+     <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm mt-8">
+      <div class="p-6">
+         <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+            <i class="fas fa-list-alt text-purple-500 mr-2"></i>
+            Existing Subverses
+         </h2>
+
+         <div id="subversesList" class="space-y-4">
+         </div>
+
+         <div id="noSubverses" class="text-center py-8 text-gray-500 dark:text-gray-400">
+            <i class="fas fa-check-circle text-2xl mb-2 block"></i>
+            <p>No subverses created yet.</p>
+         </div>
+      </div>
+   </div>
    </main>
 
    {% include "partials/footer.html" %}
