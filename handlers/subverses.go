@@ -196,13 +196,12 @@ func ViewSubverse(c *fiber.Ctx) error {
 		userEmail    = c.Locals("userEmail")
 		userUsername = c.Locals("userUsername")
 		userID       = c.Locals("userID")
+		data         = fiber.Map{
+			"Subverse":     subverse,
+			"Posts":        posts,
+			"SubverseName": subverseName,
+		}
 	)
-
-	data := fiber.Map{
-		"Subverse":     subverse,
-		"Posts":        posts,
-		"SubverseName": subverseName,
-	}
 
 	if userEmail != nil {
 		data["Email"] = userEmail
