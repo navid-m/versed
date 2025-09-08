@@ -1,4 +1,3 @@
-// Subverse page functionality
 class SubverseManager {
    constructor(subverseName) {
       this.subverseName = subverseName;
@@ -11,36 +10,40 @@ class SubverseManager {
    }
 
    setupEventListeners() {
-      // Create post button
-      const createPostBtn = document.querySelector('[onclick="showCreatePostModal()"]');
+      const createPostBtn = document.querySelector(
+         '[onclick="showCreatePostModal()"]'
+      );
       if (createPostBtn) {
-         createPostBtn.addEventListener('click', () => this.showCreatePostModal());
+         createPostBtn.addEventListener("click", () =>
+            this.showCreatePostModal()
+         );
       }
 
-      // Close modal buttons
-      document.addEventListener('click', (e) => {
-         if (e.target.classList.contains('modal-overlay') || e.target.classList.contains('close-modal')) {
+      document.addEventListener("click", (e) => {
+         if (
+            e.target.classList.contains("modal-overlay") ||
+            e.target.classList.contains("close-modal")
+         ) {
             this.hideCreatePostModal();
          }
       });
 
-      // Post type selection
-      document.addEventListener('change', (e) => {
-         if (e.target.name === 'postType') {
+      document.addEventListener("change", (e) => {
+         if (e.target.name === "postType") {
             this.togglePostFields(e.target.value);
          }
       });
 
-      // Create post form submission
-      const createPostForm = document.getElementById('createPostForm');
+      const createPostForm = document.getElementById("createPostForm");
       if (createPostForm) {
-         createPostForm.addEventListener('submit', (e) => this.handleCreatePost(e));
+         createPostForm.addEventListener("submit", (e) =>
+            this.handleCreatePost(e)
+         );
       }
 
-      // Voting buttons
-      document.addEventListener('click', (e) => {
-         if (e.target.closest('[data-vote-type]')) {
-            const button = e.target.closest('[data-vote-type]');
+      document.addEventListener("click", (e) => {
+         if (e.target.closest("[data-vote-type]")) {
+            const button = e.target.closest("[data-vote-type]");
             const postId = button.dataset.postId;
             const voteType = button.dataset.voteType;
             this.handleVote(postId, voteType, button);
@@ -55,17 +58,17 @@ class SubverseManager {
             const data = await response.json();
             this.renderPosts(data.Posts || []);
          } else {
-            console.error('Failed to load posts');
+            console.error("Failed to load posts");
             this.renderPosts([]);
          }
       } catch (error) {
-         console.error('Error loading posts:', error);
+         console.error("Error loading posts:", error);
          this.renderPosts([]);
       }
    }
 
    renderPosts(posts) {
-      const container = document.getElementById('postsContainer');
+      const container = document.getElementById("postsContainer");
       if (!container) return;
 
       if (posts.length === 0) {
@@ -85,16 +88,16 @@ class SubverseManager {
          return;
       }
 
-      container.innerHTML = posts.map(post => this.renderPost(post)).join('');
+      container.innerHTML = posts.map((post) => this.renderPost(post)).join("");
    }
 
    renderPost(post) {
-      const createdAt = new Date(post.created_at).toLocaleDateString('en-US', {
-         year: 'numeric',
-         month: 'short',
-         day: 'numeric',
-         hour: 'numeric',
-         minute: '2-digit'
+      const createdAt = new Date(post.created_at).toLocaleDateString("en-US", {
+         year: "numeric",
+         month: "short",
+         day: "numeric",
+         hour: "numeric",
+         minute: "2-digit",
       });
 
       return `
@@ -106,7 +109,9 @@ class SubverseManager {
                         data-post-id="${post.id}" data-vote-type="upvote">
                         <i class="fas fa-chevron-up text-sm"></i>
                      </button>
-                     <span class="text-xs font-medium text-orange-500 score" data-post-id="${post.id}">
+                     <span class="text-xs font-medium text-orange-500 score" data-post-id="${
+                        post.id
+                     }">
                         ${post.score || 0}
                      </span>
                      <button class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors vote-btn"
@@ -122,22 +127,30 @@ class SubverseManager {
                         </a>
                      </h2>
 
-                     ${post.post_type === 'link' ? `
+                     ${
+                        post.post_type === "link"
+                           ? `
                      <div class="mb-4">
                         <a href="${post.url}" target="_blank" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline">
                            ${post.url}
                         </a>
                      </div>
-                     ` : ''}
+                     `
+                           : ""
+                     }
 
-                     ${post.content ? `
+                     ${
+                        post.content
+                           ? `
                      <div class="relative mb-4 modern-description">
                         <div class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed line-height-6 font-medium tracking-wide line-clamp-3 bg-gradient-to-br from-gray-50/80 to-white/50 dark:from-gray-800/60 dark:to-gray-700/40 backdrop-blur-sm rounded-lg px-4 py-3 border-l-4 border-purple-500/30 dark:border-purple-400/40 shadow-sm">
                            <p>${this.escapeHtml(post.content)}</p>
                         </div>
                         <div class="absolute inset-0 bg-gradient-to-r from-purple-50/20 to-pink-50/20 dark:from-purple-900/10 dark:to-pink-900/10 rounded-lg blur-xl transform scale-105 opacity-60"></div>
                      </div>
-                     ` : ''}
+                     `
+                           : ""
+                     }
 
                      <div class="flex items-center text-xs text-gray-500 dark:text-gray-400 space-x-3">
                         <span class="flex items-center">
@@ -165,31 +178,32 @@ class SubverseManager {
    }
 
    showCreatePostModal() {
-      const modal = document.getElementById('createPostModal');
+      const modal = document.getElementById("createPostModal");
       if (modal) {
-         modal.classList.remove('hidden');
+         modal.classList.remove("hidden");
       } else {
          this.createPostModal();
       }
-
-      // Add the event listener here, after the modal is created
-      const createPostForm = document.getElementById('createPostForm');
+      const createPostForm = document.getElementById("createPostForm");
       if (createPostForm) {
-         createPostForm.addEventListener('submit', (e) => this.handleCreatePost(e));
+         createPostForm.addEventListener("submit", (e) =>
+            this.handleCreatePost(e)
+         );
       }
    }
 
    hideCreatePostModal() {
-      const modal = document.getElementById('createPostModal');
+      const modal = document.getElementById("createPostModal");
       if (modal) {
-         modal.classList.add('hidden');
+         modal.classList.add("hidden");
       }
    }
 
    createPostModal() {
-      const modal = document.createElement('div');
-      modal.id = 'createPostModal';
-      modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 modal-overlay';
+      const modal = document.createElement("div");
+      modal.id = "createPostModal";
+      modal.className =
+         "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 modal-overlay";
       modal.innerHTML = `
          <div class="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl mx-4">
             <div class="flex justify-between items-center mb-4">
@@ -250,15 +264,15 @@ class SubverseManager {
    }
 
    togglePostFields(postType) {
-      const contentField = document.getElementById('contentField');
-      const urlField = document.getElementById('urlField');
+      const contentField = document.getElementById("contentField");
+      const urlField = document.getElementById("urlField");
 
-      if (postType === 'text') {
-         contentField.classList.remove('hidden');
-         urlField.classList.add('hidden');
+      if (postType === "text") {
+         contentField.classList.remove("hidden");
+         urlField.classList.add("hidden");
       } else {
-         contentField.classList.add('hidden');
-         urlField.classList.remove('hidden');
+         contentField.classList.add("hidden");
+         urlField.classList.remove("hidden");
       }
    }
 
@@ -267,54 +281,55 @@ class SubverseManager {
 
       const formData = new FormData(e.target);
       const postData = {
-         title: formData.get('title').trim(),
-         post_type: formData.get('postType'),
-         content: formData.get('content')?.trim() || '',
-         url: formData.get('url')?.trim() || ''
+         title: formData.get("title").trim(),
+         post_type: formData.get("postType"),
+         content: formData.get("content")?.trim() || "",
+         url: formData.get("url")?.trim() || "",
       };
 
-      console.log('Creating post with data:', postData);
+      console.log("Creating post with data:", postData);
 
       if (!postData.title) {
-         this.showMessage('Title is required', 'error');
+         this.showMessage("Title is required", "error");
          return;
       }
 
-      if (postData.post_type === 'text' && !postData.content) {
-         this.showMessage('Content is required for text posts', 'error');
+      if (postData.post_type === "text" && !postData.content) {
+         this.showMessage("Content is required for text posts", "error");
          return;
       }
 
-      if (postData.post_type === 'link' && !postData.url) {
-         this.showMessage('URL is required for link posts', 'error');
+      if (postData.post_type === "link" && !postData.url) {
+         this.showMessage("URL is required for link posts", "error");
          return;
       }
 
-      const submitBtn = document.getElementById('submitPostBtn');
+      const submitBtn = document.getElementById("submitPostBtn");
       submitBtn.disabled = true;
-      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Posting...';
+      submitBtn.innerHTML =
+         '<i class="fas fa-spinner fa-spin mr-2"></i>Posting...';
 
       try {
          const response = await fetch(`/s/${this.subverseName}/posts`, {
-            method: 'POST',
+            method: "POST",
             headers: {
-               'Content-Type': 'application/json',
+               "Content-Type": "application/json",
             },
-            body: JSON.stringify(postData)
+            body: JSON.stringify(postData),
          });
 
          if (response.ok) {
-            this.showMessage('Post created successfully!', 'success');
+            this.showMessage("Post created successfully!", "success");
             this.hideCreatePostModal();
             this.loadPosts();
             e.target.reset();
          } else {
             const error = await response.json();
-            this.showMessage(error.error || 'Failed to create post', 'error');
+            this.showMessage(error.error || "Failed to create post", "error");
          }
       } catch (error) {
-         console.error('Error creating post:', error);
-         this.showMessage('Failed to create post', 'error');
+         console.error("Error creating post:", error);
+         this.showMessage("Failed to create post", "error");
       } finally {
          submitBtn.disabled = false;
          submitBtn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i>Post';
@@ -323,11 +338,12 @@ class SubverseManager {
 
    async handleVote(postId, voteType, button) {
       try {
-         // For now, just update the UI locally
-         const scoreElement = document.querySelector(`[data-post-id="${postId}"].score`);
+         const scoreElement = document.querySelector(
+            `[data-post-id="${postId}"].score`
+         );
          if (scoreElement) {
             let currentScore = parseInt(scoreElement.textContent) || 0;
-            if (voteType === 'upvote') {
+            if (voteType === "upvote") {
                currentScore += 1;
             } else {
                currentScore -= 1;
@@ -336,28 +352,31 @@ class SubverseManager {
          }
 
          // TODO: Implement actual voting API call
+         //
          // const response = await fetch(`/api/posts/${postId}/vote`, {
          //    method: 'POST',
          //    headers: { 'Content-Type': 'application/json' },
          //    body: JSON.stringify({ vote_type: voteType })
          // });
-
       } catch (error) {
-         console.error('Error voting:', error);
+         console.error("Error voting:", error);
       }
    }
 
    escapeHtml(text) {
-      const div = document.createElement('div');
+      const div = document.createElement("div");
       div.textContent = text;
       return div.innerHTML;
    }
 
-   showMessage(message, type = 'info') {
-      const notification = document.createElement('div');
+   showMessage(message, type = "info") {
+      const notification = document.createElement("div");
       notification.className = `fixed top-4 right-4 px-4 py-2 rounded-md text-white z-50 ${
-         type === 'success' ? 'bg-green-500' :
-         type === 'error' ? 'bg-red-500' : 'bg-blue-500'
+         type === "success"
+            ? "bg-green-500"
+            : type === "error"
+            ? "bg-red-500"
+            : "bg-blue-500"
       }`;
       notification.textContent = message;
 
@@ -369,9 +388,8 @@ class SubverseManager {
    }
 }
 
-// Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-   const subverseName = window.location.pathname.split('/')[2];
+document.addEventListener("DOMContentLoaded", () => {
+   const subverseName = window.location.pathname.split("/")[2];
    if (subverseName) {
       new SubverseManager(subverseName);
    }
