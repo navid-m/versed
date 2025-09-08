@@ -1050,6 +1050,7 @@ func main() {
 	app.Get("/posts/:postID", handlers.GetPost)
 	app.Put("/posts/:postID", handlers.UpdatePost)
 	app.Delete("/posts/:postID", handlers.DeletePost)
+	app.Post("/api/posts/:postID/vote", handlers.VotePost)
 
 	app.Get("/posts/:postID/comments", handlers.GetPostComments)
 	app.Post("/posts/:postID/comments", handlers.CreatePostComment)

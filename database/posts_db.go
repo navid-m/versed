@@ -299,3 +299,88 @@ func DeletePostComment(db *sql.DB, commentID, userID int) error {
 
 	return tx.Commit()
 }
+
+// VoteOnPost creates or updates a vote on a post and updates the post score
+func VoteOnPost(db *sql.DB, userID, postID int, voteType string) error {
+	if voteType != "upvote" && voteType != "downvote" {
+		return fmt.Errorf("invalid vote type: must be 'upvote' or 'downvote'")
+	}
+
+	tx, err := db.Begin()
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback()
+	var existingVoteType string
+	var hasVote bool
+	err = tx.QueryRow("SELECT vote_type FROM post_votes WHERE user_id = ? AND post_id = ?", userID, postID).Scan(&existingVoteType)
+	if err != nil && err != sql.ErrNoRows {
+		return fmt.Errorf("failed to check existing vote: %w", err)
+	}
+	hasVote = err != sql.ErrNoRows
+
+	now := time.Now()
+
+	if hasVote {
+		if existingVoteType == voteType {
+			_, err = tx.Exec("DELETE FROM post_votes WHERE user_id = ? AND post_id = ?", userID, postID)
+			if err != nil {
+				return fmt.Errorf("failed to remove vote: %w", err)
+			}
+		} else {
+			_, err = tx.Exec("UPDATE post_votes SET vote_type = ?, updated_at = ? WHERE user_id = ? AND post_id = ?", voteType, now, userID, postID)
+			if err != nil {
+				return fmt.Errorf("failed to update vote: %w", err)
+			}
+		}
+	} else {
+		_, err = tx.Exec("INSERT INTO post_votes (user_id, post_id, vote_type, created_at, updated_at) VALUES (?, ?, ?, ?, ?)", userID, postID, voteType, now, now)
+		if err != nil {
+			return fmt.Errorf("failed to create vote: %w", err)
+		}
+	}
+
+	err = updatePostScore(tx, postID)
+	if err != nil {
+		return fmt.Errorf("failed to update post score: %w", err)
+	}
+
+	return tx.Commit()
+}
+
+// GetUserVoteOnPost gets the user's current vote on a specific post (if any)
+func GetUserVoteOnPost(db *sql.DB, userID, postID int) (string, error) {
+	var voteType string
+	err := db.QueryRow("SELECT vote_type FROM post_votes WHERE user_id = ? AND post_id = ?", userID, postID).Scan(&voteType)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return "", nil
+		}
+		return "", fmt.Errorf("failed to get user vote: %w", err)
+	}
+	return voteType, nil
+}
+
+// updatePostScore recalculates and updates the score for a post based on votes
+func updatePostScore(tx *sql.Tx, postID int) error {
+	var upvotes, downvotes int
+
+	err := tx.QueryRow("SELECT COUNT(*) FROM post_votes WHERE post_id = ? AND vote_type = 'upvote'", postID).Scan(&upvotes)
+	if err != nil {
+		return fmt.Errorf("failed to count upvotes: %w", err)
+	}
+
+	err = tx.QueryRow("SELECT COUNT(*) FROM post_votes WHERE post_id = ? AND vote_type = 'downvote'", postID).Scan(&downvotes)
+	if err != nil {
+		return fmt.Errorf("failed to count downvotes: %w", err)
+	}
+
+	score := upvotes - downvotes
+
+	_, err = tx.Exec("UPDATE posts SET score = ? WHERE id = ?", score, postID)
+	if err != nil {
+		return fmt.Errorf("failed to update post score: %w", err)
+	}
+
+	return nil
+}

@@ -17,7 +17,7 @@ type Post struct {
 	Username   string    `json:"username"`
 	Title      string    `json:"title"`
 	Content    string    `json:"content,omitempty"`
-	PostType   string    `json:"post_type"` // "text" or "link"
+	PostType   string    `json:"post_type"`
 	URL        string    `json:"url,omitempty"`
 	Score      int       `json:"score"`
 	CreatedAt  time.Time `json:"created_at"`
@@ -26,13 +26,22 @@ type Post struct {
 
 // PostComment represents a comment on a post
 type PostComment struct {
-	ID        int          `json:"id"`
-	PostID    int          `json:"post_id"`
-	UserID    int          `json:"user_id"`
-	Username  string       `json:"username"`
-	Content   string       `json:"content"`
-	ParentID  *int         `json:"parent_id,omitempty"`
-	CreatedAt time.Time    `json:"created_at"`
-	UpdatedAt time.Time    `json:"updated_at"`
+	ID        int           `json:"id"`
+	PostID    int           `json:"post_id"`
+	UserID    int           `json:"user_id"`
+	Username  string        `json:"username"`
+	Content   string        `json:"content"`
+	ParentID  *int          `json:"parent_id,omitempty"`
+	CreatedAt time.Time     `json:"created_at"`
+	UpdatedAt time.Time     `json:"updated_at"`
 	Replies   []PostComment `json:"replies,omitempty"`
+}
+
+// Vote represents a user's vote on a post
+type Vote struct {
+	UserID    int       `json:"user_id"`
+	PostID    int       `json:"post_id"`
+	VoteType  string    `json:"vote_type"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }

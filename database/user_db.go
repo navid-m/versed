@@ -144,7 +144,6 @@ func GetUserByEmail(email string) (*models.User, error) {
 		return nil, err
 	}
 
-	// Convert sql.NullBool to bool with false as default
 	user.IsAdmin = isAdmin.Bool
 
 	return &user, nil
@@ -162,7 +161,6 @@ func UpdateUser(userID int, email, username, password string) error {
 		Set("username", username).
 		Where(squirrel.Eq{"id": userID})
 
-	// Only update password if it's not empty
 	if password != "" {
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 		if err != nil {

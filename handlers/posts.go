@@ -413,3 +413,60 @@ func DeletePostComment(c *fiber.Ctx) error {
 		"message": "Comment deleted successfully",
 	})
 }
+
+// VotePost handles voting on a post (upvote/downvote)
+func VotePost(c *fiber.Ctx) error {
+	userID := c.Locals("userID")
+	if userID == nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "Authentication required",
+		})
+	}
+
+	postID, err := c.ParamsInt("postID")
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid post ID",
+		})
+	}
+
+	var req struct {
+		VoteType string `json:"vote_type"`
+	}
+
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid request body",
+		})
+	}
+
+	if req.VoteType != "upvote" && req.VoteType != "downvote" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Vote type must be 'upvote' or 'downvote'",
+		})
+	}
+
+	db := database.GetDB()
+
+	// Vote on the post
+	err = database.VoteOnPost(db, userID.(int), postID, req.VoteType)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to vote on post",
+		})
+	}
+
+	// Get the updated post to return the new score
+	post, err := database.GetPostByID(db, postID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to get updated post",
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"success": true,
+		"post_id": postID,
+		"score":   post.Score,
+	})
+}

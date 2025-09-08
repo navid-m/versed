@@ -332,29 +332,76 @@ class SubverseManager {
    }
 
    async handleVote(postId, voteType, button) {
-      try {
-         const scoreElement = document.querySelector(
-            `[data-post-id="${postId}"].score`
-         );
-         if (scoreElement) {
-            let currentScore = parseInt(scoreElement.textContent) || 0;
-            if (voteType === "upvote") {
-               currentScore += 1;
-            } else {
-               currentScore -= 1;
-            }
-            scoreElement.textContent = currentScore;
-         }
+      // Prevent multiple rapid clicks
+      if (button.disabled) return;
+      button.disabled = true;
 
-         // TODO: Implement actual voting API call
-         //
-         // const response = await fetch(`/api/posts/${postId}/vote`, {
-         //    method: 'POST',
-         //    headers: { 'Content-Type': 'application/json' },
-         //    body: JSON.stringify({ vote_type: voteType })
-         // });
+      const scoreElement = document.querySelector(
+         `[data-post-id="${postId}"].score`
+      );
+
+      if (!scoreElement) {
+         button.disabled = false;
+         return;
+      }
+
+      const originalScore = parseInt(scoreElement.textContent) || 0;
+
+      try {
+         const response = await fetch(`/api/posts/${postId}/vote`, {
+            method: 'POST',
+            headers: {
+               'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ vote_type: voteType })
+         });
+
+         if (response.ok) {
+            const data = await response.json();
+            // Update the score with the server response
+            scoreElement.textContent = data.score;
+
+            // Update button states to show current vote status
+            this.updateVoteButtonStates(postId, voteType);
+         } else if (response.status === 401) {
+            // User not authenticated
+            this.showMessage("You must be logged in to vote", "error");
+            scoreElement.textContent = originalScore;
+         } else {
+            // Handle other errors
+            const error = await response.json();
+            this.showMessage(error.error || "Failed to vote", "error");
+            scoreElement.textContent = originalScore;
+         }
       } catch (error) {
          console.error("Error voting:", error);
+         this.showMessage("Failed to vote. Please try again.", "error");
+         scoreElement.textContent = originalScore;
+      } finally {
+         button.disabled = false;
+      }
+   }
+
+   updateVoteButtonStates(postId, voteType) {
+      const upvoteBtn = document.querySelector(`[data-post-id="${postId}"][data-vote-type="upvote"]`);
+      const downvoteBtn = document.querySelector(`[data-post-id="${postId}"][data-vote-type="downvote"]`);
+
+      if (!upvoteBtn || !downvoteBtn) return;
+
+      // Reset all buttons to default state
+      upvoteBtn.classList.remove('text-orange-600', 'text-gray-400');
+      upvoteBtn.classList.add('text-orange-500', 'hover:text-orange-600');
+
+      downvoteBtn.classList.remove('text-red-600', 'text-gray-400');
+      downvoteBtn.classList.add('text-gray-400', 'hover:text-gray-600', 'dark:hover:text-gray-300');
+
+      // Highlight the voted button
+      if (voteType === 'upvote') {
+         upvoteBtn.classList.remove('text-orange-500', 'hover:text-orange-600');
+         upvoteBtn.classList.add('text-orange-600');
+      } else if (voteType === 'downvote') {
+         downvoteBtn.classList.remove('text-gray-400', 'hover:text-gray-600', 'dark:hover:text-gray-300');
+         downvoteBtn.classList.add('text-red-600');
       }
    }
 
