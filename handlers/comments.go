@@ -9,7 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// GetComments retrieves all comments for a specific feed item
+// Retrieves all comments for a specific feed item
 func GetComments(c *fiber.Ctx) error {
 	itemID := c.Params("itemId")
 
@@ -32,7 +32,7 @@ func GetComments(c *fiber.Ctx) error {
 	})
 }
 
-// CreateComment adds a new comment to a feed item
+// Adds a new comment to a feed item
 func CreateComment(c *fiber.Ctx) error {
 	userIDLocal := c.Locals("userID")
 	if userIDLocal == nil {
