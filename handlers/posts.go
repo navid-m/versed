@@ -448,7 +448,6 @@ func VotePost(c *fiber.Ctx) error {
 
 	db := database.GetDB()
 
-	// Vote on the post
 	err = database.VoteOnPost(db, userID.(int), postID, req.VoteType)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -456,7 +455,6 @@ func VotePost(c *fiber.Ctx) error {
 		})
 	}
 
-	// Get the updated post to return the new score
 	post, err := database.GetPostByID(db, postID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -468,5 +466,48 @@ func VotePost(c *fiber.Ctx) error {
 		"success": true,
 		"post_id": postID,
 		"score":   post.Score,
+	})
+}
+
+// Handles searching for posts within a subverse
+func SearchPosts(c *fiber.Ctx) error {
+	subverseName := c.Params("subverseName")
+	if subverseName == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Subverse name is required",
+		})
+	}
+
+	query := c.Query("q", "")
+	limit := c.QueryInt("limit", 20)
+	if limit > 50 {
+		limit = 50
+	}
+	offset := c.QueryInt("offset", 0)
+
+	db := database.GetDB()
+
+	var subverseID int
+	err := db.QueryRow("SELECT id FROM subverses WHERE name = ?", subverseName).Scan(&subverseID)
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": "Subverse not found",
+		})
+	}
+
+	posts, err := database.SearchPostsBySubverse(db, subverseID, query, limit, offset)
+	if err != nil {
+		log.Printf("Failed to search posts: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to search posts",
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"Posts":  posts,
+		"count":  len(posts),
+		"limit":  limit,
+		"offset": offset,
+		"query":  query,
 	})
 }

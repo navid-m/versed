@@ -49,6 +49,14 @@ class SubverseManager {
             this.handleVote(postId, voteType, button);
          }
       });
+
+      // Add search functionality
+      const searchInput = document.querySelector('input[placeholder="Search posts..."]');
+      if (searchInput) {
+         searchInput.addEventListener("input", (e) => {
+            this.handleSearch(e.target.value);
+         });
+      }
    }
 
    async loadPosts() {
@@ -63,6 +71,28 @@ class SubverseManager {
          }
       } catch (error) {
          console.error("Error loading posts:", error);
+         this.renderPosts([]);
+      }
+   }
+
+   async handleSearch(query) {
+      try {
+         if (query.trim() === "") {
+            // If search is empty, load all posts
+            await this.loadPosts();
+            return;
+         }
+
+         const response = await fetch(`/s/${this.subverseName}/posts/search?q=${encodeURIComponent(query)}`);
+         if (response.ok) {
+            const data = await response.json();
+            this.renderPosts(data.Posts || []);
+         } else {
+            console.error("Failed to search posts");
+            this.renderPosts([]);
+         }
+      } catch (error) {
+         console.error("Error searching posts:", error);
          this.renderPosts([]);
       }
    }

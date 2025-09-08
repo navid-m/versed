@@ -1046,6 +1046,7 @@ func main() {
 	app.Delete("/api/admin/subverses/:subverseId/feeds/:feedId", adminMiddleware, handlers.RemoveFeedFromSubverse)
 
 	app.Get("/s/:subverseName/posts", handlers.GetSubversePosts)
+	app.Get("/s/:subverseName/posts/search", handlers.SearchPosts)
 	app.Post("/s/:subverseName/posts", handlers.CreatePost)
 	app.Get("/posts/:postID", handlers.GetPost)
 	app.Put("/posts/:postID", handlers.UpdatePost)

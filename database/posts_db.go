@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/navid-m/versed/models"
@@ -383,4 +384,46 @@ func updatePostScore(tx *sql.Tx, postID int) error {
 	}
 
 	return nil
+}
+
+// Searches for posts within a specific subverse
+func SearchPostsBySubverse(db *sql.DB, subverseID int, query string, limit, offset int) ([]models.Post, error) {
+	if strings.TrimSpace(query) == "" {
+		return GetPostsBySubverse(db, subverseID, limit, offset)
+	}
+
+	searchQuery := `SELECT p.id, p.subverse_id, p.user_id, u.username, p.title, p.content, p.post_type, p.url, p.score, p.created_at, p.updated_at
+	               FROM posts p
+	               JOIN users u ON p.user_id = u.id
+	               WHERE p.subverse_id = ? AND (p.title LIKE ? OR p.content LIKE ?)
+	               ORDER BY p.created_at DESC
+	               LIMIT ? OFFSET ?`
+
+	searchPattern := "%" + query + "%"
+	rows, err := db.Query(searchQuery, subverseID, searchPattern, searchPattern, limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("failed to search posts: %w", err)
+	}
+	defer rows.Close()
+
+	var posts []models.Post
+	for rows.Next() {
+		var post models.Post
+		var content, url sql.NullString
+		err := rows.Scan(
+			&post.ID, &post.SubverseID, &post.UserID, &post.Username,
+			&post.Title, &content, &post.PostType, &url, &post.Score,
+			&post.CreatedAt, &post.UpdatedAt,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan post: %w", err)
+		}
+
+		post.Content = content.String
+		post.URL = url.String
+
+		posts = append(posts, post)
+	}
+
+	return posts, nil
 }
