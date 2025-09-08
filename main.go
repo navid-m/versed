@@ -526,7 +526,7 @@ func main() {
 
 		var hiddenItems []feeds.FeedItem
 		for _, itemID := range itemIDs {
-			query := `SELECT fi.id, fi.source_id, fi.title, fi.url, fi.description, fi.author, fi.published_at, fi.score, fi.comments_count, fi.created_at, fs.name as source_name
+			query := `SELECT fi.id, fi.source_id, fi.title, fi.url, fi.description, fi.author, fi.published_at, COALESCE(fi.score, 0) as score, COALESCE(fi.comments_count, 0) as comments_count, fi.created_at, fs.name as source_name
 				FROM feed_items fi
 				JOIN feed_sources fs ON fi.source_id = fs.id
 				WHERE fi.id = ?`

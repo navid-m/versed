@@ -66,11 +66,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
       try {
          const response = await fetch("/api/posts/hidden");
+         console.log("Hidden posts API response status:", response.status);
+
          if (!response.ok) {
             throw new Error("Failed to load hidden posts");
          }
 
          const data = await response.json();
+         console.log("Hidden posts API response data:", data);
+
+         if (data.hiddenItems) {
+            console.log("Hidden items count:", data.hiddenItems.length);
+            console.log("First hidden item:", data.hiddenItems[0]);
+         }
+
          renderHiddenPosts(data.hiddenItems);
       } catch (error) {
          console.error("Error loading hidden posts:", error);
@@ -78,6 +87,7 @@ document.addEventListener("DOMContentLoaded", function () {
             <div class="text-center py-8 text-red-500 dark:text-red-400">
                <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
                <p>Failed to load hidden posts. Please try again.</p>
+               <p class="text-sm">Error: ${error.message}</p>
             </div>
          `;
       }
@@ -100,26 +110,26 @@ document.addEventListener("DOMContentLoaded", function () {
             <div class="flex items-start justify-between">
                <div class="flex-1 min-w-0">
                   <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2 line-clamp-2">
-                     <a href="${item.URL}" target="_blank" class="hover:text-blue-600 dark:hover:text-blue-400">
-                        ${item.Title}
+                     <a href="${item.url}" target="_blank" class="hover:text-blue-600 dark:hover:text-blue-400">
+                        ${item.title}
                      </a>
                   </h3>
                   <div class="flex items-center text-xs text-gray-500 dark:text-gray-400 space-x-2">
                      <span class="flex items-center">
                         <i class="far fa-user mr-1"></i>
-                        ${item.Author || 'Unknown'}
+                        ${item.author || 'Unknown'}
                      </span>
                      <span class="flex items-center">
                         <i class="far fa-clock mr-1"></i>
-                        ${new Date(item.PublishedAt).toLocaleDateString()}
+                        ${new Date(item.published_at).toLocaleDateString()}
                      </span>
                      <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
-                        ${item.SourceName || 'Unknown'}
+                        ${item.source_name || 'Unknown'}
                      </span>
                   </div>
                </div>
                <button class="ml-3 px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-md transition-colors unhide-btn"
-                  data-feed-id="${item.ID}">
+                  data-feed-id="${item.id}">
                   <i class="fas fa-eye mr-1"></i>
                   Unhide
                </button>
