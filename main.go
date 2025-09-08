@@ -134,6 +134,8 @@ func main() {
 		if userUsername != nil {
 			data["Username"] = userUsername
 		}
+		err = django.New("./views", ".html").Render(c, "index", data)
+		fmt.Println(err)
 		return c.Render("index", data)
 	})
 	app.Get("/signin", func(c *fiber.Ctx) error {
