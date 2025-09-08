@@ -3,6 +3,7 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/navid-m/versed/models"
@@ -109,15 +110,13 @@ func GetPostsBySubverse(db *sql.DB, subverseID int, limit, offset int) ([]models
 			return nil, fmt.Errorf("failed to scan post: %w", err)
 		}
 
-		if content.Valid {
-			post.Content = content.String
-		}
-		if url.Valid {
-			post.URL = url.String
-		}
+		post.Content = content.String
+		post.URL = url.String
 
 		posts = append(posts, post)
 	}
+
+	log.Printf("GetPostsBySubverse: returning %d posts", len(posts))
 
 	return posts, nil
 }
@@ -150,13 +149,11 @@ func DeletePost(db *sql.DB, postID, userID int) error {
 	}
 	defer tx.Rollback()
 
-	// Delete comments first (cascade should handle this, but let's be explicit)
 	_, err = tx.Exec(`DELETE FROM post_comments WHERE post_id = ?`, postID)
 	if err != nil {
 		return fmt.Errorf("failed to delete post comments: %w", err)
 	}
 
-	// Delete the post
 	result, err := tx.Exec(`DELETE FROM posts WHERE id = ? AND user_id = ?`, postID, userID)
 	if err != nil {
 		return fmt.Errorf("failed to delete post: %w", err)
@@ -239,7 +236,6 @@ func GetPostComments(db *sql.DB, postID int) ([]models.PostComment, error) {
 		commentMap[comment.ID] = &comment
 	}
 
-	// Organize into tree structure
 	var rootComments []models.PostComment
 	for _, comment := range commentMap {
 		if comment.ParentID == nil {
@@ -282,13 +278,11 @@ func DeletePostComment(db *sql.DB, commentID, userID int) error {
 	}
 	defer tx.Rollback()
 
-	// Delete replies first
 	_, err = tx.Exec(`DELETE FROM post_comments WHERE parent_id = ?`, commentID)
 	if err != nil {
 		return fmt.Errorf("failed to delete comment replies: %w", err)
 	}
 
-	// Delete the comment
 	result, err := tx.Exec(`DELETE FROM post_comments WHERE id = ? AND user_id = ?`, commentID, userID)
 	if err != nil {
 		return fmt.Errorf("failed to delete comment: %w", err)

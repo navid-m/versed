@@ -63,7 +63,6 @@ func CreatePost(c *fiber.Ctx) error {
 
 	db := database.GetDB()
 
-	// Get subverse by name
 	var subverseID int
 	err := db.QueryRow("SELECT id FROM subverses WHERE name = ?", subverseName).Scan(&subverseID)
 	if err != nil {
@@ -72,12 +71,20 @@ func CreatePost(c *fiber.Ctx) error {
 		})
 	}
 
+	log.Printf("Creating post in subverse '%s' (ID: %d)", subverseName, subverseID)
+	log.Printf("Creating post with title: %s, content: %s, type: %s, url: %s", req.Title, req.Content, req.PostType, req.URL)
 	post, err := database.CreatePost(db, subverseID, userID.(int), username.(string), req.Title, req.Content, req.PostType, req.URL)
 	if err != nil {
 		log.Printf("Failed to create post: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to create post",
 		})
+	}
+	log.Printf("Successfully created post with ID %d", post.ID)
+
+	err = database.UpdateSubversePostCount(db, subverseID)
+	if err != nil {
+		log.Printf("Failed to update subverse post count: %v", err)
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(post)
@@ -120,7 +127,6 @@ func GetSubversePosts(c *fiber.Ctx) error {
 
 	db := database.GetDB()
 
-	// Get subverse by name
 	var subverseID int
 	err := db.QueryRow("SELECT id FROM subverses WHERE name = ?", subverseName).Scan(&subverseID)
 	if err != nil {
@@ -138,7 +144,7 @@ func GetSubversePosts(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(fiber.Map{
-		"posts":  posts,
+		"Posts":  posts,
 		"count":  len(posts),
 		"limit":  limit,
 		"offset": offset,

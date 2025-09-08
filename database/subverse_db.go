@@ -130,3 +130,19 @@ func GetSubverseFeedItems(db *sql.DB, subverseID int, limit int) ([]feeds.FeedIt
 
 	return items, nil
 }
+
+func UpdateSubversePostCount(db *sql.DB, subverseID int) error {
+	var column string
+	err := db.QueryRow("SELECT 1 FROM pragma_table_info('subverses') WHERE name='post_count'").Scan(&column)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil
+		} else {
+			return err
+		}
+	}
+
+	query := `UPDATE subverses SET post_count = post_count + 1 WHERE id = ?`
+	_, err = db.Exec(query, subverseID)
+	return err
+}

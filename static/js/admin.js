@@ -17,7 +17,9 @@ class AdminPanel {
 
       const createSubverseBtn = document.getElementById("createSubverseBtn");
       if (createSubverseBtn) {
-         createSubverseBtn.addEventListener("click", () => this.createSubverse());
+         createSubverseBtn.addEventListener("click", () =>
+            this.createSubverse()
+         );
       }
    }
 
@@ -26,12 +28,13 @@ class AdminPanel {
       const createSubverseBtn = document.getElementById("createSubverseBtn");
 
       if (!subverseName) {
-         this.showMessage("Please enter a subverse name", "error");
+         this.showMessage("Enter a subverse name", "error");
          return;
       }
 
       createSubverseBtn.disabled = true;
-      createSubverseBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Creating...';
+      createSubverseBtn.innerHTML =
+         '<i class="fas fa-spinner fa-spin mr-2"></i>Creating...';
 
       try {
          const response = await fetch("/api/admin/subverses", {
@@ -48,14 +51,18 @@ class AdminPanel {
             this.loadSubverses();
          } else {
             const error = await response.json();
-            this.showMessage(error.error || "Failed to create subverse", "error");
+            this.showMessage(
+               error.error || "Failed to create subverse",
+               "error"
+            );
          }
       } catch (error) {
          console.error("Error creating subverse:", error);
          this.showMessage("Failed to create subverse", "error");
       } finally {
          createSubverseBtn.disabled = false;
-         createSubverseBtn.innerHTML = '<i class="fas fa-plus mr-2"></i>Create Subverse';
+         createSubverseBtn.innerHTML =
+            '<i class="fas fa-plus mr-2"></i>Create Subverse';
       }
    }
 
@@ -99,7 +106,9 @@ class AdminPanel {
                     <div>
                         <div class="flex items-center space-x-3">
                             <i class="fas fa-folder text-purple-500"></i>
-                            <span class="font-medium text-gray-900 dark:text-gray-100">/s/${subverse.name}</span>
+                            <span class="font-medium text-gray-900 dark:text-gray-100">/s/${
+                               subverse.name
+                            }</span>
                         </div>
                         <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">
                             <div>Created: ${new Date(
@@ -120,14 +129,14 @@ class AdminPanel {
       const banIPBtn = document.getElementById("banIPBtn");
 
       if (!ipAddress) {
-         this.showMessage("Please enter an IP address", "error");
+         this.showMessage("Enter an IP address", "error");
          return;
       }
 
       const ipRegex =
          /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
       if (!ipRegex.test(ipAddress)) {
-         this.showMessage("Please enter a valid IP address", "error");
+         this.showMessage("Enter a valid IP address", "error");
          return;
       }
 

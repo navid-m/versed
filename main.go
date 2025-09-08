@@ -166,7 +166,7 @@ func main() {
 		}
 
 		if !strings.Contains(email, "@") || !strings.Contains(email, ".") {
-			return c.Status(400).SendString("Please enter a valid email address")
+			return c.Status(400).SendString("Enter a valid email address")
 		}
 
 		if len(username) < 3 || len(username) > 20 {
@@ -1008,7 +1008,7 @@ func main() {
 		})
 	})
 
-		app.Post("/api/admin/unban-ip", adminMiddleware, func(c *fiber.Ctx) error {
+	app.Post("/api/admin/unban-ip", adminMiddleware, func(c *fiber.Ctx) error {
 		userID := c.Locals("userID").(int)
 
 		var unbanRequest struct {

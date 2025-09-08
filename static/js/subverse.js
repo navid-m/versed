@@ -53,7 +53,7 @@ class SubverseManager {
          const response = await fetch(`/s/${this.subverseName}/posts`);
          if (response.ok) {
             const data = await response.json();
-            this.renderPosts(data.posts || []);
+            this.renderPosts(data.Posts || []);
          } else {
             console.error('Failed to load posts');
             this.renderPosts([]);
@@ -171,6 +171,12 @@ class SubverseManager {
       } else {
          this.createPostModal();
       }
+
+      // Add the event listener here, after the modal is created
+      const createPostForm = document.getElementById('createPostForm');
+      if (createPostForm) {
+         createPostForm.addEventListener('submit', (e) => this.handleCreatePost(e));
+      }
    }
 
    hideCreatePostModal() {
@@ -266,6 +272,8 @@ class SubverseManager {
          content: formData.get('content')?.trim() || '',
          url: formData.get('url')?.trim() || ''
       };
+
+      console.log('Creating post with data:', postData);
 
       if (!postData.title) {
          this.showMessage('Title is required', 'error');

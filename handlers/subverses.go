@@ -11,7 +11,6 @@ import (
 
 // CreateSubverse handles the creation of a new subverse
 func CreateSubverse(c *fiber.Ctx) error {
-	// This is an admin-only function
 	isAdmin := c.Locals("isAdmin").(bool)
 	if !isAdmin {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
@@ -114,7 +113,6 @@ func AddFeedToSubverse(c *fiber.Ctx) error {
 
 // RemoveFeedFromSubverse handles removing a feed from a subverse
 func RemoveFeedFromSubverse(c *fiber.Ctx) error {
-	// This is an admin-only function
 	isAdmin := c.Locals("isAdmin").(bool)
 	if !isAdmin {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
@@ -182,7 +180,6 @@ func ViewSubverse(c *fiber.Ctx) error {
 
 	db := database.GetDB()
 
-	// Get subverse by name
 	var subverse models.Subverse
 	err := db.QueryRow("SELECT id, name, created_at FROM subverses WHERE name = ?", subverseName).Scan(
 		&subverse.ID, &subverse.Name, &subverse.CreatedAt)
@@ -190,11 +187,10 @@ func ViewSubverse(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).SendString("Subverse not found")
 	}
 
-	// Get posts for this subverse
 	posts, err := database.GetPostsBySubverse(db, subverse.ID, 20, 0)
 	if err != nil {
 		log.Printf("Failed to get subverse posts: %v", err)
-		posts = []models.Post{}
+		return c.Status(fiber.StatusInternalServerError).SendString("Failed to get posts")
 	}
 
 	userEmail := c.Locals("userEmail")
