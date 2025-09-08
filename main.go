@@ -1,3 +1,9 @@
+// Versed - A content aggregator
+//
+// Copyright (c) 2025 Navid Momtahen
+// License AGPL-3.0
+// https://github.com/navid-m/versed
+
 package main
 
 import (
