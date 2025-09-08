@@ -85,7 +85,7 @@
                      </div>
 
                      <div class="flex items-center text-xs text-gray-500 dark:text-gray-400 space-x-3">
-                        <span class="flex items-center">
+                        <span class="hidden sm:flex items-center">
                            <i class="far fa-user mr-1"></i>
                            {{ item.Author }}
                         </span>
@@ -95,7 +95,7 @@
                         </span>
                         <span
                            class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
-                           <span class="sm:hidden">{{ item.SourceName|slice:":3" }}{% if item.SourceName|length > 3 %}..{% endif %}</span>
+                           <span class="sm:hidden">{{ item.SourceName|slice:":4" }}{% if item.SourceName|length > 4 %}..{% endif %}</span>
                            <span class="hidden sm:inline">{{ item.SourceName }}</span>
                         </span>
                         <button
