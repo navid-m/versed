@@ -49,14 +49,21 @@ class SubverseManager {
             this.handleVote(postId, voteType, button);
          }
       });
-
-      // Add search functionality
-      const searchInput = document.querySelector('input[placeholder="Search posts..."]');
+      const searchInput = document.querySelector(
+         'input[placeholder="Search posts..."]'
+      );
       if (searchInput) {
          searchInput.addEventListener("input", (e) => {
             this.handleSearch(e.target.value);
          });
       }
+      document.addEventListener("click", (e) => {
+         if (e.target.closest(".save-button")) {
+            const button = e.target.closest(".save-button");
+            const postId = button.dataset.postId;
+            this.handleSave(postId, button);
+         }
+      });
    }
 
    async loadPosts() {
@@ -78,12 +85,15 @@ class SubverseManager {
    async handleSearch(query) {
       try {
          if (query.trim() === "") {
-            // If search is empty, load all posts
             await this.loadPosts();
             return;
          }
 
-         const response = await fetch(`/s/${this.subverseName}/posts/search?q=${encodeURIComponent(query)}`);
+         const response = await fetch(
+            `/s/${this.subverseName}/posts/search?q=${encodeURIComponent(
+               query
+            )}`
+         );
          if (response.ok) {
             const data = await response.json();
             this.renderPosts(data.Posts || []);
@@ -94,6 +104,41 @@ class SubverseManager {
       } catch (error) {
          console.error("Error searching posts:", error);
          this.renderPosts([]);
+      }
+   }
+
+   async handleSave(postId, button) {
+      try {
+         const isSaved = button.innerHTML.includes("fas fa-bookmark");
+
+         const endpoint = isSaved
+            ? "/api/reading-list/remove"
+            : "/api/reading-list/save";
+         const response = await fetch(endpoint, {
+            method: "POST",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ item_id: postId }),
+         });
+
+         if (response.ok) {
+            if (isSaved) {
+               button.innerHTML = '<i class="far fa-bookmark mr-1"></i> Save';
+               this.showMessage("Post removed from reading list", "info");
+            } else {
+               button.innerHTML = '<i class="fas fa-bookmark mr-1"></i> Saved';
+               this.showMessage("Post saved to reading list", "success");
+            }
+         } else if (response.status === 401) {
+            this.showMessage("You must be logged in to save posts", "error");
+         } else {
+            const error = await response.json();
+            this.showMessage(error.error || "Failed to save post", "error");
+         }
+      } catch (error) {
+         console.error("Error saving post:", error);
+         this.showMessage("Failed to save post. Please try again.", "error");
       }
    }
 
@@ -129,6 +174,9 @@ class SubverseManager {
          hour: "numeric",
          minute: "2-digit",
       });
+
+      const body = document.querySelector("body");
+      const isLoggedIn = body && body.getAttribute("data-username");
 
       return `
          <article class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md dark:hover:shadow-xl transition-shadow">
@@ -194,6 +242,15 @@ class SubverseManager {
                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200">
                            ${post.post_type}
                         </span>
+                        ${
+                           isLoggedIn
+                              ? `<button class="save-button inline-flex items-center px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                                 data-post-id="${post.id}" data-action="save">
+                                 <i class="far fa-bookmark mr-1"></i>
+                                 Save
+                              </button>`
+                              : `<span class="text-xs text-gray-400 dark:text-gray-500">Login to save</span>`
+                        }
                      </div>
                   </div>
                </div>
