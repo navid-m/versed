@@ -13,14 +13,14 @@ type User struct {
 
 // BannedIP represents a banned IP address
 type BannedIP struct {
-	ID          int       `json:"id"`
-	IPAddress   string    `json:"ip_address"`
-	BannedAt    time.Time `json:"banned_at"`
-	BannedBy    int       `json:"banned_by"` // User ID of admin who banned
-	Reason      string    `json:"reason,omitempty"`
-	IsActive    bool      `json:"is_active"`
-	UnbannedAt  *time.Time `json:"unbanned_at,omitempty"`
-	UnbannedBy  *int      `json:"unbanned_by,omitempty"`
+	ID         int        `json:"id"`
+	IPAddress  string     `json:"ip_address"`
+	BannedAt   time.Time  `json:"banned_at"`
+	BannedBy   int        `json:"banned_by"`
+	Reason     string     `json:"reason,omitempty"`
+	IsActive   bool       `json:"is_active"`
+	UnbannedAt *time.Time `json:"unbanned_at,omitempty"`
+	UnbannedBy *int       `json:"unbanned_by,omitempty"`
 }
 
 // AdminUser represents an admin user for management

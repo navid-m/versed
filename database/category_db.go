@@ -9,7 +9,7 @@ import (
 	"github.com/navid-m/versed/models"
 )
 
-// CreateUserCategory creates a new category for a user
+// Creates a new category for a user
 func CreateUserCategory(db *sql.DB, userID int, name, description string) (*models.UserCategory, error) {
 	query := `INSERT INTO user_categories (user_id, name, description) VALUES (?, ?, ?)`
 	result, err := db.Exec(query, userID, name, description)
@@ -33,7 +33,7 @@ func CreateUserCategory(db *sql.DB, userID int, name, description string) (*mode
 	return category, nil
 }
 
-// GetUserCategories retrieves all categories for a user
+// Retrieves all categories for a user
 func GetUserCategories(db *sql.DB, userID int) ([]models.UserCategory, error) {
 	query := `SELECT id, user_id, name, description, created_at FROM user_categories WHERE user_id = ? ORDER BY name`
 	rows, err := db.Query(query, userID)
@@ -55,7 +55,7 @@ func GetUserCategories(db *sql.DB, userID int) ([]models.UserCategory, error) {
 	return categories, nil
 }
 
-// GetUserCategoryByID retrieves a specific category for a user
+// Retrieves a specific category for a user
 func GetUserCategoryByID(db *sql.DB, userID, categoryID int) (*models.UserCategory, error) {
 	query := `SELECT id, user_id, name, description, created_at FROM user_categories WHERE id = ? AND user_id = ?`
 	row := db.QueryRow(query, categoryID, userID)
@@ -72,7 +72,7 @@ func GetUserCategoryByID(db *sql.DB, userID, categoryID int) (*models.UserCatego
 	return &category, nil
 }
 
-// UpdateUserCategory updates a category's name and description
+// Updates a category's name and description
 func UpdateUserCategory(db *sql.DB, userID, categoryID int, name, description string) error {
 	query := `UPDATE user_categories SET name = ?, description = ? WHERE id = ? AND user_id = ?`
 	result, err := db.Exec(query, name, description, categoryID, userID)
@@ -92,21 +92,17 @@ func UpdateUserCategory(db *sql.DB, userID, categoryID int, name, description st
 	return nil
 }
 
-// DeleteUserCategory deletes a category and all its feed associations
+// Deletes a category and all its feed associations
 func DeleteUserCategory(db *sql.DB, userID, categoryID int) error {
 	tx, err := db.Begin()
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
 	defer tx.Rollback()
-
-	// First delete all feed associations for this category
 	_, err = tx.Exec(`DELETE FROM user_category_feeds WHERE user_id = ? AND category_id = ?`, userID, categoryID)
 	if err != nil {
 		return fmt.Errorf("failed to delete category feeds: %w", err)
 	}
-
-	// Then delete the category
 	result, err := tx.Exec(`DELETE FROM user_categories WHERE id = ? AND user_id = ?`, categoryID, userID)
 	if err != nil {
 		return fmt.Errorf("failed to delete category: %w", err)
@@ -126,13 +122,11 @@ func DeleteUserCategory(db *sql.DB, userID, categoryID int) error {
 
 // AddFeedToUserCategory adds a feed source to a user's category
 func AddFeedToUserCategory(db *sql.DB, userID, categoryID, feedSourceID int) error {
-	// Check if the category belongs to the user
 	_, err := GetUserCategoryByID(db, userID, categoryID)
 	if err != nil {
 		return fmt.Errorf("invalid category: %w", err)
 	}
 
-	// Check if the feed source exists
 	var exists bool
 	err = db.QueryRow(`SELECT EXISTS(SELECT 1 FROM feed_sources WHERE id = ?)`, feedSourceID).Scan(&exists)
 	if err != nil {
@@ -151,7 +145,7 @@ func AddFeedToUserCategory(db *sql.DB, userID, categoryID, feedSourceID int) err
 	return nil
 }
 
-// RemoveFeedFromUserCategory removes a feed source from a user's category
+// Removes a feed source from a user's category
 func RemoveFeedFromUserCategory(db *sql.DB, userID, categoryID, feedSourceID int) error {
 	query := `DELETE FROM user_category_feeds WHERE user_id = ? AND category_id = ? AND feed_source_id = ?`
 	result, err := db.Exec(query, userID, categoryID, feedSourceID)
@@ -171,7 +165,7 @@ func RemoveFeedFromUserCategory(db *sql.DB, userID, categoryID, feedSourceID int
 	return nil
 }
 
-// GetFeedsInUserCategory gets all feed sources in a user's category
+// Gets all feed sources in a user's category
 func GetFeedsInUserCategory(db *sql.DB, userID, categoryID int) ([]feeds.FeedSource, error) {
 	query := `SELECT fs.id, fs.name, fs.url, fs.last_updated, fs.update_interval
 	          FROM feed_sources fs
@@ -197,7 +191,7 @@ func GetFeedsInUserCategory(db *sql.DB, userID, categoryID int) ([]feeds.FeedSou
 	return sources, nil
 }
 
-// GetUserCategoriesForFeed gets all categories for a user that contain a specific feed
+// Gets all categories for a user that contain a specific feed
 func GetUserCategoriesForFeed(db *sql.DB, userID, feedSourceID int) ([]models.UserCategory, error) {
 	query := `SELECT uc.id, uc.user_id, uc.name, uc.description, uc.created_at
 	          FROM user_categories uc
