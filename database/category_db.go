@@ -120,7 +120,7 @@ func DeleteUserCategory(db *sql.DB, userID, categoryID int) error {
 	return tx.Commit()
 }
 
-// AddFeedToUserCategory adds a feed source to a user's category
+// Adds a feed source to a user's category
 func AddFeedToUserCategory(db *sql.DB, userID, categoryID, feedSourceID int) error {
 	_, err := GetUserCategoryByID(db, userID, categoryID)
 	if err != nil {

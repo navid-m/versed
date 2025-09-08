@@ -195,7 +195,6 @@ func main() {
 			}
 		}
 
-		// Log the user in automatically after successful signup
 		user, err := database.GetUserByEmail(email)
 		if err != nil {
 			log.Printf("Error getting new user after signup: %v", err)
@@ -230,15 +229,11 @@ func main() {
 		}
 		user, err := database.GetUserByEmail(email)
 		if err != nil {
-			// Log the error but don't reveal that the email doesn't exist
 			log.Printf("Login failed for email %s: %v", email, err)
 			return c.Status(401).SendString("Invalid credentials")
 		}
-
-		// Verify the password using bcrypt
 		err = database.VerifyPassword(user.Password, password)
 		if err != nil {
-			// Password doesn't match
 			log.Printf("Invalid password attempt for user %s", email)
 			return c.Status(401).SendString("Invalid credentials")
 		}
@@ -1050,14 +1045,12 @@ func main() {
 	app.Post("/api/admin/subverses/:subverseId/feeds", adminMiddleware, handlers.AddFeedToSubverse)
 	app.Delete("/api/admin/subverses/:subverseId/feeds/:feedId", adminMiddleware, handlers.RemoveFeedFromSubverse)
 
-	// Post routes
 	app.Get("/s/:subverseName/posts", handlers.GetSubversePosts)
 	app.Post("/s/:subverseName/posts", handlers.CreatePost)
 	app.Get("/posts/:postID", handlers.GetPost)
 	app.Put("/posts/:postID", handlers.UpdatePost)
 	app.Delete("/posts/:postID", handlers.DeletePost)
 
-	// Post comment routes
 	app.Get("/posts/:postID/comments", handlers.GetPostComments)
 	app.Post("/posts/:postID/comments", handlers.CreatePostComment)
 	app.Put("/comments/:commentID", handlers.UpdatePostComment)
