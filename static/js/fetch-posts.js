@@ -72,6 +72,11 @@ document.addEventListener("DOMContentLoaded", function () {
                   }" data-action="save" title="Save to reading list">
                     <i class="far fa-bookmark text-sm"></i>
                   </button>
+                  <button class="p-1 text-gray-400 hover:text-red-500 transition-colors hide-button" data-feed-id="${
+                     item.id
+                  }" data-action="hide" title="Hide post">
+                    <i class="far fa-eye-slash text-sm"></i>
+                  </button>
                 </div>
               </div>
             </div>
@@ -96,6 +101,13 @@ document.addEventListener("DOMContentLoaded", function () {
             newVoteButtons.forEach((button) => {
                button.setAttribute("data-vote-listener-attached", "true");
                button.addEventListener("click", handleVoteClick);
+            });
+            const newHideButtons = postsContainer.querySelectorAll(
+               ".hide-button:not([data-hide-listener-attached])"
+            );
+            newHideButtons.forEach((button) => {
+               button.setAttribute("data-hide-listener-attached", "true");
+               button.addEventListener("click", handleHideClick);
             });
 
             currentPage++;
@@ -231,5 +243,64 @@ async function handleVoteClick(event) {
       }
    } catch (error) {
       console.error("Error submitting vote:", error);
+   }
+}
+
+// Hide handler
+async function handleHideClick(event) {
+   const button = event.currentTarget;
+   const feedId = button.getAttribute("data-feed-id");
+   const action = button.getAttribute("data-action");
+
+   console.log(`Hiding post ${feedId}`);
+
+   // Immediately hide the post
+   const article = button.closest("article");
+   if (article) {
+      article.style.transition = "opacity 0.3s ease-out";
+      article.style.opacity = "0";
+      setTimeout(() => {
+         article.style.display = "none";
+      }, 300);
+   }
+
+   try {
+      let response;
+      if (action === "hide") {
+         console.log(`Making API call to hide post ${feedId}`);
+         response = await fetch(`/api/posts/${feedId}/hide`, {
+            method: "POST",
+            headers: {
+               "Content-Type": "application/json",
+            },
+         });
+      } else {
+         response = await fetch(`/api/posts/${feedId}/unhide`, {
+            method: "POST",
+            headers: {
+               "Content-Type": "application/json",
+            },
+         });
+      }
+
+      if (!response.ok) {
+         console.error(`API call failed with status ${response.status}`);
+         throw new Error(`Failed to ${action} post`);
+      }
+
+      const data = await response.json();
+      console.log(`Post ${feedId} ${action}d successfully`, data);
+
+   } catch (error) {
+      console.error(`Error ${action}ing post:`, error);
+
+      // Restore the post if API call failed
+      if (article) {
+         article.style.display = "";
+         article.style.opacity = "1";
+      }
+
+      // Show error message
+      alert(`Failed to ${action} post. Please try again.`);
    }
 }

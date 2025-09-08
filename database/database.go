@@ -163,15 +163,13 @@ func createTables() error {
 			FOREIGN KEY (user_id) REFERENCES users(id),
 			FOREIGN KEY (parent_id) REFERENCES post_comments(id) ON DELETE CASCADE
 		)`,
-		`CREATE TABLE IF NOT EXISTS post_votes (
+		`CREATE TABLE IF NOT EXISTS hidden_posts (
 			user_id INTEGER NOT NULL,
-			post_id INTEGER NOT NULL,
-			vote_type TEXT NOT NULL CHECK(vote_type IN ('upvote', 'downvote')),
-			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-			updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-			PRIMARY KEY (user_id, post_id),
+			item_id TEXT NOT NULL,
+			hidden_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (user_id, item_id),
 			FOREIGN KEY (user_id) REFERENCES users(id),
-			FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
+			FOREIGN KEY (item_id) REFERENCES feed_items(id)
 		)`,
 	}
 

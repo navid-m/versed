@@ -111,6 +111,10 @@
                         data-feed-id="{{ item.ID }}" data-action="save" title="Save to reading list">
                         <i class="far fa-bookmark text-sm"></i>
                      </button>
+                     <button class="p-1 text-gray-400 hover:text-red-500 transition-colors hide-button"
+                        data-feed-id="{{ item.ID }}" data-action="hide" title="Hide post">
+                        <i class="far fa-eye-slash text-sm"></i>
+                     </button>
                   </div>
                   {% endif %}
                </div>

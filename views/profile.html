@@ -118,6 +118,32 @@
                </div>
             </form>
          </div>
+
+         <!-- Hidden Posts Section -->
+         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 mt-6">
+            <div class="flex items-center justify-between mb-6">
+               <div>
+                  <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100">
+                     Hidden Posts
+                  </h2>
+                  <p class="text-gray-600 dark:text-gray-400">
+                     Posts you've chosen to hide from your feed
+                  </p>
+               </div>
+               <button id="refreshHiddenPosts" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                  <i class="fas fa-refresh mr-2"></i>
+                  Refresh
+               </button>
+            </div>
+
+            <div id="hiddenPostsContainer" class="space-y-4">
+               <!-- Hidden posts will be loaded here -->
+               <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                  <p>Loading hidden posts...</p>
+               </div>
+            </div>
+         </div>
       </div>
    </main>
 

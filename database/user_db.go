@@ -239,3 +239,83 @@ func IsInReadingList(userID int, itemID string) (bool, error) {
 	}
 	return count > 0, nil
 }
+
+// Hides a feed item for a user
+func HideFeedItem(userID int, itemID string) error {
+	sqlQuery, args, err := squirrel.Insert("hidden_posts").
+		Columns("user_id", "item_id").
+		Values(userID, itemID).
+		Suffix("ON CONFLICT(user_id, item_id) DO NOTHING").
+		ToSql()
+
+	if err != nil {
+		return err
+	}
+
+	_, err = db.Exec(sqlQuery, args...)
+	return err
+}
+
+// Unhides a feed item for a user
+func UnhideFeedItem(userID int, itemID string) error {
+	sqlQuery, args, err := squirrel.Delete("hidden_posts").
+		Where(squirrel.Eq{"user_id": userID, "item_id": itemID}).
+		ToSql()
+
+	if err != nil {
+		return err
+	}
+
+	_, err = db.Exec(sqlQuery, args...)
+	return err
+}
+
+// Checks if a feed item is hidden by a user
+func IsFeedItemHidden(userID int, itemID string) (bool, error) {
+	var count int
+
+	sqlQuery, args, err := squirrel.Select("COUNT(*)").
+		From("hidden_posts").
+		Where(squirrel.Eq{"user_id": userID, "item_id": itemID}).
+		ToSql()
+
+	if err != nil {
+		return false, err
+	}
+
+	err = db.QueryRow(sqlQuery, args...).Scan(&count)
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
+
+// Gets all hidden feed items for a user
+func GetHiddenFeedItems(userID int) ([]string, error) {
+	sqlQuery, args, err := squirrel.Select("item_id").
+		From("hidden_posts").
+		Where(squirrel.Eq{"user_id": userID}).
+		ToSql()
+
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := db.Query(sqlQuery, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var itemIDs []string
+	for rows.Next() {
+		var itemID string
+		err := rows.Scan(&itemID)
+		if err != nil {
+			return nil, err
+		}
+		itemIDs = append(itemIDs, itemID)
+	}
+
+	return itemIDs, nil
+}

@@ -109,8 +109,19 @@ func main() {
 	app.Get("/", func(c *fiber.Ctx) error {
 		userEmail := c.Locals("userEmail")
 		userUsername := c.Locals("userUsername")
+		userID := c.Locals("userID")
 
-		feedItems, err := feeds.GetAllFeedItems(database.GetDB(), 20)
+		var feedItems []feeds.FeedItem
+		var err error
+
+		if userID != nil {
+			// User is logged in, get feed items excluding hidden ones
+			feedItems, err = feeds.GetAllFeedItemsForUser(database.GetDB(), userID.(int), 20)
+		} else {
+			// User not logged in, get all feed items
+			feedItems, err = feeds.GetAllFeedItems(database.GetDB(), 20)
+		}
+
 		if err != nil {
 			log.Printf("Failed to get feed items: %v", err)
 		}
@@ -266,10 +277,22 @@ func main() {
 	})
 
 	app.Get("/api/feeds", func(c *fiber.Ctx) error {
+		userID := c.Locals("userID")
 		page := c.QueryInt("page", 1)
 		limit := min(c.QueryInt("limit", 20), 50)
 		offset := (page - 1) * limit
-		items, err := feeds.GetAllFeedItemsWithPagination(database.GetDB(), limit, offset)
+
+		var items []feeds.FeedItem
+		var err error
+
+		if userID != nil {
+			// User is logged in, get feed items excluding hidden ones
+			items, err = feeds.GetAllFeedItemsWithPaginationForUser(database.GetDB(), userID.(int), limit, offset)
+		} else {
+			// User not logged in, get all feed items
+			items, err = feeds.GetAllFeedItemsWithPagination(database.GetDB(), limit, offset)
+		}
+
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{
 				"error": "Failed to retrieve feed items",
@@ -370,7 +393,7 @@ func main() {
 		})
 	})
 
-	app.Post("/api/reading-list/remove", func(c *fiber.Ctx) error {
+	app.Post("/api/posts/:itemId/hide", func(c *fiber.Ctx) error {
 		userID, ok := c.Locals("userID").(int)
 		if !ok {
 			return c.Status(401).JSON(fiber.Map{
@@ -378,25 +401,118 @@ func main() {
 			})
 		}
 
-		var removeRequest struct {
-			ItemID string `json:"item_id"`
-		}
-
-		if err := c.BodyParser(&removeRequest); err != nil {
+		itemID := c.Params("itemId")
+		if itemID == "" {
 			return c.Status(400).JSON(fiber.Map{
-				"error": "Invalid request body",
+				"error": "Item ID is required",
 			})
 		}
 
-		err := database.RemoveFromReadingList(userID, removeRequest.ItemID)
+		err := database.HideFeedItem(userID, itemID)
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{
-				"error": "Failed to remove item from reading list",
+				"error": "Failed to hide post",
 			})
 		}
 
 		return c.JSON(fiber.Map{
 			"success": true,
+			"message": "Post hidden successfully",
+		})
+	})
+
+	app.Post("/api/posts/:itemId/unhide", func(c *fiber.Ctx) error {
+		userID, ok := c.Locals("userID").(int)
+		if !ok {
+			return c.Status(401).JSON(fiber.Map{
+				"error": "Unauthorized",
+			})
+		}
+
+		itemID := c.Params("itemId")
+		if itemID == "" {
+			return c.Status(400).JSON(fiber.Map{
+				"error": "Item ID is required",
+			})
+		}
+
+		err := database.UnhideFeedItem(userID, itemID)
+		if err != nil {
+			return c.Status(500).JSON(fiber.Map{
+				"error": "Failed to unhide post",
+			})
+		}
+
+		return c.JSON(fiber.Map{
+			"success": true,
+			"message": "Post unhidden successfully",
+		})
+	})
+
+	app.Get("/api/posts/:itemId/hidden", func(c *fiber.Ctx) error {
+		userID, ok := c.Locals("userID").(int)
+		if !ok {
+			return c.Status(401).JSON(fiber.Map{
+				"error": "Unauthorized",
+			})
+		}
+
+		itemID := c.Params("itemId")
+		if itemID == "" {
+			return c.Status(400).JSON(fiber.Map{
+				"error": "Item ID is required",
+			})
+		}
+
+		hidden, err := database.IsFeedItemHidden(userID, itemID)
+		if err != nil {
+			return c.Status(500).JSON(fiber.Map{
+				"error": "Failed to check if post is hidden",
+			})
+		}
+
+		return c.JSON(fiber.Map{
+			"hidden": hidden,
+		})
+	})
+
+	app.Get("/api/posts/hidden", func(c *fiber.Ctx) error {
+		userID, ok := c.Locals("userID").(int)
+		if !ok {
+			return c.Status(401).JSON(fiber.Map{
+				"error": "Unauthorized",
+			})
+		}
+
+		itemIDs, err := database.GetHiddenFeedItems(userID)
+		if err != nil {
+			return c.Status(500).JSON(fiber.Map{
+				"error": "Failed to get hidden posts",
+			})
+		}
+
+		// Get full feed item details for hidden posts
+		var hiddenItems []feeds.FeedItem
+		for _, itemID := range itemIDs {
+			query := `SELECT fi.id, fi.source_id, fi.title, fi.url, fi.description, fi.author, fi.published_at, fi.score, fi.comments_count, fi.created_at, fs.name as source_name
+				FROM feed_items fi
+				JOIN feed_sources fs ON fi.source_id = fs.id
+				WHERE fi.id = ?`
+			var item feeds.FeedItem
+			var sourceName string
+			err := database.GetDB().QueryRow(query, itemID).Scan(
+				&item.ID, &item.SourceID, &item.Title, &item.URL, &item.Description,
+				&item.Author, &item.PublishedAt, &item.Score, &item.CommentsCount, &item.CreatedAt, &sourceName)
+			if err != nil {
+				continue // Skip if item doesn't exist
+			}
+			item.SourceName = sourceName
+			hiddenItems = append(hiddenItems, item)
+		}
+
+		return c.JSON(fiber.Map{
+			"hiddenItems": hiddenItems,
+			"count":       len(hiddenItems),
 		})
 	})
 
