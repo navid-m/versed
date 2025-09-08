@@ -48,11 +48,6 @@
                <i class="fas fa-plus mr-1"></i>
                Create Post
             </button>
-            <button
-               class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600">
-               <i class="fas fa-cog mr-1"></i>
-               Manage Feeds
-            </button>
          </div>
          {% endif %}
       </div>
@@ -97,11 +92,11 @@
                      {% if post.Content %}
                      <div class="relative mb-4 modern-description">
                         <div
-                           class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed line-height-6 font-medium tracking-wide line-clamp-3 bg-gradient-to-br from-gray-50/80 to-white/50 dark:from-gray-800/60 dark:to-gray-700/40 backdrop-blur-sm rounded-lg px-4 py-3 border-l-4 border-purple-500/30 dark:border-purple-400/40 shadow-sm">
+                           class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed line-height-6 font-medium tracking-wide line-clamp-3 bg-gradient-to-br from-gray-50/80 to-white/50 dark:from-gray-800/60 dark:to-gray-700/40 backdrop-blur-sm rounded-lg px-4 py-3 border-l-4 border-red-500/30 dark:border-red-400/40 shadow-sm">
                            <p>{{ post.Content|safe }}</p>
                         </div>
                         <div
-                           class="absolute inset-0 bg-gradient-to-r from-purple-50/20 to-pink-50/20 dark:from-purple-900/10 dark:to-pink-900/10 rounded-lg blur-xl transform scale-105 opacity-60">
+                           class="absolute inset-0 bg-gradient-to-r from-red-50/20 to-gray-50/20 dark:from-red-900/10 dark:to-gray-900/10 rounded-lg blur-xl transform scale-105 opacity-60">
                         </div>
                      </div>
                      {% endif %}
@@ -116,7 +111,7 @@
                            {{ post.CreatedAt }}
                         </span>
                         <span
-                           class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200">
+                           class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200">
                            {{ post.PostType }}
                         </span>
                         <button
@@ -144,7 +139,7 @@
             {% if Email %}
             <div class="mt-4">
                <button
-                  class="inline-flex items-center px-4 py-2 border border-purple-300 dark:border-purple-600 rounded-md shadow-sm bg-purple-50 dark:bg-purple-900 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-800 transition-colors font-medium text-sm">
+                  class="inline-flex items-center px-4 py-2 border border-red-300 dark:border-red-600 rounded-md shadow-sm bg-red-50 dark:bg-red-900 text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-800 transition-colors font-medium text-sm">
                   <i class="fas fa-plus mr-2"></i>
                   Add Feeds to this Subverse
                </button>

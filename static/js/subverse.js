@@ -143,10 +143,10 @@ class SubverseManager {
                         post.content
                            ? `
                      <div class="relative mb-4 modern-description">
-                        <div class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed line-height-6 font-medium tracking-wide line-clamp-3 bg-gradient-to-br from-gray-50/80 to-white/50 dark:from-gray-800/60 dark:to-gray-700/40 backdrop-blur-sm rounded-lg px-4 py-3 border-l-4 border-purple-500/30 dark:border-purple-400/40 shadow-sm">
+                        <div class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed line-height-6 font-medium tracking-wide line-clamp-3 bg-gradient-to-br from-gray-50/80 to-white/50 dark:from-gray-800/60 dark:to-gray-700/40 backdrop-blur-sm rounded-lg px-4 py-3 border-l-4 border-red-500/30 dark:border-red-400/40 shadow-sm">
                            <p>${this.escapeHtml(post.content)}</p>
                         </div>
-                        <div class="absolute inset-0 bg-gradient-to-r from-purple-50/20 to-pink-50/20 dark:from-purple-900/10 dark:to-pink-900/10 rounded-lg blur-xl transform scale-105 opacity-60"></div>
+                        <div class="absolute inset-0 bg-gradient-to-r from-red-50/20 to-pink-50/20 dark:from-red-900/10 dark:to-gray-900/10 rounded-lg blur-xl transform scale-105 opacity-60"></div>
                      </div>
                      `
                            : ""
@@ -161,7 +161,7 @@ class SubverseManager {
                            <i class="far fa-clock mr-1"></i>
                            ${createdAt}
                         </span>
-                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200">
                            ${post.post_type}
                         </span>
                         <button class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
@@ -217,7 +217,7 @@ class SubverseManager {
                <div class="mb-4">
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Title</label>
                   <input type="text" name="title" required
-                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500">
                </div>
 
                <div class="mb-4">
@@ -237,13 +237,13 @@ class SubverseManager {
                <div id="contentField" class="mb-4">
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Content</label>
                   <textarea name="content" rows="6"
-                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
+                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"></textarea>
                </div>
 
                <div id="urlField" class="mb-4 hidden">
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">URL</label>
                   <input type="url" name="url"
-                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
                      placeholder="https://example.com">
                </div>
 
@@ -251,7 +251,7 @@ class SubverseManager {
                   <button type="button" class="px-4 py-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 close-modal">
                      Cancel
                   </button>
-                  <button type="submit" class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50" id="submitPostBtn">
+                  <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50" id="submitPostBtn">
                      <i class="fas fa-paper-plane mr-2"></i>
                      Post
                   </button>
