@@ -10,7 +10,7 @@ import (
 	"github.com/navid-m/versed/models"
 )
 
-// CreateSubverse creates a new subverse
+// Creates a new subverse
 func CreateSubverse(db *sql.DB, name string) (*models.Subverse, error) {
 	name = strings.ToLower(strings.TrimSpace(name))
 	if name == "" {
@@ -37,7 +37,7 @@ func CreateSubverse(db *sql.DB, name string) (*models.Subverse, error) {
 	return subverse, nil
 }
 
-// GetSubverses retrieves all subverses
+// Retrieves all subverses
 func GetSubverses(db *sql.DB) ([]models.Subverse, error) {
 	query := `SELECT id, name, created_at FROM subverses ORDER BY name`
 	rows, err := db.Query(query)
@@ -59,21 +59,21 @@ func GetSubverses(db *sql.DB) ([]models.Subverse, error) {
 	return subverses, nil
 }
 
-// AddFeedToSubverse adds a feed source to a subverse
+// Adds a feed source to a subverse
 func AddFeedToSubverse(db *sql.DB, subverseID, feedSourceID int) error {
 	query := `INSERT INTO subverse_feeds (subverse_id, feed_source_id) VALUES (?, ?)`
 	_, err := db.Exec(query, subverseID, feedSourceID)
 	return err
 }
 
-// RemoveFeedFromSubverse removes a feed source from a subverse
+// Removes a feed source from a subverse
 func RemoveFeedFromSubverse(db *sql.DB, subverseID, feedSourceID int) error {
 	query := `DELETE FROM subverse_feeds WHERE subverse_id = ? AND feed_source_id = ?`
 	_, err := db.Exec(query, subverseID, feedSourceID)
 	return err
 }
 
-// GetSubverseFeeds gets all feed sources associated with a subverse
+// Gets all feed sources associated with a subverse
 func GetSubverseFeeds(db *sql.DB, subverseID int) ([]feeds.FeedSource, error) {
 	query := `
 		SELECT fs.id, fs.name, fs.url, fs.last_updated, fs.update_interval
@@ -101,7 +101,7 @@ func GetSubverseFeeds(db *sql.DB, subverseID int) ([]feeds.FeedSource, error) {
 	return sources, nil
 }
 
-// GetSubverseFeedItems gets feed items from feeds associated with a subverse
+// Gets feed items from feeds associated with a subverse
 func GetSubverseFeedItems(db *sql.DB, subverseID int, limit int) ([]feeds.FeedItem, error) {
 	query := `
 		SELECT fi.id, fi.source_id, fi.title, fi.url, fi.description, fi.author, fi.published_at, fi.score, fi.comments_count, fi.created_at, fs.name
@@ -131,6 +131,7 @@ func GetSubverseFeedItems(db *sql.DB, subverseID int, limit int) ([]feeds.FeedIt
 	return items, nil
 }
 
+// Updates the post count for a subverse
 func UpdateSubversePostCount(db *sql.DB, subverseID int) error {
 	var column string
 	err := db.QueryRow("SELECT 1 FROM pragma_table_info('subverses') WHERE name='post_count'").Scan(&column)
@@ -141,7 +142,6 @@ func UpdateSubversePostCount(db *sql.DB, subverseID int) error {
 			return err
 		}
 	}
-
 	query := `UPDATE subverses SET post_count = post_count + 1 WHERE id = ?`
 	_, err = db.Exec(query, subverseID)
 	return err
