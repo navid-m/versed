@@ -5,9 +5,10 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/navid-m/versed/database"
+	"github.com/navid-m/versed/models"
 )
 
-// CreatePost handles creating a new post in a subverse
+// Handles creating a new post in a subverse
 func CreatePost(c *fiber.Ctx) error {
 	userID := c.Locals("userID")
 	username := c.Locals("userUsername")
@@ -90,7 +91,7 @@ func CreatePost(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(post)
 }
 
-// GetPost handles retrieving a single post
+// Handles retrieving a single post
 func GetPost(c *fiber.Ctx) error {
 	postID, err := c.ParamsInt("postID")
 	if err != nil {
@@ -107,10 +108,45 @@ func GetPost(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.JSON(post)
+	var subverse models.Subverse
+	err = db.QueryRow("SELECT id, name, created_at FROM subverses WHERE id = ?", post.SubverseID).Scan(
+		&subverse.ID, &subverse.Name, &subverse.CreatedAt)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to get subverse information",
+		})
+	}
+
+	comments, err := database.GetPostComments(db, postID)
+	if err != nil {
+		log.Printf("Failed to get comments: %v", err)
+		comments = []models.PostComment{}
+	}
+	userEmail := c.Locals("userEmail")
+	userUsername := c.Locals("userUsername")
+	userID := c.Locals("userID")
+
+	data := fiber.Map{
+		"Post":          post,
+		"Subverse":      subverse,
+		"Comments":      comments,
+		"CommentsCount": len(comments),
+	}
+
+	if userEmail != nil {
+		data["Email"] = userEmail
+	}
+	if userUsername != nil {
+		data["Username"] = userUsername
+	}
+	if userID != nil {
+		data["UserID"] = userID
+	}
+
+	return c.Render("subverse-post", data)
 }
 
-// GetSubversePosts handles retrieving posts for a subverse
+// handles retrieving posts for a subverse
 func GetSubversePosts(c *fiber.Ctx) error {
 	subverseName := c.Params("subverseName")
 	if subverseName == "" {
@@ -151,7 +187,7 @@ func GetSubversePosts(c *fiber.Ctx) error {
 	})
 }
 
-// UpdatePost handles updating a post
+// Handles updating a post
 func UpdatePost(c *fiber.Ctx) error {
 	userID := c.Locals("userID")
 	if userID == nil {
@@ -199,7 +235,7 @@ func UpdatePost(c *fiber.Ctx) error {
 	})
 }
 
-// DeletePost handles deleting a post
+// Handles deleting a post
 func DeletePost(c *fiber.Ctx) error {
 	userID := c.Locals("userID")
 	if userID == nil {
@@ -230,7 +266,7 @@ func DeletePost(c *fiber.Ctx) error {
 	})
 }
 
-// CreatePostComment handles creating a new comment on a post
+// Handles creating a new comment on a post
 func CreatePostComment(c *fiber.Ctx) error {
 	userID := c.Locals("userID")
 	username := c.Locals("userUsername")
@@ -276,7 +312,7 @@ func CreatePostComment(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(comment)
 }
 
-// GetPostComments handles retrieving comments for a post
+// Handles retrieving comments for a post
 func GetPostComments(c *fiber.Ctx) error {
 	postID, err := c.ParamsInt("postID")
 	if err != nil {
@@ -300,7 +336,7 @@ func GetPostComments(c *fiber.Ctx) error {
 	})
 }
 
-// UpdatePostComment handles updating a comment
+// Handles updating a comment
 func UpdatePostComment(c *fiber.Ctx) error {
 	userID := c.Locals("userID")
 	if userID == nil {
@@ -347,7 +383,7 @@ func UpdatePostComment(c *fiber.Ctx) error {
 	})
 }
 
-// DeletePostComment handles deleting a comment
+// Handles deleting a comment
 func DeletePostComment(c *fiber.Ctx) error {
 	userID := c.Locals("userID")
 	if userID == nil {
