@@ -9,7 +9,7 @@ import (
 	"github.com/navid-m/versed/models"
 )
 
-// CreateSubverse handles the creation of a new subverse
+// Handles the creation of a new subverse
 func CreateSubverse(c *fiber.Ctx) error {
 	isAdmin := c.Locals("isAdmin").(bool)
 	if !isAdmin {
@@ -47,7 +47,7 @@ func CreateSubverse(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(subverse)
 }
 
-// GetSubverses handles retrieving all subverses
+// Handles retrieving all subverses
 func GetSubverses(c *fiber.Ctx) error {
 	db := database.GetDB()
 
@@ -64,9 +64,8 @@ func GetSubverses(c *fiber.Ctx) error {
 	})
 }
 
-// AddFeedToSubverse handles adding a feed to a subverse
+// Handles adding a feed to a subverse
 func AddFeedToSubverse(c *fiber.Ctx) error {
-	// This is an admin-only function
 	isAdmin := c.Locals("isAdmin").(bool)
 	if !isAdmin {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
@@ -111,7 +110,7 @@ func AddFeedToSubverse(c *fiber.Ctx) error {
 	})
 }
 
-// RemoveFeedFromSubverse handles removing a feed from a subverse
+// Handles removing a feed from a subverse
 func RemoveFeedFromSubverse(c *fiber.Ctx) error {
 	isAdmin := c.Locals("isAdmin").(bool)
 	if !isAdmin {
@@ -148,7 +147,7 @@ func RemoveFeedFromSubverse(c *fiber.Ctx) error {
 	})
 }
 
-// GetSubverseFeeds handles getting all feeds for a subverse
+// Handles getting all feeds for a subverse
 func GetSubverseFeeds(c *fiber.Ctx) error {
 	subverseID, err := c.ParamsInt("subverseId")
 	if err != nil {
@@ -171,7 +170,7 @@ func GetSubverseFeeds(c *fiber.Ctx) error {
 	})
 }
 
-// ViewSubverse handles viewing a specific subverse page
+// Handles viewing a specific subverse page
 func ViewSubverse(c *fiber.Ctx) error {
 	subverseName := c.Params("subverseName")
 	if subverseName == "" {
@@ -193,9 +192,11 @@ func ViewSubverse(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).SendString("Failed to get posts")
 	}
 
-	userEmail := c.Locals("userEmail")
-	userUsername := c.Locals("userUsername")
-	userID := c.Locals("userID")
+	var (
+		userEmail    = c.Locals("userEmail")
+		userUsername = c.Locals("userUsername")
+		userID       = c.Locals("userID")
+	)
 
 	data := fiber.Map{
 		"Subverse":     subverse,
