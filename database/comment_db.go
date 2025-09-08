@@ -16,6 +16,8 @@ type Comment struct {
 }
 
 // Adds a new comment to the database
+//
+// Handles POST request
 func CreateComment(itemID string, userID int, username, content string) (*Comment, error) {
 	query := `
 		INSERT INTO comments (item_id, user_id, username, content)
