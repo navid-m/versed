@@ -37,11 +37,17 @@
             </div>
             <input type="text"
                class="block w-full pl-8 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-500 focus:border-transparent"
-               placeholder="Search content..." />
+               placeholder="Search posts..." />
          </div>
 
          {% if Email %}
          <div class="flex flex-wrap gap-2">
+            <button
+               class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+               onclick="showCreatePostModal()">
+               <i class="fas fa-plus mr-1"></i>
+               Create Post
+            </button>
             <button
                class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600">
                <i class="fas fa-cog mr-1"></i>
@@ -52,76 +58,71 @@
       </div>
 
       <div class="space-y-3" id="postsContainer">
-         {% for item in FeedItems %}
-         <article
-            class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md dark:hover:shadow-xl transition-shadow">
+         {% for post in Posts %}
+         <article class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md dark:hover:shadow-xl transition-shadow">
             <div class="p-4">
                <div class="flex items-start space-x-3">
                   <div class="flex flex-col items-center space-y-1 flex-shrink-0">
                      <button class="p-1 text-orange-500 hover:text-orange-600 transition-colors"
-                        data-feed-id="{{ item.ID }}" data-vote-type="upvote">
+                        data-post-id="{{ post.ID }}" data-vote-type="upvote">
                         <i class="fas fa-chevron-up text-sm"></i>
                      </button>
                      <span class="text-xs font-medium text-orange-500">
-                        {{ item.Score }}
+                        {{ post.Score }}
                      </span>
                      <button class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                        data-feed-id="{{ item.ID }}" data-vote-type="downvote">
+                        data-post-id="{{ post.ID }}" data-vote-type="downvote">
                         <i class="fas fa-chevron-down text-sm"></i>
                      </button>
                   </div>
 
                   <div class="flex-1 min-w-0">
-                     <h2
-                        class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 hover:text-gray-700 dark:hover:text-gray-300 transition-colors line-clamp-2">
-                        <a href="{{ item.URL }}" target="_blank" class="hover:underline">
-                           {{ item.Title }}
+                     <h2 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 hover:text-gray-700 dark:hover:text-gray-300 transition-colors line-clamp-2">
+                        <a href="/posts/{{ post.ID }}" class="hover:underline">
+                           {{ post.Title }}
                         </a>
                      </h2>
 
-                     <div class="relative mb-4 modern-description">
-                        <div
-                           class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed line-height-6 font-medium tracking-wide line-clamp-3 bg-gradient-to-br from-gray-50/80 to-white/50 dark:from-gray-800/60 dark:to-gray-700/40 backdrop-blur-sm rounded-lg px-4 py-3 border-l-4 border-purple-500/30 dark:border-purple-400/40 shadow-sm">
-                           <p>{{ item.Description|safe }}</p>
-                        </div>
-                        <div
-                           class="absolute inset-0 bg-gradient-to-r from-purple-50/20 to-pink-50/20 dark:from-purple-900/10 dark:to-pink-900/10 rounded-lg blur-xl transform scale-105 opacity-60">
-                        </div>
+                     {% if post.PostType == "link" %}
+                     <div class="mb-4">
+                        <a href="{{ post.URL }}" target="_blank" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline">
+                           {{ post.URL }}
+                        </a>
                      </div>
+                     {% endif %}
+
+                     {% if post.Content %}
+                     <div class="relative mb-4 modern-description">
+                        <div class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed line-height-6 font-medium tracking-wide line-clamp-3 bg-gradient-to-br from-gray-50/80 to-white/50 dark:from-gray-800/60 dark:to-gray-700/40 backdrop-blur-sm rounded-lg px-4 py-3 border-l-4 border-purple-500/30 dark:border-purple-400/40 shadow-sm">
+                           <p>{{ post.Content|safe }}</p>
+                        </div>
+                        <div class="absolute inset-0 bg-gradient-to-r from-purple-50/20 to-pink-50/20 dark:from-purple-900/10 dark:to-pink-900/10 rounded-lg blur-xl transform scale-105 opacity-60"></div>
+                     </div>
+                     {% endif %}
 
                      <div class="flex items-center text-xs text-gray-500 dark:text-gray-400 space-x-3">
                         <span class="flex items-center">
                            <i class="far fa-user mr-1"></i>
-                           {{ item.Author }}
+                           {{ post.Username }}
                         </span>
                         <span class="flex items-center">
                            <i class="far fa-clock mr-1"></i>
-                           {{ item.PublishedAt }}
+                           {{ post.CreatedAt.Format("Jan 2, 2006 at 3:04pm") }}
                         </span>
-                        <span
-                           class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200">
-                           {{ item.SourceName }}
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200">
+                           {{ post.PostType }}
                         </span>
-                        <button
-                           class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors view-comments-btn"
-                           data-post-id="{{ item.ID }}">
+                        <button class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors view-comments-btn"
+                           data-post-id="{{ post.ID }}">
                            <i class="far fa-comments mr-1"></i>
-                           View comments ({{ item.CommentsCount }})
+                           View comments (0)
                         </button>
                      </div>
                   </div>
-                  {% if Email %}
-                  <div class="flex flex-col items-center space-y-1 flex-shrink-0 ml-3">
-                     <button class="p-1 text-gray-400 hover:text-blue-500 transition-colors save-button"
-                        data-feed-id="{{ item.ID }}" data-action="save" title="Save to reading list">
-                        <i class="far fa-bookmark text-sm"></i>
-                     </button>
-                  </div>
-                  {% endif %}
                </div>
             </div>
          </article>
-         {% endfor %} {% if not FeedItems %}
+         {% endfor %} {% if not Posts %}
          <div class="text-center py-12">
             <div class="w-16 h-16 mx-auto mb-4 text-gray-400 dark:text-gray-600">
                <i class="fas fa-folder-open text-4xl"></i>
@@ -149,9 +150,7 @@
    {% include "partials/footer.html" %}
 
    <script src="/static/js/description-truncation.js"></script>
-   <script src="/static/js/index.js"></script>
-   <script src="/static/js/fetch-posts.js"></script>
-   <script src="/static/js/search.js"></script>
+   <script src="/static/js/subverse.js"></script>
    <script src="/static/js/comments.js"></script>
 
    <link rel="stylesheet" href="/static/css/index.css" />

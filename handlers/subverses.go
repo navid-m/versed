@@ -1,4 +1,3 @@
-
 package handlers
 
 import (
@@ -7,7 +6,6 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/navid-m/versed/database"
-	"github.com/navid-m/versed/feeds"
 	"github.com/navid-m/versed/models"
 )
 
@@ -192,11 +190,11 @@ func ViewSubverse(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).SendString("Subverse not found")
 	}
 
-	// Get feed items for this subverse
-	items, err := database.GetSubverseFeedItems(db, subverse.ID, 50)
+	// Get posts for this subverse
+	posts, err := database.GetPostsBySubverse(db, subverse.ID, 20, 0)
 	if err != nil {
-		log.Printf("Failed to get subverse feed items: %v", err)
-		items = []feeds.FeedItem{}
+		log.Printf("Failed to get subverse posts: %v", err)
+		posts = []models.Post{}
 	}
 
 	userEmail := c.Locals("userEmail")
@@ -204,8 +202,8 @@ func ViewSubverse(c *fiber.Ctx) error {
 	userID := c.Locals("userID")
 
 	data := fiber.Map{
-		"Subverse":   subverse,
-		"FeedItems":  items,
+		"Subverse":     subverse,
+		"Posts":        posts,
 		"SubverseName": subverseName,
 	}
 

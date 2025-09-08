@@ -1050,6 +1050,19 @@ func main() {
 	app.Post("/api/admin/subverses/:subverseId/feeds", adminMiddleware, handlers.AddFeedToSubverse)
 	app.Delete("/api/admin/subverses/:subverseId/feeds/:feedId", adminMiddleware, handlers.RemoveFeedFromSubverse)
 
+	// Post routes
+	app.Get("/s/:subverseName/posts", handlers.GetSubversePosts)
+	app.Post("/s/:subverseName/posts", handlers.CreatePost)
+	app.Get("/posts/:postID", handlers.GetPost)
+	app.Put("/posts/:postID", handlers.UpdatePost)
+	app.Delete("/posts/:postID", handlers.DeletePost)
+
+	// Post comment routes
+	app.Get("/posts/:postID/comments", handlers.GetPostComments)
+	app.Post("/posts/:postID/comments", handlers.CreatePostComment)
+	app.Put("/comments/:commentID", handlers.UpdatePostComment)
+	app.Delete("/comments/:commentID", handlers.DeletePostComment)
+
 	port := 3000
 	if len(os.Args) > 1 {
 		if os.Args[1] == "prod" {

@@ -136,6 +136,33 @@ func createTables() error {
 			FOREIGN KEY (subverse_id) REFERENCES subverses(id),
 			FOREIGN KEY (feed_source_id) REFERENCES feed_sources(id)
 		)`,
+		`CREATE TABLE IF NOT EXISTS posts (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			subverse_id INTEGER NOT NULL,
+			user_id INTEGER NOT NULL,
+			title TEXT NOT NULL,
+			content TEXT,
+			post_type TEXT NOT NULL CHECK(post_type IN ('text', 'link')),
+			url TEXT,
+			score INTEGER DEFAULT 0,
+			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			FOREIGN KEY (subverse_id) REFERENCES subverses(id),
+			FOREIGN KEY (user_id) REFERENCES users(id)
+		)`,
+		`CREATE TABLE IF NOT EXISTS post_comments (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			post_id INTEGER NOT NULL,
+			user_id INTEGER NOT NULL,
+			username TEXT NOT NULL,
+			content TEXT NOT NULL,
+			parent_id INTEGER,
+			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
+			FOREIGN KEY (user_id) REFERENCES users(id),
+			FOREIGN KEY (parent_id) REFERENCES post_comments(id) ON DELETE CASCADE
+		)`,
 	}
 
 	for _, query := range queries {
