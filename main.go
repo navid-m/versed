@@ -1062,8 +1062,9 @@ func main() {
 	port := 3000
 	if len(os.Args) > 1 {
 		if os.Args[1] == "prod" {
-			port = 80
+			log.Fatal(app.ListenTLS(":443", "/etc/letsencrypt/live/versed.cc/fullchain.pem", "/etc/letsencrypt/live/versed.cc/privkey.pem"))
 		}
+	} else {
+		log.Fatal(app.Listen(fmt.Sprintf(":%d", port)))
 	}
-	log.Fatal(app.Listen(fmt.Sprintf(":%d", port)))
 }
