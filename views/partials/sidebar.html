@@ -66,10 +66,24 @@ class SidebarManager {
    }
 
    init() {
+      console.log('Initializing SidebarManager...');
+      console.log('Toggle button found:', !!this.toggleBtn);
+      console.log('Search input found:', !!this.searchInput);
+
       this.toggleBtn.addEventListener('click', () => this.toggle());
       this.closeBtn.addEventListener('click', () => this.close());
       this.overlay.addEventListener('click', () => this.close());
-      this.searchInput.addEventListener('input', (e) => this.filterSubverses(e.target.value));
+
+      if (this.searchInput) {
+         console.log('Adding search input event listener');
+         this.searchInput.addEventListener('input', (e) => {
+            console.log('Search input event fired with value:', e.target.value);
+            this.filterSubverses(e.target.value);
+         });
+      } else {
+         console.error('Search input not found!');
+      }
+
       this.retryBtn.addEventListener('click', () => this.loadSubverses());
 
       document.addEventListener('keydown', (e) => {
@@ -114,34 +128,55 @@ class SidebarManager {
       const loadingState = document.getElementById('loadingState');
       const errorState = document.getElementById('errorState');
 
-      loadingState.classList.remove('hidden');
-      errorState.classList.add('hidden');
+      if (loadingState) {
+         loadingState.classList.remove('hidden');
+      }
+      if (errorState) {
+         errorState.classList.add('hidden');
+      }
 
       try {
+         console.log('Loading subverses from API...');
          const response = await fetch('/api/subverses');
+         console.log('API response status:', response.status);
+
          if (!response.ok) {
             throw new Error('Failed to load subverses');
          }
 
          const data = await response.json();
+         console.log('API response data:', data);
+         console.log('Subverses count:', data.subverses ? data.subverses.length : 0);
+
          this.subverses = data.subverses || [];
          this.filteredSubverses = [...this.subverses];
 
+         console.log('Loaded subverses:', this.subverses);
          this.renderSubverses();
       } catch (error) {
          console.error('Error loading subverses:', error);
-         loadingState.classList.add('hidden');
-         errorState.classList.remove('hidden');
+         if (loadingState) {
+            loadingState.classList.add('hidden');
+         }
+         if (errorState) {
+            errorState.classList.remove('hidden');
+         }
       }
    }
 
    filterSubverses(query) {
+      console.log('Filtering subverses with query:', query);
+      console.log('Original subverses count:', this.subverses.length);
+
       if (!query.trim()) {
          this.filteredSubverses = [...this.subverses];
+         console.log('No query, showing all subverses');
       } else {
          this.filteredSubverses = this.subverses.filter(subverse =>
             subverse.name.toLowerCase().includes(query.toLowerCase())
          );
+         console.log('Filtered subverses count:', this.filteredSubverses.length);
+         console.log('Filtered subverses:', this.filteredSubverses.map(s => s.name));
       }
       this.renderSubverses();
    }
@@ -152,15 +187,32 @@ class SidebarManager {
       const emptyState = document.getElementById('emptyState');
       const subversesList = document.getElementById('subversesList');
 
-      loadingState.classList.add('hidden');
-      errorState.classList.add('hidden');
+      if (loadingState) {
+         loadingState.classList.add('hidden');
+      }
+
+      if (errorState) {
+         errorState.classList.add('hidden');
+      }
+
+      if (emptyState) {
+         emptyState.classList.add('hidden');
+      }
+
+      if (subversesList) {
+         subversesList.classList.remove('hidden');
+      }
 
       if (this.filteredSubverses.length === 0) {
-         emptyState.classList.remove('hidden');
+         if (emptyState) {
+            emptyState.classList.remove('hidden');
+         }
          return;
       }
 
-      emptyState.classList.add('hidden');
+      if (emptyState) {
+         emptyState.classList.add('hidden');
+      }
 
       const html = this.filteredSubverses.map(subverse => `
          <a href="/s/${subverse.name}"
