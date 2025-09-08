@@ -48,15 +48,12 @@ if (userMenuButton && userDropdown) {
    });
 }
 
-// Hidden Posts Management
 document.addEventListener("DOMContentLoaded", function () {
    const hiddenPostsContainer = document.getElementById("hiddenPostsContainer");
    const refreshHiddenPostsBtn = document.getElementById("refreshHiddenPosts");
 
-   // Load hidden posts on page load
    loadHiddenPosts();
 
-   // Handle refresh button
    if (refreshHiddenPostsBtn) {
       refreshHiddenPostsBtn.addEventListener("click", loadHiddenPosts);
    }
@@ -105,26 +102,30 @@ document.addEventListener("DOMContentLoaded", function () {
          return;
       }
 
-      const postsHTML = hiddenItems.map(item => `
+      const postsHTML = hiddenItems
+         .map(
+            (item) => `
          <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
             <div class="flex items-start justify-between">
                <div class="flex-1 min-w-0">
                   <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2 line-clamp-2">
-                     <a href="${item.url}" target="_blank" class="hover:text-blue-600 dark:hover:text-blue-400">
+                     <a href="${
+                        item.url
+                     }" target="_blank" class="hover:text-blue-600 dark:hover:text-blue-400">
                         ${item.title}
                      </a>
                   </h3>
                   <div class="flex items-center text-xs text-gray-500 dark:text-gray-400 space-x-2">
                      <span class="flex items-center">
                         <i class="far fa-user mr-1"></i>
-                        ${item.author || 'Unknown'}
+                        ${item.author || "Unknown"}
                      </span>
                      <span class="flex items-center">
                         <i class="far fa-clock mr-1"></i>
                         ${new Date(item.published_at).toLocaleDateString()}
                      </span>
                      <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
-                        ${item.source_name || 'Unknown'}
+                        ${item.source_name || "Unknown"}
                      </span>
                   </div>
                </div>
@@ -135,13 +136,14 @@ document.addEventListener("DOMContentLoaded", function () {
                </button>
             </div>
          </div>
-      `).join('');
+      `
+         )
+         .join("");
 
       hiddenPostsContainer.innerHTML = postsHTML;
-
-      // Add event listeners for unhide buttons
-      const unhideButtons = hiddenPostsContainer.querySelectorAll(".unhide-btn");
-      unhideButtons.forEach(button => {
+      const unhideButtons =
+         hiddenPostsContainer.querySelectorAll(".unhide-btn");
+      unhideButtons.forEach((button) => {
          button.addEventListener("click", async function () {
             const feedId = this.getAttribute("data-feed-id");
             await unhidePost(feedId, this);
@@ -152,7 +154,8 @@ document.addEventListener("DOMContentLoaded", function () {
    async function unhidePost(feedId, buttonElement) {
       try {
          buttonElement.disabled = true;
-         buttonElement.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Unhiding...';
+         buttonElement.innerHTML =
+            '<i class="fas fa-spinner fa-spin mr-1"></i>Unhiding...';
 
          const response = await fetch(`/api/posts/${feedId}/unhide`, {
             method: "POST",
@@ -165,23 +168,19 @@ document.addEventListener("DOMContentLoaded", function () {
             throw new Error("Failed to unhide post");
          }
 
-         // Remove the post from the UI with animation
          const postElement = buttonElement.closest(".bg-gray-50, .bg-gray-700");
          postElement.style.transition = "opacity 0.3s ease-out";
          postElement.style.opacity = "0";
          setTimeout(() => {
             postElement.remove();
-            // If no more posts, reload to show empty state
             if (hiddenPostsContainer.children.length === 0) {
                loadHiddenPosts();
             }
          }, 300);
-
       } catch (error) {
          console.error("Error unhiding post:", error);
          buttonElement.disabled = false;
          buttonElement.innerHTML = '<i class="fas fa-eye mr-1"></i>Unhide';
-         // Could add error notification here
       }
    }
 });
