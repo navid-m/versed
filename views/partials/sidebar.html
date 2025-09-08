@@ -94,12 +94,20 @@ class SidebarManager {
       this.sidebar.classList.remove('-translate-x-full');
       this.overlay.classList.remove('hidden');
       document.body.style.overflow = 'hidden';
+      if (this.toggleBtn) {
+         this.toggleBtn.style.opacity = '0';
+         this.toggleBtn.style.pointerEvents = 'none';
+      }
    }
 
    close() {
       this.sidebar.classList.add('-translate-x-full');
       this.overlay.classList.add('hidden');
       document.body.style.overflow = '';
+      if (this.toggleBtn) {
+         this.toggleBtn.style.opacity = '1';
+         this.toggleBtn.style.pointerEvents = 'auto';
+      }
    }
 
    async loadSubverses() {
