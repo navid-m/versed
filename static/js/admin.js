@@ -93,13 +93,13 @@ class AdminPanel {
          .map(
             (subverse) => `
             <div class="border border-gray-200 dark:border-gray-600 rounded-lg p-4" data-subverse-id="${
-               subverse.ID
+               subverse.id
             }">
                 <div class="flex items-center justify-between">
                     <div>
                         <div class="flex items-center space-x-3">
                             <i class="fas fa-folder text-purple-500"></i>
-                            <span class="font-medium text-gray-900 dark:text-gray-100">/s/${subverse.Name}</span>
+                            <span class="font-medium text-gray-900 dark:text-gray-100">/s/${subverse.name}</span>
                         </div>
                         <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">
                             <div>Created: ${new Date(
