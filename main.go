@@ -9,14 +9,14 @@ import (
 	"time"
 	"unicode"
 
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/session"
+	"github.com/gofiber/template/django/v3"
+
 	"github.com/navid-m/versed/database"
 	"github.com/navid-m/versed/feeds"
 	"github.com/navid-m/versed/handlers"
 
-	"github.com/Masterminds/squirrel"
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/session"
-	"github.com/gofiber/template/django/v3"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -406,8 +406,7 @@ func main() {
 		}
 
 		userID := c.Locals("userID").(int)
-		sqlQ, args, _ := database.ReadingListQueryBuilder.Where(squirrel.Eq{"rl.user_id": userID}).ToSql()
-		rows, err := database.GetDB().Query(sqlQ, args...)
+		rows, err := database.RetrieveReadingList(userID)
 		if err != nil {
 			log.Printf("Failed to get reading list: %v", err)
 		}
