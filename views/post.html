@@ -259,7 +259,6 @@
                      </div>
                      {% endif %}
 
-                     <!-- Nested Replies -->
                      {% if comment.Replies %}
                         {% for reply in comment.Replies %}
                            {{ render_comment(reply, depth + 1) }}

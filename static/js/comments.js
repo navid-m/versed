@@ -138,7 +138,7 @@ class CommentsManager {
          '<i class="fas fa-spinner fa-spin mr-2"></i>Posting...';
 
       try {
-         const response = await fetch(`/api/posts/${postId}/comments`, {
+         const response = await fetch(`/posts/${postId}/comments`, {
             method: "POST",
             headers: {
                "Content-Type": "application/json",
@@ -151,11 +151,14 @@ class CommentsManager {
 
             const optimisticComment = {
                ID: serverComment.id || Date.now(),
+               PostID: postId,
                UserID: parseInt(document.body.dataset.userId) || 0,
                Username: currentUsername,
                Content: content,
+               ParentID: null,
                CreatedAt: new Date().toISOString(),
-               ItemID: postId,
+               UpdatedAt: new Date().toISOString(),
+               Replies: [],
             };
 
             this.addCommentToUI(optimisticComment);
@@ -578,7 +581,7 @@ class CommentsManager {
       submitBtn.textContent = 'Posting...';
 
       try {
-         const response = await fetch(`/api/posts/${postId}/comments`, {
+         const response = await fetch(`/posts/${postId}/comments`, {
             method: "POST",
             headers: {
                "Content-Type": "application/json",
@@ -645,6 +648,96 @@ class CommentsManager {
       repliesContainer.insertAdjacentHTML('beforeend', replyHTML);
    }
 
+   createCommentHTML(comment) {
+      const currentUserId = parseInt(document.body.dataset.userId) || 0;
+      const isOwner = currentUserId === comment.UserID;
+
+      const username = comment.Username || "Anonymous";
+      const createdAt = comment.CreatedAt
+         ? new Date(comment.CreatedAt)
+         : new Date();
+
+      // Check if this is a reply (has parent_id)
+      const isReply = comment.ParentID !== null && comment.ParentID !== undefined;
+      const depthClass = isReply ? 'ml-4' : '';
+      const avatarSize = isReply ? 'w-6 h-6' : 'w-8 h-8';
+      const avatarIcon = isReply ? 'fa-reply' : 'fa-user';
+
+      return `
+            <div class="border-l-2 border-gray-200 dark:border-gray-600 pl-4 ${depthClass}" data-comment-id="${
+               comment.ID
+            }">
+                <div class="flex items-start space-x-3">
+                    <div class="flex-shrink-0">
+                        <div class="${avatarSize} bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
+                            <i class="fas ${avatarIcon} text-gray-600 dark:text-gray-400 text-xs"></i>
+                        </div>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center space-x-2 mb-1">
+                            <span class="text-sm font-medium text-gray-900 dark:text-gray-100">${username}</span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">${createdAt.toLocaleDateString(
+                               "en-US",
+                               {
+                                  year: "numeric",
+                                  month: "short",
+                                  day: "numeric",
+                                  hour: "numeric",
+                                  minute: "2-digit",
+                                  hour12: true,
+                               }
+                            )}</span>
+                        </div>
+                        <div class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
+                            ${comment.Content}
+                        </div>
+                        <div class="flex items-center space-x-2 mt-2">
+                            <button class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 reply-btn" data-comment-id="${comment.ID}" data-parent-id="${comment.ID}" data-post-id="${comment.PostID || document.body.dataset.postId}">
+                                <i class="fas fa-reply mr-1"></i>Reply
+                            </button>
+                            ${isOwner
+                              ? `
+                            <button class="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 edit-comment-btn" data-comment-id="${comment.ID}">
+                                <i class="fas fa-edit mr-1"></i>Edit
+                            </button>
+                            <button class="text-xs text-red-500 hover:text-red-700 delete-comment-btn" data-comment-id="${comment.ID}">
+                                <i class="fas fa-trash mr-1"></i>Delete
+                            </button>
+                            `
+                              : ""
+                        }
+                        </div>
+
+                        <!-- Reply Form (hidden by default) -->
+                        <div class="reply-form mt-3 hidden" data-comment-id="${comment.ID}">
+                            <div class="flex items-start space-x-3">
+                                <div class="flex-shrink-0">
+                                    <div class="w-6 h-6 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-reply text-gray-600 dark:text-gray-400 text-xs"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-1">
+                                    <textarea class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 text-sm resize-y" rows="2" placeholder="Write a reply..." data-reply-content="${comment.ID}"></textarea>
+                                    <div class="flex justify-end space-x-2 mt-2">
+                                        <button class="px-3 py-1 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 cancel-reply-btn" data-comment-id="${comment.ID}">Cancel</button>
+                                        <button class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 submit-reply-btn" data-comment-id="${comment.ID}" data-parent-id="${comment.ID}" data-post-id="${comment.PostID || document.body.dataset.postId}">Reply</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Nested Replies -->
+                        ${comment.Replies && comment.Replies.length > 0 ? `
+                        <div class="replies-container mt-3 space-y-2" data-replies-container="${comment.ID}">
+                            ${comment.Replies.map(reply => this.createReplyHTML(reply, comment.PostID || document.body.dataset.postId)).join('')}
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+   }
+
    createReplyHTML(reply, postId = '') {
       const currentUserId = parseInt(document.body.dataset.userId) || 0;
       const isOwner = currentUserId === reply.UserID;
@@ -676,7 +769,7 @@ class CommentsManager {
                      ${reply.Content}
                   </div>
                   <div class="flex items-center space-x-2 mt-2">
-                     <button class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 reply-btn" data-comment-id="${reply.ID}" data-parent-id="${reply.ID}">
+                     <button class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 reply-btn" data-comment-id="${reply.ID}" data-parent-id="${reply.ID}" data-post-id="${postId}">
                         <i class="fas fa-reply mr-1"></i>Reply
                      </button>
                      ${isOwner ? `
