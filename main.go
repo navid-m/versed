@@ -255,12 +255,22 @@ func main() {
 		user, err := database.GetUserByEmail(email)
 		if err != nil {
 			log.Printf("Login failed for email %s: %v", email, err)
-			return c.Status(401).SendString("Invalid credentials")
+			return c.Status(401).JSON(fiber.Map{
+				"toast": fiber.Map{
+					"type":    "error",
+					"message": "Invalid email or password",
+				},
+			})
 		}
 		err = database.VerifyPassword(user.Password, password)
 		if err != nil {
 			log.Printf("Invalid password attempt for user %s", email)
-			return c.Status(401).SendString("Invalid credentials")
+			return c.Status(401).JSON(fiber.Map{
+				"toast": fiber.Map{
+					"type":    "error",
+					"message": "Invalid email or password",
+				},
+			})
 		}
 
 		sess, err := store.Get(c)

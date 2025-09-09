@@ -95,7 +95,7 @@
                   <div>
                      <button
                         type="submit"
-                        class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                        class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
                      >
                         <span
                            class="absolute left-0 inset-y-0 flex items-center pl-3"
@@ -124,7 +124,28 @@
 
       {% include "partials/footer.html" %}
 
-      <script src="static/js/sign-in-sign-up.js"></script>
+      <!-- Toast notifications -->
+      <script src="/static/js/toast.js"></script>
+      <!-- Form handling -->
+      <script src="/static/js/auth-forms.js"></script>
+      <!-- Theme toggle -->
+      <script src="/static/js/sign-in-sign-up.js"></script>
+      
+      <style>
+        /* Add smooth transitions for form elements */
+        input[type="email"],
+        input[type="password"] {
+          transition: all 0.2s ease-in-out;
+        }
+        
+        /* Loading spinner animation */
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        .fa-spinner {
+          animation: spin 1s linear infinite;
+        }
+      </style>
 
       <style>
          .line-clamp-2 {
