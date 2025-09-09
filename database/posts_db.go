@@ -176,16 +176,35 @@ func DeletePost(db *sql.DB, postID string, userID int) error {
 
 // CreatePostComment creates a new comment on a post
 func CreatePostComment(db *sql.DB, postID string, userID int, username, content string, parentID *string) (*models.PostComment, error) {
-	// Generate UUID for the comment ID
-	commentID := generateUUID()
-
-	query := `INSERT INTO post_comments (id, post_id, user_id, username, content, parent_id, created_at, updated_at)
-	          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-
+	// For now, let's try inserting without the id field to see if SQLite auto-generates it
 	now := time.Now()
-	_, err := db.Exec(query, commentID, postID, userID, username, content, parentID, now, now)
+
+	query := `INSERT INTO post_comments (post_id, user_id, username, content, created_at, updated_at)
+	          VALUES (?, ?, ?, ?, ?, ?)`
+
+	result, err := db.Exec(query, postID, userID, username, content, now, now)
 	if err != nil {
+		log.Printf("Failed to insert comment without id: %v", err)
 		return nil, fmt.Errorf("failed to create comment: %w", err)
+	}
+
+	// Get the auto-generated ID
+	commentIDInt, err := result.LastInsertId()
+	if err != nil {
+		log.Printf("Failed to get comment ID: %v", err)
+		return nil, fmt.Errorf("failed to get comment ID: %w", err)
+	}
+
+	// Convert to string for our model
+	commentID := fmt.Sprintf("%d", commentIDInt)
+
+	// Update parent_id if provided
+	if parentID != nil && *parentID != "" {
+		updateQuery := `UPDATE post_comments SET parent_id = ? WHERE id = ?`
+		_, err = db.Exec(updateQuery, *parentID, commentID)
+		if err != nil {
+			log.Printf("Failed to update parent_id: %v", err)
+		}
 	}
 
 	comment := &models.PostComment{
@@ -252,7 +271,7 @@ func GetPostComments(db *sql.DB, postID string) ([]models.PostComment, error) {
 }
 
 // UpdatePostComment updates a comment's content
-func UpdatePostComment(db *sql.DB, commentID, userID int, content string) error {
+func UpdatePostComment(db *sql.DB, commentID string, userID int, content string) error {
 	query := `UPDATE post_comments SET content = ?, updated_at = ? WHERE id = ? AND user_id = ?`
 	result, err := db.Exec(query, content, time.Now(), commentID, userID)
 	if err != nil {
@@ -272,7 +291,7 @@ func UpdatePostComment(db *sql.DB, commentID, userID int, content string) error 
 }
 
 // DeletePostComment deletes a comment and all its replies
-func DeletePostComment(db *sql.DB, commentID, userID int) error {
+func DeletePostComment(db *sql.DB, commentID string, userID int) error {
 	tx, err := db.Begin()
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
@@ -350,7 +369,7 @@ func VoteOnPost(db *sql.DB, userID int, postID string, voteType string) error {
 }
 
 // GetUserVoteOnPost gets the user's current vote on a specific post (if any)
-func GetUserVoteOnPost(db *sql.DB, userID, postID int) (string, error) {
+func GetUserVoteOnPost(db *sql.DB, userID int, postID string) (string, error) {
 	var voteType string
 	err := db.QueryRow("SELECT vote_type FROM post_votes WHERE user_id = ? AND post_id = ?", userID, postID).Scan(&voteType)
 	if err != nil {

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"log"
+	"strconv"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
@@ -74,7 +75,7 @@ func CreatePost(c *fiber.Ctx) error {
 	}
 
 	log.Printf("Creating post in subverse '%s' (ID: %d)", subverseName, subverseID)
-	log.Printf("Creating post with title: %s, content: %s, type: %s, url: %s", req.Title, req.Content, req.PostType, req.URL)
+	log.Printf("Getting post with ID: %s", req.Title)
 	post, err := database.CreatePost(db, subverseID, userID.(int), username.(string), req.Title, req.Content, req.PostType, req.URL)
 	if err != nil {
 		log.Printf("Failed to create post: %v", err)
@@ -302,10 +303,13 @@ func CreatePostComment(c *fiber.Ctx) error {
 	}
 
 	if err := c.BodyParser(&req); err != nil {
+		log.Printf("BodyParser error: %v", err)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Invalid request body",
 		})
 	}
+
+	log.Printf("Received comment request: content='%s', parent_id=%v", req.Content, req.ParentID)
 
 	if req.Content == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -385,7 +389,7 @@ func UpdatePostComment(c *fiber.Ctx) error {
 	}
 
 	db := database.GetDB()
-	err = database.UpdatePostComment(db, commentID, userID.(int), req.Content)
+	err = database.UpdatePostComment(db, strconv.Itoa(commentID), userID.(int), req.Content)
 	if err != nil {
 		log.Printf("Failed to update comment: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -416,7 +420,7 @@ func DeletePostComment(c *fiber.Ctx) error {
 	}
 
 	db := database.GetDB()
-	err = database.DeletePostComment(db, commentID, userID.(int))
+	err = database.DeletePostComment(db, strconv.Itoa(commentID), userID.(int))
 	if err != nil {
 		log.Printf("Failed to delete comment: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

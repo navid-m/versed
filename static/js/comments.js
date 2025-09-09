@@ -539,15 +539,17 @@ class CommentsManager {
    // Reply functionality methods
    showReplyForm(commentId) {
       // Hide any existing reply forms
-      document.querySelectorAll('.reply-form').forEach(form => {
-         form.classList.add('hidden');
+      document.querySelectorAll(".reply-form").forEach((form) => {
+         form.classList.add("hidden");
       });
 
       // Show the reply form for this comment
-      const replyForm = document.querySelector(`.reply-form[data-comment-id="${commentId}"]`);
+      const replyForm = document.querySelector(
+         `.reply-form[data-comment-id="${commentId}"]`
+      );
       if (replyForm) {
-         replyForm.classList.remove('hidden');
-         const textarea = replyForm.querySelector('textarea');
+         replyForm.classList.remove("hidden");
+         const textarea = replyForm.querySelector("textarea");
          if (textarea) {
             textarea.focus();
          }
@@ -555,20 +557,24 @@ class CommentsManager {
    }
 
    cancelReply(commentId) {
-      const replyForm = document.querySelector(`.reply-form[data-comment-id="${commentId}"]`);
+      const replyForm = document.querySelector(
+         `.reply-form[data-comment-id="${commentId}"]`
+      );
       if (replyForm) {
-         replyForm.classList.add('hidden');
-         const textarea = replyForm.querySelector('textarea');
+         replyForm.classList.add("hidden");
+         const textarea = replyForm.querySelector("textarea");
          if (textarea) {
-            textarea.value = '';
+            textarea.value = "";
          }
       }
    }
 
    async submitReply(commentId, parentId, postId) {
-      const replyForm = document.querySelector(`.reply-form[data-comment-id="${commentId}"]`);
-      const textarea = replyForm.querySelector('textarea');
-      const submitBtn = replyForm.querySelector('.submit-reply-btn');
+      const replyForm = document.querySelector(
+         `.reply-form[data-comment-id="${commentId}"]`
+      );
+      const textarea = replyForm.querySelector("textarea");
+      const submitBtn = replyForm.querySelector(".submit-reply-btn");
 
       const content = textarea.value.trim();
 
@@ -578,7 +584,7 @@ class CommentsManager {
       }
 
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Posting...';
+      submitBtn.textContent = "Posting...";
 
       try {
          const response = await fetch(`/posts/${postId}/comments`, {
@@ -588,7 +594,7 @@ class CommentsManager {
             },
             body: JSON.stringify({
                content: content,
-               parent_id: parseInt(parentId)
+               parent_id: parentId || null,
             }),
          });
 
@@ -597,7 +603,8 @@ class CommentsManager {
 
             // Ensure the reply has the correct data
             if (!newReply.Username) {
-               newReply.Username = document.body.dataset.username || "Anonymous";
+               newReply.Username =
+                  document.body.dataset.username || "Anonymous";
             }
             if (!newReply.CreatedAt) {
                newReply.CreatedAt = new Date().toISOString();
@@ -624,28 +631,30 @@ class CommentsManager {
          this.showMessage("Failed to post reply", "error");
       } finally {
          submitBtn.disabled = false;
-         submitBtn.textContent = 'Reply';
+         submitBtn.textContent = "Reply";
       }
    }
 
    addReplyToUI(reply, parentId) {
-      const parentComment = document.querySelector(`[data-comment-id="${parentId}"]`);
+      const parentComment = document.querySelector(
+         `[data-comment-id="${parentId}"]`
+      );
       if (!parentComment) return;
 
       // Get the post ID from the body element
-      const postId = document.body.dataset.postId || '';
+      const postId = document.body.dataset.postId || "";
 
       // Find the replies container or create one
-      let repliesContainer = parentComment.querySelector('.replies-container');
+      let repliesContainer = parentComment.querySelector(".replies-container");
       if (!repliesContainer) {
-         repliesContainer = document.createElement('div');
-         repliesContainer.className = 'replies-container mt-3 space-y-2';
+         repliesContainer = document.createElement("div");
+         repliesContainer.className = "replies-container mt-3 space-y-2";
          parentComment.appendChild(repliesContainer);
       }
 
       // Create the reply HTML
       const replyHTML = this.createReplyHTML(reply, postId);
-      repliesContainer.insertAdjacentHTML('beforeend', replyHTML);
+      repliesContainer.insertAdjacentHTML("beforeend", replyHTML);
    }
 
    createCommentHTML(comment) {
@@ -658,15 +667,16 @@ class CommentsManager {
          : new Date();
 
       // Check if this is a reply (has parent_id)
-      const isReply = comment.ParentID !== null && comment.ParentID !== undefined;
-      const depthClass = isReply ? 'ml-4' : '';
-      const avatarSize = isReply ? 'w-6 h-6' : 'w-8 h-8';
-      const avatarIcon = isReply ? 'fa-reply' : 'fa-user';
+      const isReply =
+         comment.ParentID !== null && comment.ParentID !== undefined;
+      const depthClass = isReply ? "ml-4" : "";
+      const avatarSize = isReply ? "w-6 h-6" : "w-8 h-8";
+      const avatarIcon = isReply ? "fa-reply" : "fa-user";
 
       return `
             <div class="border-l-2 border-gray-200 dark:border-gray-600 pl-4 ${depthClass}" data-comment-id="${
-               comment.ID
-            }">
+         comment.ID
+      }">
                 <div class="flex items-start space-x-3">
                     <div class="flex-shrink-0">
                         <div class="${avatarSize} bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
@@ -692,11 +702,16 @@ class CommentsManager {
                             ${comment.Content}
                         </div>
                         <div class="flex items-center space-x-2 mt-2">
-                            <button class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 reply-btn" data-comment-id="${comment.ID}" data-parent-id="${comment.ID}" data-post-id="${comment.PostID || document.body.dataset.postId}">
+                            <button class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 reply-btn" data-comment-id="${
+                               comment.ID
+                            }" data-parent-id="${comment.ID}" data-post-id="${
+         comment.PostID || document.body.dataset.postId
+      }">
                                 <i class="fas fa-reply mr-1"></i>Reply
                             </button>
-                            ${isOwner
-                              ? `
+                            ${
+                               isOwner
+                                  ? `
                             <button class="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 edit-comment-btn" data-comment-id="${comment.ID}">
                                 <i class="fas fa-edit mr-1"></i>Edit
                             </button>
@@ -704,12 +719,14 @@ class CommentsManager {
                                 <i class="fas fa-trash mr-1"></i>Delete
                             </button>
                             `
-                              : ""
-                        }
+                                  : ""
+                            }
                         </div>
 
                         <!-- Reply Form (hidden by default) -->
-                        <div class="reply-form mt-3 hidden" data-comment-id="${comment.ID}">
+                        <div class="reply-form mt-3 hidden" data-comment-id="${
+                           comment.ID
+                        }">
                             <div class="flex items-start space-x-3">
                                 <div class="flex-shrink-0">
                                     <div class="w-6 h-6 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
@@ -717,36 +734,61 @@ class CommentsManager {
                                     </div>
                                 </div>
                                 <div class="flex-1">
-                                    <textarea class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 text-sm resize-y" rows="2" placeholder="Write a reply..." data-reply-content="${comment.ID}"></textarea>
+                                    <textarea class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 text-sm resize-y" rows="2" placeholder="Write a reply..." data-reply-content="${
+                                       comment.ID
+                                    }"></textarea>
                                     <div class="flex justify-end space-x-2 mt-2">
-                                        <button class="px-3 py-1 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 cancel-reply-btn" data-comment-id="${comment.ID}">Cancel</button>
-                                        <button class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 submit-reply-btn" data-comment-id="${comment.ID}" data-parent-id="${comment.ID}" data-post-id="${comment.PostID || document.body.dataset.postId}">Reply</button>
+                                        <button class="px-3 py-1 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 cancel-reply-btn" data-comment-id="${
+                                           comment.ID
+                                        }">Cancel</button>
+                                        <button class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 submit-reply-btn" data-comment-id="${
+                                           comment.ID
+                                        }" data-parent-id="${
+         comment.ID
+      }" data-post-id="${
+         comment.PostID || document.body.dataset.postId
+      }">Reply</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Nested Replies -->
-                        ${comment.Replies && comment.Replies.length > 0 ? `
-                        <div class="replies-container mt-3 space-y-2" data-replies-container="${comment.ID}">
-                            ${comment.Replies.map(reply => this.createReplyHTML(reply, comment.PostID || document.body.dataset.postId)).join('')}
+                        ${
+                           comment.Replies && comment.Replies.length > 0
+                              ? `
+                        <div class="replies-container mt-3 space-y-2" data-replies-container="${
+                           comment.ID
+                        }">
+                            ${comment.Replies.map((reply) =>
+                               this.createReplyHTML(
+                                  reply,
+                                  comment.PostID || document.body.dataset.postId
+                               )
+                            ).join("")}
                         </div>
-                        ` : ''}
+                        `
+                              : ""
+                        }
                     </div>
                 </div>
             </div>
         `;
    }
 
-   createReplyHTML(reply, postId = '') {
+   createReplyHTML(reply, postId = "") {
       const currentUserId = parseInt(document.body.dataset.userId) || 0;
       const isOwner = currentUserId === reply.UserID;
 
       const username = reply.Username || "Anonymous";
-      const createdAt = reply.CreatedAt ? new Date(reply.CreatedAt) : new Date();
+      const createdAt = reply.CreatedAt
+         ? new Date(reply.CreatedAt)
+         : new Date();
 
       return `
-         <div class="border-l-2 border-gray-200 dark:border-gray-600 pl-4 ml-4" data-comment-id="${reply.ID}">
+         <div class="border-l-2 border-gray-200 dark:border-gray-600 pl-4 ml-4" data-comment-id="${
+            reply.ID
+         }">
             <div class="flex items-start space-x-3">
                <div class="flex-shrink-0">
                   <div class="w-6 h-6 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
@@ -756,34 +798,45 @@ class CommentsManager {
                <div class="flex-1 min-w-0">
                   <div class="flex items-center space-x-2 mb-1">
                      <span class="text-sm font-medium text-gray-900 dark:text-gray-100">${username}</span>
-                     <span class="text-xs text-gray-500 dark:text-gray-400">${createdAt.toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                        hour: "numeric",
-                        minute: "2-digit",
-                        hour12: true
-                     })}</span>
+                     <span class="text-xs text-gray-500 dark:text-gray-400">${createdAt.toLocaleDateString(
+                        "en-US",
+                        {
+                           year: "numeric",
+                           month: "short",
+                           day: "numeric",
+                           hour: "numeric",
+                           minute: "2-digit",
+                           hour12: true,
+                        }
+                     )}</span>
                   </div>
                   <div class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
                      ${reply.Content}
                   </div>
                   <div class="flex items-center space-x-2 mt-2">
-                     <button class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 reply-btn" data-comment-id="${reply.ID}" data-parent-id="${reply.ID}" data-post-id="${postId}">
+                     <button class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 reply-btn" data-comment-id="${
+                        reply.ID
+                     }" data-parent-id="${reply.ID}" data-post-id="${postId}">
                         <i class="fas fa-reply mr-1"></i>Reply
                      </button>
-                     ${isOwner ? `
+                     ${
+                        isOwner
+                           ? `
                         <button class="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 edit-comment-btn" data-comment-id="${reply.ID}">
                            <i class="fas fa-edit mr-1"></i>Edit
                         </button>
                         <button class="text-xs text-red-500 hover:text-red-700 delete-comment-btn" data-comment-id="${reply.ID}">
                            <i class="fas fa-trash mr-1"></i>Delete
                         </button>
-                     ` : ''}
+                     `
+                           : ""
+                     }
                   </div>
 
                   <!-- Reply Form (hidden by default) -->
-                  <div class="reply-form mt-3 hidden" data-comment-id="${reply.ID}">
+                  <div class="reply-form mt-3 hidden" data-comment-id="${
+                     reply.ID
+                  }">
                      <div class="flex items-start space-x-3">
                         <div class="flex-shrink-0">
                            <div class="w-6 h-6 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
@@ -791,10 +844,18 @@ class CommentsManager {
                            </div>
                         </div>
                         <div class="flex-1">
-                           <textarea class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 text-sm resize-y" rows="2" placeholder="Write a reply..." data-reply-content="${reply.ID}"></textarea>
+                           <textarea class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 text-sm resize-y" rows="2" placeholder="Write a reply..." data-reply-content="${
+                              reply.ID
+                           }"></textarea>
                            <div class="flex justify-end space-x-2 mt-2">
-                              <button class="px-3 py-1 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 cancel-reply-btn" data-comment-id="${reply.ID}">Cancel</button>
-                              <button class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 submit-reply-btn" data-comment-id="${reply.ID}" data-parent-id="${reply.ID}" data-post-id="${postId}">Reply</button>
+                              <button class="px-3 py-1 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 cancel-reply-btn" data-comment-id="${
+                                 reply.ID
+                              }">Cancel</button>
+                              <button class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 submit-reply-btn" data-comment-id="${
+                                 reply.ID
+                              }" data-parent-id="${
+         reply.ID
+      }" data-post-id="${postId}">Reply</button>
                            </div>
                         </div>
                      </div>
