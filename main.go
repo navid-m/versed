@@ -958,7 +958,42 @@ func main() {
 		)
 
 		if err != nil {
-			return c.Status(404).SendString("Post not found")
+			postObj, postErr := database.GetPostByID(db, itemID)
+			if postErr != nil {
+				return c.Status(404).SendString("Post not found")
+			}
+
+			post.ID = postObj.ID
+			post.Title = postObj.Title
+			post.Description = postObj.Content
+			post.Author = postObj.Username
+			post.Score = postObj.Score
+			post.CommentsCount = 0
+			post.CreatedAt = postObj.CreatedAt
+			sourceName = "Forum"
+
+			comments, commentErr := database.GetCommentsByItemID(itemID)
+			if commentErr != nil {
+				log.Printf("Failed to get comments: %v", commentErr)
+				comments = []database.Comment{}
+			}
+
+			data := fiber.Map{
+				"post":     post,
+				"comments": comments,
+			}
+
+			if userEmail != nil {
+				data["Email"] = userEmail
+			}
+			if userUsername != nil {
+				data["Username"] = userUsername
+			}
+			if userID != nil {
+				data["userID"] = userID
+			}
+
+			return c.Render("post", data)
 		}
 
 		post.SourceName = sourceName
