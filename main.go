@@ -1008,10 +1008,10 @@ func main() {
 				return c.Status(500).SendString("Failed to get subverse information")
 			}
 
-			comments, commentErr := database.GetPostComments(db, itemID)
+			comments, commentErr := database.GetCommentsByItemID(itemID)
 			if commentErr != nil {
 				log.Printf("Failed to get comments: %v", commentErr)
-				comments = []models.PostComment{}
+				comments = []database.Comment{}
 			}
 
 			data := fiber.Map{
