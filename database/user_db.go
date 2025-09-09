@@ -319,3 +319,32 @@ func GetHiddenFeedItems(userID int) ([]string, error) {
 
 	return itemIDs, nil
 }
+
+// GetAllUsers retrieves all users from the database
+func GetAllUsers() ([]models.User, error) {
+	rows, err := db.Query("SELECT id, email, username, password, is_admin, ip_address FROM users ORDER BY id")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []models.User
+	for rows.Next() {
+		var user models.User
+		var isAdmin sql.NullBool
+		var ipAddress sql.NullString
+		err := rows.Scan(&user.ID, &user.Email, &user.Username, &user.Password, &isAdmin, &ipAddress)
+		if err != nil {
+			return nil, err
+		}
+		user.IsAdmin = isAdmin.Bool
+		if ipAddress.Valid {
+			user.IPAddress = ipAddress.String
+		} else {
+			user.IPAddress = ""
+		}
+		users = append(users, user)
+	}
+
+	return users, nil
+}

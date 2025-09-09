@@ -9,6 +9,7 @@ type User struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 	IsAdmin  bool   `json:"is_admin"`
+	IPAddress string `json:"ip_address"`
 }
 
 // BannedIP represents a banned IP address

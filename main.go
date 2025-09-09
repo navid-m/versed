@@ -1104,6 +1104,20 @@ func main() {
 		return c.Render("admin", data)
 	})
 
+	app.Get("/api/admin/users", adminMiddleware, func(c *fiber.Ctx) error {
+		users, err := database.GetAllUsers()
+		if err != nil {
+			log.Printf("Error getting users: %v", err)
+			return c.Status(500).JSON(fiber.Map{
+				"error": "Failed to retrieve users",
+			})
+		}
+
+		return c.JSON(fiber.Map{
+			"users": users,
+		})
+	})
+
 	app.Get("/api/admin/banned-ips", adminMiddleware, func(c *fiber.Ctx) error {
 		bannedIPs, err := database.GetAllBannedIPs()
 		if err != nil {
