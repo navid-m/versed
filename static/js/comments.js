@@ -601,6 +601,8 @@ class CommentsManager {
          if (response.ok) {
             const newReply = await response.json();
 
+            console.log("Server response for new reply:", newReply);
+
             // Ensure the reply has the correct data
             if (!newReply.Username) {
                newReply.Username =
@@ -609,6 +611,12 @@ class CommentsManager {
             if (!newReply.CreatedAt) {
                newReply.CreatedAt = new Date().toISOString();
             }
+            if (!newReply.Content) {
+               console.error("Reply content is missing from server response!");
+               newReply.Content = content; // Use the content we just sent
+            }
+
+            console.log("Reply object after processing:", newReply);
 
             // Add the reply to the UI
             this.addReplyToUI(newReply, parentId);
@@ -657,6 +665,17 @@ class CommentsManager {
       const postId = document.body.dataset.postId || "";
       console.log("Using postId:", postId);
 
+      // Calculate depth based on how many parent comments we have
+      let depth = 0;
+      let currentElement = parentComment;
+      while (currentElement && currentElement !== document.querySelector("#commentsList")) {
+         if (currentElement.hasAttribute("data-comment-id")) {
+            depth++;
+         }
+         currentElement = currentElement.parentElement;
+      }
+      console.log("Calculated depth:", depth);
+
       // Find the replies container or create one
       let repliesContainer = parentComment.querySelector(".replies-container");
       console.log("Existing replies container:", repliesContainer);
@@ -668,8 +687,8 @@ class CommentsManager {
          console.log("Created new replies container");
       }
 
-      // Create the reply HTML
-      const replyHTML = this.createReplyHTML(reply, postId);
+      // Create the reply HTML with proper depth
+      const replyHTML = this.createReplyHTML(reply, postId, depth);
       console.log("Generated reply HTML:", replyHTML.substring(0, 200) + "...");
 
       repliesContainer.insertAdjacentHTML("beforeend", replyHTML);
@@ -795,7 +814,7 @@ class CommentsManager {
         `;
    }
 
-   createReplyHTML(reply, postId = "") {
+   createReplyHTML(reply, postId = "", depth = 1) {
       const currentUserId = parseInt(document.body.dataset.userId) || 0;
       const isOwner = currentUserId === reply.UserID;
 
@@ -804,8 +823,11 @@ class CommentsManager {
          ? new Date(reply.CreatedAt)
          : new Date();
 
+      // Calculate margin based on depth
+      const marginClass = depth > 1 ? `ml-${4 + (depth - 1) * 4}` : "ml-4";
+
       return `
-         <div class="border-l-2 border-gray-200 dark:border-gray-600 pl-4 ml-4" data-comment-id="${
+         <div class="border-l-2 border-gray-200 dark:border-gray-600 pl-4 ${marginClass}" data-comment-id="${
             reply.ID
          }">
             <div class="flex items-start space-x-3">

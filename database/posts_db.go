@@ -279,6 +279,10 @@ func GetPostComments(db *sql.DB, postID string) ([]models.PostComment, error) {
 		} else {
 			if parent, exists := commentMap[*comment.ParentID]; exists {
 				parent.Replies = append(parent.Replies, *comment)
+			} else {
+				// Parent doesn't exist, treat as root comment
+				log.Printf("Warning: Comment %s has parent_id %s but parent not found, treating as root comment", comment.ID, *comment.ParentID)
+				rootComments = append(rootComments, *comment)
 			}
 		}
 	}
