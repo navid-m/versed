@@ -2,6 +2,11 @@ document.addEventListener("DOMContentLoaded", function () {
    const loadMoreButton = document.querySelector(".text-center.py-6 button");
    let currentPage = 1;
 
+   if (!loadMoreButton) {
+      console.log("Load more button was null");
+      return;
+   }
+
    loadMoreButton.addEventListener("click", async function () {
       try {
          const response = await fetch(`/api/feeds?page=${currentPage + 1}`);
