@@ -1041,7 +1041,6 @@ func main() {
 		if userID != nil {
 			data["userID"] = userID
 		}
-
 		return c.Render("post", data)
 	})
 

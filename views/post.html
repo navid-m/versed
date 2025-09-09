@@ -263,14 +263,25 @@
 	</div>
 	{% endmacro %}
 
-	{% for comment in comments %}
-		{{ render_comment_flat(comment) }}
-		{% if comment.Replies %}
-			{% for reply in comment.Replies %}
-				{{ render_comment_flat(reply) }}
-			{% endfor %}
-		{% endif %}
-	{% endfor %}
+	{% macro render_comments_recursive(comments) %}
+		{% for comment in comments %}
+			{{ render_comment_flat(comment) }}
+			{% if comment.Replies %}
+				{{ render_comments_recursive(comment.Replies) }}
+			{% endif %}
+		{% endfor %}
+	{% endmacro %}
+
+	{% macro render_all_comments_flat(comments) %}
+		{% for comment in comments %}
+			{{ render_comment_flat(comment) }}
+			{% if comment.Replies %}
+				{{ render_comments_recursive(comment.Replies) }}
+			{% endif %}
+		{% endfor %}
+	{% endmacro %}
+
+	{{ render_all_comments_flat(comments) }}
 
                   {% if not comments %}
                   <div

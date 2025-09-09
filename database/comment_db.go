@@ -28,14 +28,14 @@ func CreateComment(itemID string, userID int, username, content string, parentID
 	} else {
 		log.Printf("=== CreateComment parentID is nil ===")
 	}
-	
+
 	query := `
 		INSERT INTO comments (item_id, user_id, username, content, parent_id)
 		VALUES (?, ?, ?, ?, ?)`
 
-	log.Printf("=== CreateComment executing query with params: itemID=%s, userID=%d, username=%s, content=%s, parentID=%v ===", 
+	log.Printf("=== CreateComment executing query with params: itemID=%s, userID=%d, username=%s, content=%s, parentID=%v ===",
 		itemID, userID, username, content, parentID)
-	
+
 	result, err := GetDB().Exec(query, itemID, userID, username, content, parentID)
 	if err != nil {
 		log.Printf("=== CreateComment ERROR executing query: %v ===", err)
@@ -62,7 +62,7 @@ func CreateComment(itemID string, userID int, username, content string, parentID
 		return nil, err
 	}
 	log.Printf("=== CreateComment returning comment with ParentID: %v ===", comment.ParentID)
-	
+
 	return comment, nil
 }
 
@@ -108,7 +108,7 @@ func GetCommentsByItemID(itemID string) ([]Comment, error) {
 		log.Printf("=== HIERARCHY INPUT: Comment %d: ID=%d, Content='%s', ParentID=%v ===", i+1, comment.ID, comment.Content, comment.ParentID)
 	}
 	topLevelComments := buildCommentHierarchy(allComments)
-	
+
 	log.Printf("=== HIERARCHY RESULT: %d top-level comments ===", len(topLevelComments))
 	for i, comment := range topLevelComments {
 		log.Printf("=== HIERARCHY OUTPUT: Top-level %d: ID=%d, Content='%s', Replies=%d ===", i+1, comment.ID, comment.Content, len(comment.Replies))
@@ -188,45 +188,42 @@ func GetCommentCountByItemID(itemID string) (int, error) {
 // Builds hierarchical comment structure from flat comments array
 func buildCommentHierarchy(comments []Comment) []Comment {
 	commentMap := make(map[int]*Comment)
+	replyMap := make(map[int][]*Comment)
 	var topLevelComments []Comment
 
-	// First pass: create map of all comments
 	for i := range comments {
 		comment := &comments[i]
 		commentMap[comment.ID] = comment
+		replyMap[comment.ID] = []*Comment{}
 	}
 
-	// Second pass: build hierarchy
-	log.Printf("=== BUILDING HIERARCHY: Starting hierarchy construction ===")
 	for i := range comments {
-		comment := &comments[i]
-		log.Printf("=== BUILDING HIERARCHY: Processing comment %d (ID=%d, ParentID=%v) ===", i+1, comment.ID, comment.ParentID)
+		comment := comments[i]
+
 		if comment.ParentID == nil {
-			log.Printf("=== BUILDING HIERARCHY: Comment %d (ID=%d) is top-level (ParentID=nil) ===", i+1, comment.ID)
-			// Store reference to the original comment so we can modify it later
-			topLevelComments = append(topLevelComments, *comment)
-			log.Printf("=== BUILDING HIERARCHY: Added to topLevelComments, now have %d ===", len(topLevelComments))
+			topLevelComments = append(topLevelComments, comment)
 		} else {
-			parentIDValue := *comment.ParentID
-			log.Printf("=== BUILDING HIERARCHY: Comment %d (ID=%d) is reply to parent %d ===", i+1, comment.ID, parentIDValue)
-			if parent, exists := commentMap[parentIDValue]; exists {
-				log.Printf("=== BUILDING HIERARCHY: Found parent %d, adding reply %d ===", parentIDValue, comment.ID)
-				parent.Replies = append(parent.Replies, *comment)
-				log.Printf("=== BUILDING HIERARCHY: Parent %d now has %d replies ===", parentIDValue, len(parent.Replies))
-			} else {
-				log.Printf("=== BUILDING HIERARCHY: Parent %d not found in commentMap, treating as top-level ===", parentIDValue)
-				topLevelComments = append(topLevelComments, *comment)
-			}
+			parentID := *comment.ParentID
+			replyMap[parentID] = append(replyMap[parentID], &comment)
 		}
 	}
 
-	// Third pass: update topLevelComments with the modified parents that now have replies
-	for i := range topLevelComments {
-		if parent, exists := commentMap[topLevelComments[i].ID]; exists {
-			// Replace the copy with the updated version that has replies
-			topLevelComments[i] = *parent
-			log.Printf("=== BUILDING HIERARCHY: Updated topLevel comment %d with %d replies ===", topLevelComments[i].ID, len(topLevelComments[i].Replies))
+	var buildReplies func(comment *Comment)
+	buildReplies = func(comment *Comment) {
+		replies := replyMap[comment.ID]
+		comment.Replies = make([]Comment, len(replies))
+
+		for i, reply := range replies {
+			comment.Replies[i] = *reply
 		}
+
+		for i := range comment.Replies {
+			buildReplies(&comment.Replies[i])
+		}
+	}
+
+	for i := range topLevelComments {
+		buildReplies(&topLevelComments[i])
 	}
 
 	return topLevelComments
