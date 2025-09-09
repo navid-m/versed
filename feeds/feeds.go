@@ -21,17 +21,17 @@ type FeedSource struct {
 }
 
 type FeedItem struct {
-	ID            string    `json:"id"`
-	SourceID      int       `json:"source_id"`
-	SourceName    string    `json:"source_name"`
-	Title         string    `json:"title"`
-	URL           string    `json:"url"`
-	Description   string    `json:"description,omitempty"`
-	Author        string    `json:"author,omitempty"`
-	PublishedAt   time.Time `json:"published_at"`
-	Score         int       `json:"score,omitempty"`
-	CommentsCount int       `json:"comments_count,omitempty"`
-	CreatedAt     time.Time `json:"created_at"`
+	ID            string     `json:"id"`
+	SourceID      int        `json:"source_id"`
+	SourceName    string     `json:"source_name"`
+	Title         string     `json:"title"`
+	URL           string     `json:"url"`
+	Description   string     `json:"description"`
+	Author        string     `json:"author"`
+	PublishedAt   *time.Time `json:"published_at"`
+	Score         int        `json:"score"`
+	CommentsCount int        `json:"comments_count"`
+	CreatedAt     *time.Time `json:"created_at"`
 }
 
 // Interface for different feed sources.
@@ -147,6 +147,7 @@ func ParseFeedWithParser(content []byte, sourceID int, sourceName string) ([]Fee
 		if item.Author != nil {
 			authorName = item.Author.Name
 		}
+		var curTime = time.Now()
 		feedItem := FeedItem{
 			ID:            id,
 			SourceID:      sourceID,
@@ -154,10 +155,10 @@ func ParseFeedWithParser(content []byte, sourceID int, sourceName string) ([]Fee
 			URL:           item.Link,
 			Description:   item.Description,
 			Author:        authorName,
-			PublishedAt:   publishedAt,
+			PublishedAt:   &publishedAt,
 			Score:         0,
 			CommentsCount: 0,
-			CreatedAt:     time.Now(),
+			CreatedAt:     &curTime,
 		}
 		items = append(items, feedItem)
 	}
@@ -218,6 +219,19 @@ func UpdateFeedSourceTimestamp(db *sql.DB, sourceID int) error {
 	return err
 }
 
+// Gets a feed source by URL.
+func GetFeedSourceByURL(db *sql.DB, url string) (*FeedSource, error) {
+	query := `SELECT id, name, url, last_updated, update_interval FROM feed_sources WHERE url = ?`
+	row := db.QueryRow(query, url)
+
+	var source FeedSource
+	err := row.Scan(&source.ID, &source.Name, &source.URL, &source.LastUpdated, &source.UpdateInterval)
+	if err != nil {
+		return nil, err
+	}
+	return &source, nil
+}
+
 // Gets a feed source by name.
 func GetFeedSourceByName(db *sql.DB, name string) (*FeedSource, error) {
 	query := `SELECT id, name, url, last_updated, update_interval FROM feed_sources WHERE name = ?`
@@ -231,9 +245,9 @@ func GetFeedSourceByName(db *sql.DB, name string) (*FeedSource, error) {
 	return &source, nil
 }
 
-// Creates or updates a feed source - FIXED to preserve timestamps
+// Creates or updates a feed source - FIXED to check by URL instead of name
 func CreateOrUpdateFeedSource(db *sql.DB, name, url string) (*FeedSource, error) {
-	existing, err := GetFeedSourceByName(db, name)
+	existing, err := GetFeedSourceByURL(db, url)
 	if err == nil {
 		log.Printf("Found existing source: %s (ID: %d, LastUpdated: %v)",
 			name, existing.ID, existing.LastUpdated)

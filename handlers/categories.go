@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/navid-m/versed/database"
 	"github.com/navid-m/versed/feeds"
@@ -229,11 +230,15 @@ func GetCategoryFeedItems(c *fiber.Ctx) error {
 	for rows.Next() {
 		var item feeds.FeedItem
 		var sourceName string
+		var publishedAt time.Time
+		var createdAt time.Time
 		err := rows.Scan(&item.ID, &item.SourceID, &item.Title, &item.URL, &item.Description,
-			&item.Author, &item.PublishedAt, &item.Score, &item.CommentsCount, &item.CreatedAt, &sourceName)
+			&item.Author, &publishedAt, &item.Score, &item.CommentsCount, &createdAt, &sourceName)
 		if err != nil {
 			continue
 		}
+		item.PublishedAt = &publishedAt
+		item.CreatedAt = &createdAt
 		item.SourceName = sourceName
 		items = append(items, item)
 	}
@@ -435,6 +440,29 @@ func CreateAndAddFeedToCategory(c *fiber.Ctx) error {
 		return c.Status(500).JSON(fiber.Map{
 			"error": "Failed to add feed to category",
 		})
+	}
+
+	fmt.Printf("Processing new feed: %s\n", source.URL)
+	content, fetchErr := feeds.FetchFeed(source.URL)
+	if fetchErr != nil {
+		fmt.Printf("Failed to fetch feed %s: %v\n", source.URL, fetchErr)
+	} else {
+		parsedItems, parseErr := feeds.ParseFeedWithParser(content, source.ID, source.Name)
+		if parseErr != nil {
+			fmt.Printf("Failed to parse feed %s: %v\n", source.URL, parseErr)
+		} else {
+			fmt.Printf("Parsed %d items from new feed %s\n", len(parsedItems), source.Name)
+			saveErr := feeds.SaveFeedItems(db, parsedItems)
+			if saveErr != nil {
+				fmt.Printf("Failed to save feed items for %s: %v\n", source.Name, saveErr)
+			} else {
+				fmt.Printf("Successfully saved %d items for new feed %s\n", len(parsedItems), source.Name)
+				updateErr := feeds.UpdateFeedSourceTimestamp(db, source.ID)
+				if updateErr != nil {
+					fmt.Printf("Failed to update timestamp for %s: %v\n", source.Name, updateErr)
+				}
+			}
+		}
 	}
 
 	fmt.Printf("=== Successfully added feed to category ===\n")

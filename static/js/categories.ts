@@ -668,6 +668,35 @@ class CategoryManager {
          );
 
          if (response.ok) {
+            console.log(
+               "[DEBUG] Feed added successfully, attempting redirect..."
+            );
+            const category = this.categories.find(
+               (cat) => cat.id === categoryId
+            );
+            console.log("[DEBUG] Category found:", category);
+            if (category) {
+               const username = this.getUsername();
+               console.log("[DEBUG] Username found:", username);
+               if (username) {
+                  const categorySlug = category.name
+                     .toLowerCase()
+                     .replace(/\s+/g, "-");
+                  const url = `/u/${username}/c/${categorySlug}?t=${Date.now()}`;
+                  console.log("[DEBUG] Redirecting to:", url);
+                  window.location.href = url;
+                  console.log("[DEBUG] Redirect initiated");
+                  return;
+               } else {
+                  console.log("[DEBUG] Username not found, cannot redirect");
+               }
+            } else {
+               console.log("[DEBUG] Category not found, cannot redirect");
+            }
+
+            console.log(
+               "[DEBUG] Falling back to modal removal and feed reload"
+            );
             document.querySelector(".fixed").remove();
             this.loadCategoryFeeds(categoryId);
          } else {
@@ -679,7 +708,7 @@ class CategoryManager {
       }
    }
 
-   async removeFeedFromCategory(categoryId, feedSourceId) {
+   async removeFeedFromCategory(categoryId: any, feedSourceId: any) {
       if (!confirm("Remove this feed from the category?")) return;
 
       try {

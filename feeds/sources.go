@@ -46,7 +46,7 @@ func (r *RedditFeed) ParseFeed(content []byte, sourceID int) ([]FeedItem, error)
 		} else {
 			publishedAt = time.Now()
 		}
-
+		var curTime = time.Now()
 		feedItem := FeedItem{
 			ID:            id,
 			SourceID:      sourceID,
@@ -54,10 +54,10 @@ func (r *RedditFeed) ParseFeed(content []byte, sourceID int) ([]FeedItem, error)
 			URL:           item.Link,
 			Description:   item.Description,
 			Author:        item.Author.Name,
-			PublishedAt:   publishedAt,
+			PublishedAt:   &publishedAt,
 			Score:         score,
 			CommentsCount: commentsCount,
-			CreatedAt:     time.Now(),
+			CreatedAt:     &curTime,
 		}
 
 		if innerLink := extractRedditInnerLink(item.Description); innerLink != "" {
@@ -166,7 +166,7 @@ func (h *HackerNewsFeed) ParseFeed(content []byte, sourceID int) ([]FeedItem, er
 		} else {
 			publishedAt = time.Now()
 		}
-
+		var curTime = time.Now()
 		feedItem := FeedItem{
 			ID:            id,
 			SourceID:      sourceID,
@@ -174,10 +174,10 @@ func (h *HackerNewsFeed) ParseFeed(content []byte, sourceID int) ([]FeedItem, er
 			URL:           item.Link,
 			Description:   item.Description,
 			Author:        item.Author.Name,
-			PublishedAt:   publishedAt,
+			PublishedAt:   &publishedAt,
 			Score:         score,
 			CommentsCount: commentsCount,
-			CreatedAt:     time.Now(),
+			CreatedAt:     &curTime,
 		}
 		items = append(items, feedItem)
 	}
@@ -235,7 +235,7 @@ func (l *LobsterFeed) ParseFeed(content []byte, sourceID int) ([]FeedItem, error
 		} else {
 			publishedAt = time.Now()
 		}
-
+		var curTime = time.Now()
 		feedItem := FeedItem{
 			ID:            id,
 			SourceID:      sourceID,
@@ -243,10 +243,10 @@ func (l *LobsterFeed) ParseFeed(content []byte, sourceID int) ([]FeedItem, error
 			URL:           item.Link,
 			Description:   item.Description,
 			Author:        item.Author.Name,
-			PublishedAt:   publishedAt,
+			PublishedAt:   &publishedAt,
 			Score:         score,
 			CommentsCount: 0,
-			CreatedAt:     time.Now(),
+			CreatedAt:     &curTime,
 		}
 		items = append(items, feedItem)
 	}
