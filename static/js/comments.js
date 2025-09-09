@@ -65,8 +65,20 @@ class CommentsManager {
             const commentId = button.dataset.commentId;
             const parentId = button.dataset.parentId;
             const postId = button.dataset.postId;
-            console.log("Button data attributes - parentId:", JSON.stringify(parentId), "postId:", JSON.stringify(postId));
-            console.log("parentId type:", typeof parentId, "parentId == 'undefined':", parentId === "undefined", "parentId truthy:", !!parentId);
+            console.log(
+               "Button data attributes - parentId:",
+               JSON.stringify(parentId),
+               "postId:",
+               JSON.stringify(postId)
+            );
+            console.log(
+               "parentId type:",
+               typeof parentId,
+               "parentId == 'undefined':",
+               parentId === "undefined",
+               "parentId truthy:",
+               !!parentId
+            );
             this.submitReply(commentId, parentId, postId);
          }
       });
@@ -596,7 +608,8 @@ class CommentsManager {
             },
             body: JSON.stringify({
                content: content,
-               parent_id: (parentId && parentId !== "undefined") ? parentId : null,
+               parent_id:
+                  parentId && parentId !== "undefined" ? parentId : null,
             }),
          });
 
@@ -612,7 +625,10 @@ class CommentsManager {
             console.log("CLIENT: Comment ParentID:", newReply.parent_id);
             console.log("CLIENT: Comment CreatedAt:", newReply.created_at);
             console.log("CLIENT: Comment UpdatedAt:", newReply.updated_at);
-            console.log("CLIENT: Full received comment:", JSON.stringify(newReply, null, 2));
+            console.log(
+               "CLIENT: Full received comment:",
+               JSON.stringify(newReply, null, 2)
+            );
             console.log("=== CLIENT: Processing received comment ===");
 
             // Ensure the reply has the correct data
@@ -630,13 +646,10 @@ class CommentsManager {
 
             console.log("Reply object after processing:", newReply);
 
-            // Add the reply to the UI
             this.addReplyToUI(newReply, parentId);
 
-            // Hide the reply form and clear it
             this.cancelReply(commentId);
 
-            // Update comment count
             this.currentCommentCount++;
             this.updateCommentCountDisplay();
             this.updateIndexPageCommentCount(postId, this.currentCommentCount);
@@ -656,7 +669,12 @@ class CommentsManager {
    }
 
    addReplyToUI(reply, parentId) {
-      console.log("addReplyToUI called with reply:", reply, "parentId:", parentId);
+      console.log(
+         "addReplyToUI called with reply:",
+         reply,
+         "parentId:",
+         parentId
+      );
 
       const parentComment = document.querySelector(
          `[data-comment-id="${parentId}"]`
@@ -667,7 +685,7 @@ class CommentsManager {
       if (!parentComment) {
          console.error("Parent comment not found for parentId:", parentId);
          console.log("Available comment IDs:");
-         document.querySelectorAll("[data-comment-id]").forEach(el => {
+         document.querySelectorAll("[data-comment-id]").forEach((el) => {
             console.log("Comment ID:", el.getAttribute("data-comment-id"));
          });
          return;
@@ -680,7 +698,10 @@ class CommentsManager {
       // Calculate depth based on how many parent comments we have
       let depth = 0;
       let currentElement = parentComment;
-      while (currentElement && currentElement !== document.querySelector("#commentsList")) {
+      while (
+         currentElement &&
+         currentElement !== document.querySelector("#commentsList")
+      ) {
          if (currentElement.hasAttribute("data-comment-id")) {
             depth++;
          }
@@ -810,12 +831,15 @@ class CommentsManager {
                         <div class="replies-container mt-3 space-y-2" data-replies-container="${
                            comment.id
                         }">
-                            ${comment.replies.map((reply) =>
-                               this.createReplyHTML(
-                                  reply,
-                                  comment.post_id || document.body.dataset.postId
+                            ${comment.replies
+                               .map((reply) =>
+                                  this.createReplyHTML(
+                                     reply,
+                                     comment.post_id ||
+                                        document.body.dataset.postId
+                                  )
                                )
-                            ).join("")}
+                               .join("")}
                         </div>
                         `
                               : ""
@@ -840,8 +864,8 @@ class CommentsManager {
 
       return `
          <div class="border-l-2 border-gray-200 dark:border-gray-600 pl-4 ${marginClass}" data-comment-id="${
-            reply.id
-         }">
+         reply.id
+      }">
             <div class="flex items-start space-x-3">
                <div class="flex-shrink-0">
                   <div class="w-6 h-6 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
