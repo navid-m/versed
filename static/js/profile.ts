@@ -1,6 +1,3 @@
-const userMenuButton = document.getElementById("userMenuButton");
-const userDropdown = document.getElementById("userDropdown");
-
 document.addEventListener("DOMContentLoaded", function () {
    const avatarElement = document.querySelector("[data-email]");
    if (avatarElement) {
@@ -10,22 +7,6 @@ document.addEventListener("DOMContentLoaded", function () {
       }
    }
 });
-
-if (userMenuButton && userDropdown) {
-   userMenuButton.addEventListener("click", (e) => {
-      e.stopPropagation();
-      userDropdown.classList.toggle("hidden");
-   });
-
-   document.addEventListener("click", (e) => {
-      if (
-         !userMenuButton.contains(e.target as Node) &&
-         !userDropdown.contains(e.target as Node)
-      ) {
-         userDropdown.classList.add("hidden");
-      }
-   });
-}
 
 document.addEventListener("DOMContentLoaded", function () {
    const hiddenPostsContainer = document.getElementById("hiddenPostsContainer");

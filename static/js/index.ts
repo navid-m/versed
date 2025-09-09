@@ -31,7 +31,6 @@ document.addEventListener("DOMContentLoaded", function () {
       }
    });
 
-   // Initialize dark mode toggle
    const darkModeToggle = document.getElementById("darkModeToggle");
    const toggleSlider = document.getElementById("toggleSlider");
    const html = document.documentElement;
@@ -63,7 +62,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
    checkAdminStatus();
 
-   // Initialize user menu dropdown
    const userMenuButton = document.getElementById("userMenuButton");
    const userDropdown = document.getElementById("userDropdown");
 
@@ -71,6 +69,7 @@ document.addEventListener("DOMContentLoaded", function () {
       userMenuButton.addEventListener("click", (e) => {
          e.stopPropagation();
          userDropdown.classList.toggle("hidden");
+         console.log("Dropdown classes after toggle:", userDropdown.className);
       });
 
       document.addEventListener("click", (e) => {
@@ -81,9 +80,10 @@ document.addEventListener("DOMContentLoaded", function () {
             userDropdown.classList.add("hidden");
          }
       });
+   } else {
+      console.log("User menu elements not found");
    }
 
-   // Initialize view buttons
    const listViewBtn = document.getElementById("listViewBtn");
    const gridViewBtn = document.getElementById("gridViewBtn");
    const postsContainer = document.getElementById("postsContainer");
