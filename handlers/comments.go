@@ -3,12 +3,12 @@ package handlers
 import (
 	"fmt"
 	"log"
+	"regexp"
 	"strconv"
 
+	"github.com/gofiber/fiber/v2"
 	"github.com/navid-m/versed/database"
 	"github.com/navid-m/versed/feeds"
-
-	"github.com/gofiber/fiber/v2"
 )
 
 // Retrieves all comments for a specific feed item
@@ -92,7 +92,22 @@ func CreateComment(c *fiber.Ctx) error {
 		})
 	}
 
-	// Parse parent_id string to int if provided
+	urlPattern := `(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w- .\/?%&=]*)?`
+	regex, err := regexp.Compile(urlPattern)
+	if err != nil {
+		log.Printf("=== CreateComment ERROR compiling URL regex: %v ===", err)
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Internal server error",
+		})
+	}
+
+	if regex.MatchString(req.Content) {
+		log.Printf("=== CreateComment ERROR: Comment contains URL ===")
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Links are not allowed in comments",
+		})
+	}
+
 	var parentID *int
 	if req.ParentIDStr != "" {
 		if parsedID, err := strconv.Atoi(req.ParentIDStr); err != nil {
@@ -103,7 +118,6 @@ func CreateComment(c *fiber.Ctx) error {
 		} else {
 			parentID = &parsedID
 			log.Printf("=== CreateComment parsed parent_id: %d ===", *parentID)
-			// Prepend @mention to reply content
 			if req.Content != "" {
 				req.Content = fmt.Sprintf("@%d %s", *parentID, req.Content)
 				log.Printf("=== CreateComment added @mention: '%s' ===", req.Content)
