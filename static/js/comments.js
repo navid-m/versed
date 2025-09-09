@@ -691,11 +691,9 @@ class CommentsManager {
          return;
       }
 
-      // Get the post ID from the body element
       const postId = document.body.dataset.postId || "";
       console.log("Using postId:", postId);
 
-      // Calculate depth based on how many parent comments we have
       let depth = 0;
       let currentElement = parentComment;
       while (
@@ -709,7 +707,6 @@ class CommentsManager {
       }
       console.log("Calculated depth:", depth);
 
-      // Find the replies container or create one
       let repliesContainer = parentComment.querySelector(".replies-container");
       console.log("Existing replies container:", repliesContainer);
 
@@ -720,7 +717,6 @@ class CommentsManager {
          console.log("Created new replies container");
       }
 
-      // Create the reply HTML with proper depth
       const replyHTML = this.createReplyHTML(reply, postId, depth);
       console.log("Generated reply HTML:", replyHTML.substring(0, 200) + "...");
 
@@ -737,7 +733,6 @@ class CommentsManager {
          ? new Date(comment.created_at)
          : new Date();
 
-      // Check if this is a reply (has parent_id)
       const isReply =
          comment.parent_id !== null && comment.parent_id !== undefined;
       const depthClass = isReply ? "ml-4" : "";
@@ -859,7 +854,6 @@ class CommentsManager {
          ? new Date(reply.created_at)
          : new Date();
 
-      // Calculate margin based on depth
       const marginClass = depth > 1 ? `ml-${4 + (depth - 1) * 4}` : "ml-4";
 
       return `
