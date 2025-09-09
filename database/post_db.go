@@ -74,19 +74,33 @@ func RetrievePostReadingList(userID int) (*sql.Rows, error) {
 func RetrieveReadingList(userID int) (*sql.Rows, error) {
 	query := `
 		SELECT fi.id, fi.source_id, fi.title, fi.url, fi.description, fi.author,
-		       fi.published_at, fi.score, fi.comments_count, fi.created_at, fs.name as source_name
+		       fi.published_at, fi.score,
+		       COALESCE(feed_comment_counts.comment_count, 0) as comments_count,
+		       fi.created_at, fs.name as source_name
 		FROM feed_items fi
 		JOIN reading_list rl ON fi.id = rl.item_id
 		JOIN feed_sources fs ON fi.source_id = fs.id
+		LEFT JOIN (
+		    SELECT item_id, COUNT(*) as comment_count
+		    FROM comments
+		    GROUP BY item_id
+		) feed_comment_counts ON fi.id = feed_comment_counts.item_id
 		WHERE rl.user_id = $1
 
 		UNION ALL
 
 		SELECT p.id, '0' as source_id, p.title, p.url, p.content as description, u.username as author,
-		       p.created_at as published_at, p.score, '0' as comments_count, p.created_at, 'Subverse Post' as source_name
+		       p.created_at as published_at, p.score,
+		       COALESCE(post_comment_counts.comment_count, 0) as comments_count,
+		       p.created_at, 'Subverse Post' as source_name
 		FROM posts p
 		JOIN reading_list rl ON CAST(p.id AS TEXT) = rl.item_id
 		JOIN users u ON p.user_id = u.id
+		LEFT JOIN (
+		    SELECT post_id, COUNT(*) as comment_count
+		    FROM post_comments
+		    GROUP BY post_id
+		) post_comment_counts ON CAST(p.id AS TEXT) = post_comment_counts.post_id
 		WHERE rl.user_id = $1
 
 		ORDER BY 10 DESC
