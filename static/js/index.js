@@ -30,6 +30,8 @@ document.addEventListener("DOMContentLoaded", function () {
          );
       }
    });
+
+   checkAdminStatus();
 });
 
 darkModeToggle.addEventListener("click", () => {
@@ -200,3 +202,39 @@ document.addEventListener("DOMContentLoaded", function () {
 
    console.log("=== index.js setup complete ===");
 });
+
+async function checkAdminStatus() {
+   const adminButton = document.querySelector(".admin-button");
+   const adminDivider = document.querySelector(".admin-divider");
+
+   if (!adminButton || !adminDivider) {
+      console.log(
+         "Admin button or divider not found, skipping admin status check"
+      );
+      return;
+   }
+
+   try {
+      console.log("Checking admin status...");
+      const response = await fetch("/api/user/status");
+
+      if (response.ok) {
+         const data = await response.json();
+         console.log("Admin status response:", data);
+
+         if (data.isAdmin) {
+            console.log("User is admin, showing admin button");
+            adminButton.classList.remove("hidden");
+            adminDivider.classList.remove("hidden");
+         } else {
+            console.log("User is not admin, hiding admin button");
+            adminButton.classList.add("hidden");
+            adminDivider.classList.add("hidden");
+         }
+      } else {
+         console.log("Failed to fetch ASTATUS");
+      }
+   } catch (error) {
+      console.error("Error checking ASTATUS:", error);
+   }
+}

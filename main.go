@@ -1217,10 +1217,26 @@ func main() {
 	app.Delete("/posts/:postID", handlers.DeletePost)
 	app.Post("/api/posts/:postID/vote", handlers.VotePost)
 
-	app.Get("/posts/:postID/comments", handlers.GetPostComments)
-	app.Post("/posts/:postID/comments", handlers.CreatePostComment)
-	app.Put("/comments/:commentID", handlers.UpdatePostComment)
-	app.Delete("/comments/:commentID", handlers.DeletePostComment)
+	app.Get("/api/user/status", func(c *fiber.Ctx) error {
+		userID, ok := c.Locals("userID").(int)
+		if !ok {
+			return c.JSON(fiber.Map{
+				"isAdmin": false,
+			})
+		}
+
+		isAdmin, err := database.IsUserAdmin(userID)
+		if err != nil {
+			log.Printf("Error checking admin status for user %d: %v", userID, err)
+			return c.Status(500).JSON(fiber.Map{
+				"error": "Failed to check admin status",
+			})
+		}
+
+		return c.JSON(fiber.Map{
+			"isAdmin": isAdmin,
+		})
+	})
 
 	port := 3000
 	if len(os.Args) > 1 {
