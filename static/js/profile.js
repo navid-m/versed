@@ -116,7 +116,7 @@ document.addEventListener("DOMContentLoaded", function () {
                      </a>
                   </h3>
                   <div class="flex items-center text-xs text-gray-500 dark:text-gray-400 space-x-2">
-                     <span class="flex items-center">
+                     <span class="hidden sm:flex items-center">
                         <i class="far fa-user mr-1"></i>
                         ${item.author || "Unknown"}
                      </span>
@@ -125,7 +125,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         ${new Date(item.published_at).toLocaleDateString()}
                      </span>
                      <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
-                        ${item.source_name || "Unknown"}
+                        <span class="sm:hidden">${(item.source_name || 'Unknown').slice(0, 4)}${(item.source_name || '').length > 4 ? '..' : ''}</span>
+                        <span class="hidden sm:inline">${item.source_name || "Unknown"}</span>
                      </span>
                   </div>
                </div>

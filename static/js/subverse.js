@@ -231,7 +231,7 @@ class SubverseManager {
                      }
 
                      <div class="flex items-center text-xs text-gray-500 dark:text-gray-400 space-x-3">
-                        <span class="flex items-center">
+                        <span class="hidden sm:flex items-center">
                            <i class="far fa-user mr-1"></i>
                            ${post.username}
                         </span>
@@ -240,7 +240,8 @@ class SubverseManager {
                            ${createdAt}
                         </span>
                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200">
-                           ${post.post_type}
+                           <span class="sm:hidden">${(post.post_type || 'Unknown').slice(0, 4)}${(post.post_type || '').length > 4 ? '..' : ''}</span>
+                           <span class="hidden sm:inline">${post.post_type}</span>
                         </span>
                         ${
                            isLoggedIn
