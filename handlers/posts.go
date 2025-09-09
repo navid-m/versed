@@ -83,7 +83,7 @@ func CreatePost(c *fiber.Ctx) error {
 			"error": "Failed to create post",
 		})
 	}
-	log.Printf("Successfully created post with ID %d", post.ID)
+	log.Printf("Successfully created post with ID %s", post.ID)
 
 	err = database.UpdateSubversePostCount(db, subverseID)
 	if err != nil {
