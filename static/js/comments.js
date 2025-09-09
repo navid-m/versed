@@ -509,8 +509,8 @@ class CommentsManager {
          commentHTML.substring(0, 200) + "..."
       );
 
-      commentsList.insertAdjacentHTML("afterbegin", commentHTML);
-      console.log("Comment HTML inserted into DOM");
+      commentsList.insertAdjacentHTML("beforeend", commentHTML);
+      console.log("Comment HTML appended to DOM");
 
       const addedElement = commentsList.querySelector(
          `[data-comment-id="${comment.ID}"]`
