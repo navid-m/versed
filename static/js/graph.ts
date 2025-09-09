@@ -1,4 +1,12 @@
+declare var d3: any;
+
 class GraphView {
+   svg: null;
+   simulation: null;
+   width: number;
+   height: number;
+   nodes: any[];
+   links: any[];
    constructor() {
       this.svg = null;
       this.simulation = null;
@@ -28,12 +36,12 @@ class GraphView {
          .zoom()
          .scaleExtent([0.1, 4])
          .on("zoom", (event) => {
-            this.svg.select("g").attr("transform", event.transform);
+            this.svg!.select("g").attr("transform", event.transform);
          });
 
-      this.svg.call(zoom);
-      this.svg.append("g");
-      this.svg
+      this.svg!.call(zoom);
+      this.svg!.append("g");
+      this.svg!.select("g")
          .select("g")
          .append("rect")
          .attr("width", this.width * 2)

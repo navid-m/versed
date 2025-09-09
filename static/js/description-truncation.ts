@@ -4,6 +4,7 @@
  */
 
 class DescriptionTruncator {
+   maxParagraphs: number;
    constructor() {
       this.maxParagraphs = 3;
    }
@@ -58,21 +59,17 @@ document.addEventListener("DOMContentLoaded", () => {
          if (mutation.type === "childList") {
             mutation.addedNodes.forEach((node) => {
                if (node.nodeType === Node.ELEMENT_NODE) {
-                  const containers = node.querySelectorAll
-                     ? node.querySelectorAll(
-                          ".text-gray-700.dark\\:text-gray-300.text-sm.leading-relaxed.line-height-6.font-medium.tracking-wide.line-clamp-3.bg-gradient-to-br.from-gray-50\\/80.to-white\\/50.dark\\:from-gray-800\\/60.dark\\:to-gray-700\\/40.backdrop-blur-sm.rounded-lg.px-4.py-3.border-l-4.border-blue-500\\/30.dark\\:border-blue-400\\/40.shadow-sm"
-                       )
-                     : [];
-
+                  const element = node as Element;
+                  const containers = element.querySelectorAll(
+                     ".text-gray-700.dark\\:text-gray-300.text-sm.leading-relaxed.line-height-6.font-medium.tracking-wide.line-clamp-3.bg-gradient-to-br.from-gray-50\\/80.to-white\\/50.dark\\:from-gray-800\\/60.dark\\:to-gray-700\\/40.backdrop-blur-sm.rounded-lg.px-4.py-3.border-l-4.border-blue-500\\/30.dark\\:border-blue-400\\/40.shadow-sm"
+                  );
                   if (
-                     node.matches &&
-                     node.matches(
+                     element.matches(
                         ".text-gray-700.dark\\:text-gray-300.text-sm.leading-relaxed.line-height-6.font-medium.tracking-wide.line-clamp-3.bg-gradient-to-br.from-gray-50\\/80.to-white\\/50.dark\\:from-gray-800\\/60.dark\\:to-gray-700\\/40.backdrop-blur-sm.rounded-lg.px-4.py-3.border-l-4.border-blue-500\\/30.dark\\:border-blue-400\\/40.shadow-sm"
                      )
                   ) {
-                     truncator.truncateContainer(node);
+                     truncator.truncateContainer(element);
                   }
-
                   containers.forEach((container) => {
                      truncator.truncateContainer(container);
                   });
@@ -88,4 +85,4 @@ document.addEventListener("DOMContentLoaded", () => {
    });
 });
 
-window.DescriptionTruncator = DescriptionTruncator;
+(window as any).DescriptionTruncator = DescriptionTruncator;

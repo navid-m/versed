@@ -123,7 +123,7 @@ document.addEventListener("DOMContentLoaded", function () {
             currentPage++;
          } else {
             loadMoreButton.textContent = "No more posts to load";
-            loadMoreButton.disabled = true;
+            (loadMoreButton as HTMLButtonElement).disabled = true;
          }
       } catch (error) {
          console.error("Error loading more posts:", error);
