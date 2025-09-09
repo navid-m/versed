@@ -102,7 +102,6 @@ func GetPost(c *fiber.Ctx) error {
 		})
 	}
 
-	// Use the UUID string directly without conversion
 	postID := strings.TrimSpace(postIDStr)
 
 	db := database.GetDB()
@@ -151,7 +150,7 @@ func GetPost(c *fiber.Ctx) error {
 	return c.Render("subverse-post", data)
 }
 
-// handles retrieving posts for a subverse
+// Handles retrieving posts for a subverse
 func GetSubversePosts(c *fiber.Ctx) error {
 	subverseName := c.Params("subverseName")
 	if subverseName == "" {
@@ -207,8 +206,6 @@ func UpdatePost(c *fiber.Ctx) error {
 			"error": "Invalid post ID",
 		})
 	}
-
-	// Use the UUID string directly without conversion
 	postID := strings.TrimSpace(postIDStr)
 
 	var req struct {
@@ -259,7 +256,6 @@ func DeletePost(c *fiber.Ctx) error {
 		})
 	}
 
-	// Use the UUID string directly without conversion
 	postID := strings.TrimSpace(postIDStr)
 
 	db := database.GetDB()
@@ -294,7 +290,6 @@ func CreatePostComment(c *fiber.Ctx) error {
 		})
 	}
 
-	// Use the UUID string directly without conversion
 	postID := strings.TrimSpace(postIDStr)
 
 	var req struct {
@@ -338,7 +333,6 @@ func GetPostComments(c *fiber.Ctx) error {
 		})
 	}
 
-	// Use the UUID string directly without conversion
 	postID := strings.TrimSpace(postIDStr)
 
 	db := database.GetDB()
@@ -450,7 +444,6 @@ func VotePost(c *fiber.Ctx) error {
 		})
 	}
 
-	// Use the UUID string directly without conversion
 	postID := strings.TrimSpace(postIDStr)
 
 	var req struct {
@@ -501,17 +494,15 @@ func SearchPosts(c *fiber.Ctx) error {
 		})
 	}
 
-	query := c.Query("q", "")
-	limit := c.QueryInt("limit", 20)
-	if limit > 50 {
-		limit = 50
-	}
-	offset := c.QueryInt("offset", 0)
+	var (
+		subverseID int
+		query      = c.Query("q", "")
+		limit      = min(c.QueryInt("limit", 20), 50)
+		offset     = c.QueryInt("offset", 0)
+		db         = database.GetDB()
+		err        = db.QueryRow("SELECT id FROM subverses WHERE name = ?", subverseName).Scan(&subverseID)
+	)
 
-	db := database.GetDB()
-
-	var subverseID int
-	err := db.QueryRow("SELECT id FROM subverses WHERE name = ?", subverseName).Scan(&subverseID)
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"error": "Subverse not found",
