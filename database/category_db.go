@@ -217,4 +217,5 @@ func GetUserCategoriesForFeed(db *sql.DB, userID, feedSourceID int) ([]models.Us
 	return categories, nil
 }
 
+// Variation of category query that only returns the ID
 var CategoryQueryVariation = "SELECT id FROM user_categories WHERE user_id = ? AND LOWER(name) = LOWER(?)"
