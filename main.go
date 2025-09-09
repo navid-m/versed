@@ -22,6 +22,7 @@ import (
 	"github.com/navid-m/versed/database"
 	"github.com/navid-m/versed/feeds"
 	"github.com/navid-m/versed/handlers"
+	"github.com/navid-m/versed/models"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -1000,24 +1001,24 @@ func main() {
 				return c.Status(404).SendString("Post not found")
 			}
 
-			post.ID = postObj.ID
-			post.Title = postObj.Title
-			post.Description = postObj.Content
-			post.Author = postObj.Username
-			post.Score = postObj.Score
-			post.CommentsCount = 0
-			post.CreatedAt = postObj.CreatedAt
-			sourceName = "Forum"
+			var subverse models.Subverse
+			subverseErr := db.QueryRow("SELECT id, name, created_at FROM subverses WHERE id = ?", postObj.SubverseID).Scan(
+				&subverse.ID, &subverse.Name, &subverse.CreatedAt)
+			if subverseErr != nil {
+				return c.Status(500).SendString("Failed to get subverse information")
+			}
 
-			comments, commentErr := database.GetCommentsByItemID(itemID)
+			comments, commentErr := database.GetPostComments(db, itemID)
 			if commentErr != nil {
 				log.Printf("Failed to get comments: %v", commentErr)
-				comments = []database.Comment{}
+				comments = []models.PostComment{}
 			}
 
 			data := fiber.Map{
-				"post":     post,
-				"comments": comments,
+				"Post":          postObj,
+				"Subverse":      subverse,
+				"Comments":      comments,
+				"CommentsCount": len(comments),
 			}
 
 			if userEmail != nil {
@@ -1027,10 +1028,10 @@ func main() {
 				data["Username"] = userUsername
 			}
 			if userID != nil {
-				data["userID"] = userID
+				data["UserID"] = userID
 			}
 
-			return c.Render("post", data)
+			return c.Render("subverse-post", data)
 		}
 
 		post.SourceName = sourceName
