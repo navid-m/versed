@@ -8,9 +8,9 @@ class CommentsManager {
       console.log("=== COMMENTS MANAGER INITIALIZING ===");
 
       this.initializeCommentCount();
-      this.setupIndexPageListener();
       this.updateExistingComments();
-
+      this.setupMentionClickHandlers();
+      this.setupIndexPageListener();
       const existingComments = document.querySelectorAll("[data-comment-id]");
       console.log("=== EXISTING COMMENTS IN DOM ===");
       console.log("Number of existing comments:", existingComments.length);
@@ -799,6 +799,43 @@ class CommentsManager {
             contentDiv.innerHTML = this.processMentions(originalContent);
          }
       });
+   }
+
+   setupMentionClickHandlers() {
+      document.addEventListener("click", (e) => {
+         if (e.target.classList.contains("mention")) {
+            e.preventDefault();
+            const mentionText = e.target.textContent;
+            const commentId = mentionText.replace("@", "");
+            this.highlightMentionedComment(commentId);
+         }
+      });
+   }
+
+   highlightMentionedComment(commentId) {
+      console.log("Highlighting mentioned comment:", commentId);
+      document.querySelectorAll(".mention-highlight").forEach((el) => {
+         el.classList.remove("mention-highlight");
+      });
+      const targetComment = document.querySelector(
+         `[data-comment-id="${commentId}"]`
+      );
+      if (targetComment) {
+         targetComment.classList.add("mention-highlight");
+         targetComment.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+         });
+
+         setTimeout(() => {
+            targetComment.classList.remove("mention-highlight");
+         }, 3000);
+
+         console.log("Highlighted comment:", commentId);
+      } else {
+         console.log("Comment not found:", commentId);
+         this.showMessage(`Comment @${commentId} not found`, "error");
+      }
    }
 }
 
