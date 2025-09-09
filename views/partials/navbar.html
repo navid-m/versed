@@ -13,11 +13,11 @@
       </div>
       <div class="flex items-center space-x-3">
          <button
-            class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
-            <i class="fas fa-moon"></i> <i class="fas fa-sun"></i>
+            class="hidden sm:flex text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
+            <i class="fas fa-moon"></i> <i class="ml-2 fas fa-sun"></i>
          </button>
 
-         <div class="flex items-center">
+         <div class="hidden sm:flex items-center">
             <button id="darkModeToggle"
                class="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-200 dark:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
                <span id="toggleSlider"
@@ -81,11 +81,13 @@
          {% if not Email %}
          <a href="/signin"
             class="bg-gray-900 dark:bg-gray-700 text-white px-3 py-1.5 rounded-md hover:bg-gray-800 dark:hover:bg-gray-600 transition-colors font-medium text-sm">
-            Sign In
+            <i class="fas fa-sign-in-alt sm:hidden"></i>
+            <span class="hidden sm:inline">Sign In</span>
          </a>
          <a href="/signup"
             class="bg-gray-900 dark:bg-gray-700 text-white px-3 py-1.5 rounded-md hover:bg-gray-800 dark:hover:bg-gray-600 transition-colors font-medium text-sm">
-            Sign Up
+            <i class="fas fa-user-plus sm:hidden"></i>
+            <span class="hidden sm:inline">Sign Up</span>
          </a>
          {% endif %}
       </div>
