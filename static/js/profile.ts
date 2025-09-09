@@ -11,17 +11,6 @@ document.addEventListener("DOMContentLoaded", function () {
    }
 });
 
-darkModeToggle.addEventListener("click", () => {
-   html.classList.toggle("dark");
-   if (html.classList.contains("dark")) {
-      toggleSlider.classList.remove("translate-x-6");
-      toggleSlider.classList.add("translate-x-1");
-   } else {
-      toggleSlider.classList.remove("translate-x-1");
-      toggleSlider.classList.add("translate-x-6");
-   }
-});
-
 if (userMenuButton && userDropdown) {
    userMenuButton.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -115,8 +104,14 @@ document.addEventListener("DOMContentLoaded", function () {
                         ${new Date(item.published_at).toLocaleDateString()}
                      </span>
                      <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
-                        <span class="sm:hidden">${(item.source_name || 'Unknown').slice(0, 4)}${(item.source_name || '').length > 4 ? '..' : ''}</span>
-                        <span class="hidden sm:inline">${item.source_name || "Unknown"}</span>
+                        <span class="sm:hidden">${(
+                           item.source_name || "Unknown"
+                        ).slice(0, 4)}${
+               (item.source_name || "").length > 4 ? ".." : ""
+            }</span>
+                        <span class="hidden sm:inline">${
+                           item.source_name || "Unknown"
+                        }</span>
                      </span>
                   </div>
                </div>
