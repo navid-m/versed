@@ -66,6 +66,7 @@ func (fs *FeedScheduler) updateAllFeeds() {
 	}
 }
 
+// Creates or updates a feed source
 func CreateOrUpdateFeedSource(db *sql.DB, name, url string) (*feeds.FeedSource, error) {
 	existing, err := feeds.GetFeedSourceByName(db, name)
 	if err == nil {
@@ -102,6 +103,7 @@ func CreateOrUpdateFeedSource(db *sql.DB, name, url string) (*feeds.FeedSource, 
 	return source, nil
 }
 
+// Resets all feed timestamps to force updates
 func ResetAllFeedTimestamps(db *sql.DB) error {
 	query := database.ResetAllFeedTimestampsQuery
 	_, err := db.Exec(query)
@@ -112,6 +114,7 @@ func ResetAllFeedTimestamps(db *sql.DB) error {
 	return nil
 }
 
+// Updates a feed source
 func (fs *FeedScheduler) updateFeed(source feeds.FeedSourceInterface) {
 	var (
 		sourceName    = source.GetSourceName()
