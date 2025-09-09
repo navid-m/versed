@@ -1,5 +1,6 @@
 class Toast {
    toastContainer: HTMLDivElement | null;
+
    constructor() {
       this.toastContainer = null;
       this.initializeContainer();
