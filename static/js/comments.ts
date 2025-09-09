@@ -1,4 +1,6 @@
 class CommentsManager {
+   currentCommentCount: number;
+   indexPageListenerSet: any;
    constructor() {
       this.currentCommentCount = 0;
       this.init();
@@ -28,10 +30,10 @@ class CommentsManager {
       });
 
       document.addEventListener("click", (e) => {
-         if (e.target.closest(".view-comments-btn")) {
+         if ((e.target as HTMLElement).closest(".view-comments-btn")) {
             e.preventDefault();
-            const button = e.target.closest(".view-comments-btn");
-            const postId = button.dataset.postId;
+            const button = (e.target as HTMLElement).closest(".view-comments-btn");
+            const postId = (button as HTMLElement).dataset.postId;
             this.viewPostComments(postId);
          }
       });
@@ -42,48 +44,48 @@ class CommentsManager {
       }
 
       document.addEventListener("click", (e) => {
-         if (e.target.closest(".edit-comment-btn")) {
+         if ((e.target as HTMLElement).closest(".edit-comment-btn")) {
             e.preventDefault();
-            const button = e.target.closest(".edit-comment-btn");
-            const commentId = button.dataset.commentId;
+            const button = (e.target as HTMLElement).closest(".edit-comment-btn");
+            const commentId = (button as HTMLElement).dataset.commentId;
             this.editComment(commentId);
          }
       });
 
       document.addEventListener("click", (e) => {
-         if (e.target.closest(".delete-comment-btn")) {
+         if ((e.target as HTMLElement).closest(".delete-comment-btn")) {
             e.preventDefault();
-            const button = e.target.closest(".delete-comment-btn");
-            const commentId = button.dataset.commentId;
+            const button = (e.target as HTMLElement).closest(".delete-comment-btn");
+            const commentId = (button as HTMLElement).dataset.commentId;
             this.deleteComment(commentId);
          }
       });
 
       document.addEventListener("click", (e) => {
-         if (e.target.closest(".reply-btn")) {
+         if ((e.target as HTMLElement).closest(".reply-btn")) {
             e.preventDefault();
-            const button = e.target.closest(".reply-btn");
-            const commentId = button.dataset.commentId;
+            const button = (e.target as HTMLElement).closest(".reply-btn");
+            const commentId = (button as HTMLElement).dataset.commentId;
             this.showReplyForm(commentId);
          }
       });
 
       document.addEventListener("click", (e) => {
-         if (e.target.closest(".cancel-reply-btn")) {
+         if ((e.target as HTMLElement).closest(".cancel-reply-btn")) {
             e.preventDefault();
-            const button = e.target.closest(".cancel-reply-btn");
-            const commentId = button.dataset.commentId;
+            const button = (e.target as HTMLElement).closest(".cancel-reply-btn");
+            const commentId = (button as HTMLElement).dataset.commentId;
             this.cancelReply(commentId);
          }
       });
 
       document.addEventListener("click", (e) => {
-         if (e.target.closest(".submit-reply-btn")) {
+         if ((e.target as HTMLElement).closest(".submit-reply-btn")) {
             e.preventDefault();
-            const button = e.target.closest(".submit-reply-btn");
-            const commentId = button.dataset.commentId;
-            const parentId = button.dataset.parentId;
-            const postId = button.dataset.postId;
+            const button = (e.target as HTMLElement).closest(".submit-reply-btn");
+            const commentId = (button as HTMLElement).dataset.commentId;
+            const parentId = (button as HTMLElement).dataset.parentId;
+            const postId = (button as HTMLElement).dataset.postId;
             console.log(
                "Button data attributes - parentId:",
                JSON.stringify(parentId),
@@ -132,7 +134,7 @@ class CommentsManager {
       console.log("Stored comment counts:", storedCounts);
 
       commentButtons.forEach((button) => {
-         const postId = button.dataset.postId;
+         const postId = (button as HTMLElement).dataset.postId;
          const storedCount = storedCounts[postId];
 
          if (storedCount !== undefined) {
@@ -150,14 +152,14 @@ class CommentsManager {
       });
    }
 
-   viewPostComments(postId) {
+   viewPostComments(postId: string) {
       window.location.href = `/post/${postId}`;
    }
 
    async submitComment() {
-      const content = document.getElementById("commentContent").value.trim();
+      const content = (document.getElementById("commentContent") as HTMLInputElement).value.trim();
       const submitButton = document.getElementById("submitComment");
-      const postId = submitButton.dataset.postId;
+      const postId = (submitButton as HTMLElement).dataset.postId;
 
       if (!content) {
          this.showMessage("Comment cannot be empty", "error");
@@ -167,7 +169,7 @@ class CommentsManager {
       const currentUsername = document.body.dataset.username || "Anonymous";
       console.log("Current username from DOM:", currentUsername);
 
-      submitButton.disabled = true;
+      (submitButton as HTMLButtonElement).disabled = true;
       submitButton.innerHTML =
          '<i class="fas fa-spinner fa-spin mr-2"></i>Posting...';
 
@@ -219,7 +221,7 @@ class CommentsManager {
             this.updateCommentCountDisplay();
             this.updateIndexPageCommentCount(postId, this.currentCommentCount);
 
-            document.getElementById("commentContent").value = "";
+            (document.getElementById("commentContent") as HTMLInputElement).value = "";
 
             this.showMessage("Comment posted successfully", "success");
 
@@ -239,13 +241,13 @@ class CommentsManager {
          console.error("Error posting comment:", error);
          this.showMessage("Failed to post comment", "error");
       } finally {
-         submitButton.disabled = false;
+         (submitButton as HTMLButtonElement).disabled = false;
          submitButton.innerHTML =
             '<i class="fas fa-paper-plane mr-2"></i>Post Comment';
       }
    }
 
-   refreshCommentFromServer(serverId, tempId) {
+   refreshCommentFromServer(serverId: any, tempId: any) {
       console.log(
          "Refreshing comment from server:",
          serverId,
@@ -298,7 +300,7 @@ class CommentsManager {
          });
    }
 
-   updateIndexPageCommentCount(postId, newCount) {
+   updateIndexPageCommentCount(postId: string, newCount: number) {
       console.log("Updating comment count for post:", postId, "to:", newCount);
 
       const commentCounts = JSON.parse(
@@ -333,12 +335,12 @@ class CommentsManager {
       });
    }
 
-   updateLocalCommentCount(postId, newCount) {
+   updateLocalCommentCount(postId: any, newCount: any) {
       const commentButtons = document.querySelectorAll(".view-comments-btn");
       console.log("Found comment buttons:", commentButtons.length);
 
       commentButtons.forEach((button) => {
-         const buttonPostId = button.dataset.postId;
+         const buttonPostId = (button as HTMLElement).dataset.postId;
          console.log("Checking button with postId:", buttonPostId);
 
          if (buttonPostId === postId) {
@@ -351,7 +353,7 @@ class CommentsManager {
       });
    }
 
-   async editComment(commentId) {
+   async editComment(commentId: string) {
       const commentElement = document.querySelector(
          `[data-comment-id="${commentId}"]`
       );
@@ -390,7 +392,7 @@ class CommentsManager {
          });
    }
 
-   async saveCommentEdit(commentId) {
+   async saveCommentEdit(commentId: any) {
       const commentElement = document.querySelector(
          `[data-comment-id="${commentId}"]`
       );
@@ -442,12 +444,12 @@ class CommentsManager {
    cancelEdit() {
       const editingElement = document.querySelector(".editing");
       if (editingElement) {
-         const commentId = editingElement.dataset.commentId;
+         const commentId = (editingElement as HTMLElement).dataset.commentId;
          this.refreshComment(commentId);
       }
    }
 
-   async deleteComment(commentId) {
+   async deleteComment(commentId: string) {
       if (!confirm("Are you sure you want to delete this comment?")) {
          return;
       }
@@ -463,7 +465,8 @@ class CommentsManager {
             this.updateCommentCountDisplay();
 
             const postId =
-               document.querySelector("[data-post-id]")?.dataset.postId;
+               (document.querySelector("[data-post-id]") as HTMLElement)
+                  .dataset.postId;
             if (postId) {
                this.updateIndexPageCommentCount(
                   postId,
@@ -485,7 +488,7 @@ class CommentsManager {
       }
    }
 
-   addCommentToUI(comment) {
+   addCommentToUI(comment: { ID: any; PostID?: any; UserID: any; Username: any; Content: any; ParentID?: any; CreatedAt: any; UpdatedAt?: any; Replies?: any; }) {
       console.log("addCommentToUI called with:", comment);
       const commentsList = document.getElementById("commentsList");
       console.log("commentsList element:", commentsList);
@@ -518,7 +521,7 @@ class CommentsManager {
       console.log("Added element found:", addedElement);
    }
 
-   updateCommentInUI(comment) {
+   updateCommentInUI(comment: { ID: any; PostID?: any; UserID: any; Username: any; Content: any; CreatedAt: any; UpdatedAt?: any; ParentID?: any; Replies?: any; }) {
       const commentElement = document.querySelector(
          `[data-comment-id="${comment.ID}"]`
       );
@@ -531,7 +534,7 @@ class CommentsManager {
       contentElement.innerHTML = comment.Content;
    }
 
-   removeCommentFromUI(commentId) {
+   removeCommentFromUI(commentId: any) {
       const commentElement = document.querySelector(
          `[data-comment-id="${commentId}"]`
       );
@@ -550,7 +553,7 @@ class CommentsManager {
       }
    }
 
-   async refreshComment(commentId) {
+   async refreshComment(commentId: any) {
       try {
          const response = await fetch(`/api/comments/${commentId}`);
          if (response.ok) {
@@ -593,7 +596,7 @@ class CommentsManager {
       }
    }
 
-   showMessage(message, type = "info") {
+   showMessage(message: string, type = "info") {
       const notification = document.createElement("div");
       notification.className = `fixed top-4 right-4 px-4 py-2 rounded-md text-white z-50 ${
          type === "success"
@@ -611,7 +614,7 @@ class CommentsManager {
       }, 3000);
    }
 
-   showReplyForm(commentId) {
+   showReplyForm(commentId: string) {
       document.querySelectorAll(".reply-form").forEach((form) => {
          form.classList.add("hidden");
       });
@@ -628,7 +631,7 @@ class CommentsManager {
       }
    }
 
-   cancelReply(commentId) {
+   cancelReply(commentId: string) {
       const replyForm = document.querySelector(
          `.reply-form[data-comment-id="${commentId}"]`
       );
@@ -641,7 +644,7 @@ class CommentsManager {
       }
    }
 
-   async submitReply(commentId, parentId, postId) {
+   async submitReply(commentId: string, parentId: string, postId: string) {
       const replyForm = document.querySelector(
          `.reply-form[data-comment-id="${commentId}"]`
       );
@@ -655,7 +658,7 @@ class CommentsManager {
          return;
       }
 
-      submitBtn.disabled = true;
+      (submitBtn as HTMLButtonElement).disabled = true;
       submitBtn.textContent = "Posting...";
 
       try {
@@ -706,7 +709,7 @@ class CommentsManager {
          console.error("Error posting reply:", error);
          this.showMessage("Failed to post reply", "error");
       } finally {
-         submitBtn.disabled = false;
+         (submitBtn as HTMLButtonElement).disabled = false;
          submitBtn.textContent = "Reply";
       }
    }
@@ -715,7 +718,7 @@ class CommentsManager {
 
    createReplyHTML() {}
 
-   createCommentHTML(comment) {
+   createCommentHTML(comment: { ID: any; PostID?: any; UserID: any; Username: any; Content: any; CreatedAt: any; UpdatedAt?: any; ParentID?: any; Replies?: any; id?: any; }) {
       console.log("createCommentHTML called with:", comment);
       console.log("comment.ID:", comment.ID, "comment.id:", comment.id);
 
@@ -786,7 +789,7 @@ class CommentsManager {
         `;
    }
 
-   processMentions(content) {
+   processMentions(content: string) {
       if (!content) return content;
       return content.replace(/@(\d+)/g, '<span class="mention">@$1</span>');
    }
@@ -803,16 +806,16 @@ class CommentsManager {
 
    setupMentionClickHandlers() {
       document.addEventListener("click", (e) => {
-         if (e.target.classList.contains("mention")) {
+         if ((e.target as HTMLElement).classList.contains("mention")) {
             e.preventDefault();
-            const mentionText = e.target.textContent;
+            const mentionText = (e.target as HTMLElement).textContent;
             const commentId = mentionText.replace("@", "");
             this.highlightMentionedComment(commentId);
          }
       });
    }
 
-   highlightMentionedComment(commentId) {
+   highlightMentionedComment(commentId: any) {
       console.log("Highlighting mentioned comment:", commentId);
       document.querySelectorAll(".mention-highlight").forEach((el) => {
          el.classList.remove("mention-highlight");

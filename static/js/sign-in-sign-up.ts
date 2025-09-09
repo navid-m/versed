@@ -1,7 +1,3 @@
-const darkModeToggle = document.getElementById("darkModeToggle");
-const toggleSlider = document.getElementById("toggleSlider");
-const html = document.documentElement;
-
 html.classList.add("dark");
 
 darkModeToggle.addEventListener("click", () => {

@@ -1,4 +1,5 @@
 class Toast {
+   toastContainer: HTMLDivElement | null;
    constructor() {
       this.toastContainer = null;
       this.initializeContainer();
@@ -59,13 +60,13 @@ class Toast {
    }
 }
 
-window.toast = new Toast();
+(window as any).toast = new Toast();
 
-window.showToast = {
+(window as any).showToast = {
    success: (message, duration) =>
-      window.toast.show(message, "success", duration),
-   error: (message, duration) => window.toast.show(message, "error", duration),
-   info: (message, duration) => window.toast.show(message, "info", duration),
+      (window as any).toast.show(message, "success", duration),
+   error: (message, duration) => (window as any).toast.show(message, "error", duration),
+   info: (message, duration) => (window as any).toast.show(message, "info", duration),
    warning: (message, duration) =>
-      window.toast.show(message, "warning", duration),
+      (window as any).toast.show(message, "warning", duration),
 };

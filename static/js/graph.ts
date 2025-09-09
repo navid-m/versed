@@ -1,8 +1,8 @@
 declare var d3: any;
 
 class GraphView {
-   svg: null;
-   simulation: null;
+   svg: any = null;
+   simulation: any = null;
    width: number;
    height: number;
    nodes: any[];
@@ -35,7 +35,7 @@ class GraphView {
       const zoom = d3
          .zoom()
          .scaleExtent([0.1, 4])
-         .on("zoom", (event) => {
+         .on("zoom", (event: { transform: any; }) => {
             this.svg!.select("g").attr("transform", event.transform);
          });
 
@@ -76,14 +76,14 @@ class GraphView {
             "link",
             d3
                .forceLink(this.links)
-               .id((d) => d.id)
+               .id((d: { id: any; }) => d.id)
                .distance(100)
          )
          .force("charge", d3.forceManyBody().strength(-50))
          .force("center", d3.forceCenter(this.width / 2, this.height / 2))
          .force(
             "collision",
-            d3.forceCollide().radius((d) => this.getNodeRadius(d) + 3)
+            d3.forceCollide().radius((d: any) => this.getNodeRadius(d) + 3)
          );
       const link = this.svg
          .select("g")
@@ -106,16 +106,16 @@ class GraphView {
          .call(
             d3
                .drag()
-               .on("start", (event, d) => {
+               .on("start", (event: { active: any; }, d: { fx: any; x: any; fy: any; y: any; }) => {
                   if (!event.active) this.simulation.alphaTarget(0.3).restart();
                   d.fx = d.x;
                   d.fy = d.y;
                })
-               .on("drag", (event, d) => {
+               .on("drag", (event: { x: any; y: any; }, d: { fx: any; fy: any; }) => {
                   d.fx = event.x;
                   d.fy = event.y;
                })
-               .on("end", (event, d) => {
+               .on("end", (event: { active: any; }, d: { fx: null; fy: null; }) => {
                   if (!event.active) this.simulation.alphaTarget(0);
                   d.fx = null;
                   d.fy = null;
@@ -123,30 +123,30 @@ class GraphView {
          );
       node
          .append("circle")
-         .attr("r", (d) => this.getNodeRadius(d))
-         .attr("fill", (d) => this.getNodeColor(d))
+         .attr("r", (d: any) => this.getNodeRadius(d))
+         .attr("fill", (d: any) => this.getNodeColor(d))
          .attr("stroke", "#fff")
          .attr("stroke-width", 2);
       node
          .append("text")
-         .attr("dx", (d) => this.getNodeRadius(d) + 5)
+         .attr("dx", (d: any) => this.getNodeRadius(d) + 5)
          .attr("dy", 4)
          .style("font-size", "12px")
          .style("font-family", "Arial, sans-serif")
          .style("font-weight", "bold")
-         .text((d) => this.truncateText(d.name, 20));
+         .text((d: { name: any; }) => this.truncateText(d.name, 20));
       this.simulation.on("tick", () => {
          link
-            .attr("x1", (d) => d.source.x)
-            .attr("y1", (d) => d.source.y)
-            .attr("x2", (d) => d.target.x)
-            .attr("y2", (d) => d.target.y);
+            .attr("x1", (d: { source: { x: any; }; }) => d.source.x)
+            .attr("y1", (d: { source: { y: any; }; }) => d.source.y)
+            .attr("x2", (d: { target: { x: any; }; }) => d.target.x)
+            .attr("y2", (d: { target: { y: any; }; }) => d.target.y);
 
-         node.attr("transform", (d) => `translate(${d.x},${d.y})`);
+         node.attr("transform", (d: { x: any; y: any; }) => `translate(${d.x},${d.y})`);
       });
    }
 
-   getNodeRadius(d) {
+   getNodeRadius(d: { type: string; }) {
       if (d.type === "root") {
          return 20;
       } else if (d.type === "category") {
@@ -156,7 +156,7 @@ class GraphView {
       }
    }
 
-   getNodeColor(d) {
+   getNodeColor(d: { type: string; }) {
       if (d.type === "root") {
          return "#1f2937";
       } else if (d.type === "category") {
@@ -166,12 +166,12 @@ class GraphView {
       }
    }
 
-   truncateText(text, maxLength) {
+   truncateText(text: string, maxLength: number) {
       if (text.length <= maxLength) return text;
       return text.substring(0, maxLength - 3) + "...";
    }
 
-   showError(message) {
+   showError(message: string) {
       const container = document.getElementById("graphContainer");
       container.innerHTML = `
             <div class="flex items-center justify-center h-full">

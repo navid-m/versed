@@ -24,7 +24,7 @@ class AdminPanel {
    }
 
    async createSubverse() {
-      const subverseName = document.getElementById("subverseName").value.trim();
+      const subverseName = (document.getElementById("subverseName") as HTMLInputElement).value.trim();
       const createSubverseBtn = document.getElementById("createSubverseBtn");
 
       if (!subverseName) {
@@ -32,7 +32,7 @@ class AdminPanel {
          return;
       }
 
-      createSubverseBtn.disabled = true;
+      (createSubverseBtn as HTMLButtonElement).disabled = true;
       createSubverseBtn.innerHTML =
          '<i class="fas fa-spinner fa-spin mr-2"></i>Creating...';
 
@@ -47,7 +47,7 @@ class AdminPanel {
 
          if (response.ok) {
             this.showMessage("Subverse created successfully", "success");
-            document.getElementById("subverseName").value = "";
+            (document.getElementById("subverseName") as HTMLInputElement).value = "";
             this.loadSubverses();
          } else {
             const error = await response.json();
@@ -60,7 +60,7 @@ class AdminPanel {
          console.error("Error creating subverse:", error);
          this.showMessage("Failed to create subverse", "error");
       } finally {
-         createSubverseBtn.disabled = false;
+         (createSubverseBtn as HTMLButtonElement).disabled = false;
          createSubverseBtn.innerHTML =
             '<i class="fas fa-plus mr-2"></i>Create Subverse';
       }
@@ -124,8 +124,8 @@ class AdminPanel {
    }
 
    async banIP() {
-      const ipAddress = document.getElementById("banIP").value.trim();
-      const reason = document.getElementById("banReason").value.trim();
+      const ipAddress = (document.getElementById("banIP") as HTMLInputElement).value.trim();
+      const reason = (document.getElementById("banReason") as HTMLInputElement).value.trim();
       const banIPBtn = document.getElementById("banIPBtn");
 
       if (!ipAddress) {
@@ -140,7 +140,7 @@ class AdminPanel {
          return;
       }
 
-      banIPBtn.disabled = true;
+      (banIPBtn as HTMLButtonElement).disabled = true;
       banIPBtn.innerHTML =
          '<i class="fas fa-spinner fa-spin mr-2"></i>Banning...';
 
@@ -155,8 +155,8 @@ class AdminPanel {
 
          if (response.ok) {
             this.showMessage("IP address banned successfully", "success");
-            document.getElementById("banIP").value = "";
-            document.getElementById("banReason").value = "";
+            (document.getElementById("banIP") as HTMLInputElement).value = "";
+            (document.getElementById("banReason") as HTMLInputElement).value = "";
             this.loadBannedIPs();
          } else {
             const error = await response.json();
@@ -169,7 +169,7 @@ class AdminPanel {
          console.error("Error banning IP:", error);
          this.showMessage("Failed to ban IP address", "error");
       } finally {
-         banIPBtn.disabled = false;
+         (banIPBtn as HTMLButtonElement).disabled = false;
          banIPBtn.innerHTML = '<i class="fas fa-ban mr-2"></i>Ban IP Address';
       }
    }
@@ -190,7 +190,7 @@ class AdminPanel {
       }
    }
 
-   renderBannedIPs(bannedIPs) {
+   renderBannedIPs(bannedIPs: any[]) {
       const container = document.getElementById("bannedIPsList");
       const noBannedIPs = document.getElementById("noBannedIPs");
 
@@ -258,13 +258,13 @@ class AdminPanel {
 
       container.querySelectorAll(".unban-btn").forEach((button) => {
          button.addEventListener("click", (e) => {
-            const ipAddress = e.target.closest(".unban-btn").dataset.ip;
+            const ipAddress = ((e.target as HTMLButtonElement).closest(".unban-btn") as HTMLButtonElement).dataset.ip;
             this.unbanIP(ipAddress);
          });
       });
    }
 
-   async unbanIP(ipAddress) {
+   async unbanIP(ipAddress: string) {
       if (!confirm(`Are you sure you want to unban IP address ${ipAddress}?`)) {
          return;
       }

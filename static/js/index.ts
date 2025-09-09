@@ -4,7 +4,7 @@ const darkModeToggle = document.getElementById("darkModeToggle");
 const toggleSlider = document.getElementById("toggleSlider");
 const html = document.documentElement;
 
-function htmlDecode(input) {
+function htmlDecode(input: string) {
    var doc = new DOMParser().parseFromString(input, "text/html");
    return doc.documentElement.textContent;
 }
@@ -54,8 +54,8 @@ if (userMenuButton && userDropdown) {
 
    document.addEventListener("click", (e) => {
       if (
-         !userMenuButton.contains(e.target) &&
-         !userDropdown.contains(e.target)
+         !userMenuButton.contains(e.target as Node) &&
+         !userDropdown.contains(e.target as Node)
       ) {
          userDropdown.classList.add("hidden");
       }

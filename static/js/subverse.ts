@@ -1,5 +1,6 @@
 class SubverseManager {
-   constructor(subverseName) {
+   subverseName: string;
+   constructor(subverseName: string) {
       this.subverseName = subverseName;
       this.init();
    }
@@ -21,16 +22,16 @@ class SubverseManager {
 
       document.addEventListener("click", (e) => {
          if (
-            e.target.classList.contains("modal-overlay") ||
-            e.target.classList.contains("close-modal")
+            (e.target as HTMLElement).classList.contains("modal-overlay") ||
+            (e.target as HTMLElement).classList.contains("close-modal")
          ) {
             this.hideCreatePostModal();
          }
       });
 
       document.addEventListener("change", (e) => {
-         if (e.target.name === "postType") {
-            this.togglePostFields(e.target.value);
+         if ((e.target as HTMLInputElement).name === "postType") {
+            this.togglePostFields((e.target as HTMLInputElement).value);
          }
       });
 
@@ -42,10 +43,10 @@ class SubverseManager {
       }
 
       document.addEventListener("click", (e) => {
-         if (e.target.closest("[data-vote-type]")) {
-            const button = e.target.closest("[data-vote-type]");
-            const postId = button.dataset.postId;
-            const voteType = button.dataset.voteType;
+         if ((e.target as HTMLElement).closest("[data-vote-type]")) {
+            const button = (e.target as HTMLElement).closest("[data-vote-type]");
+            const postId = (button as HTMLElement).dataset.postId;
+            const voteType = (button as HTMLElement).dataset.voteType;
             this.handleVote(postId, voteType, button);
          }
       });
@@ -54,13 +55,13 @@ class SubverseManager {
       );
       if (searchInput) {
          searchInput.addEventListener("input", (e) => {
-            this.handleSearch(e.target.value);
+            this.handleSearch((e.target as HTMLInputElement).value);
          });
       }
       document.addEventListener("click", (e) => {
-         if (e.target.closest(".save-button")) {
-            const button = e.target.closest(".save-button");
-            const postId = button.dataset.postId;
+         if ((e.target as HTMLElement).closest(".save-button")) {
+            const button = (e.target as HTMLElement).closest(".save-button");
+            const postId = (button as HTMLElement).dataset.postId;
             this.handleSave(postId, button);
          }
       });
@@ -370,10 +371,10 @@ class SubverseManager {
 
       const formData = new FormData(e.target);
       const postData = {
-         title: formData.get("title").trim(),
+         title: (formData.get("title") as string).trim(),
          post_type: formData.get("postType"),
-         content: formData.get("content")?.trim() || "",
-         url: formData.get("url")?.trim() || "",
+         content: (formData.get("content") as string)?.trim() || "",
+         url: (formData.get("url") as string)?.trim() || "",
       };
 
       console.log("Creating post with data:", postData);
@@ -394,7 +395,7 @@ class SubverseManager {
       }
 
       const submitBtn = document.getElementById("submitPostBtn");
-      submitBtn.disabled = true;
+      (submitBtn as HTMLButtonElement).disabled = true;
       submitBtn.innerHTML =
          '<i class="fas fa-spinner fa-spin mr-2"></i>Posting...';
 
@@ -420,7 +421,7 @@ class SubverseManager {
          console.error("Error creating post:", error);
          this.showMessage("Failed to create post", "error");
       } finally {
-         submitBtn.disabled = false;
+         (submitBtn as HTMLButtonElement).disabled = false;
          submitBtn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i>Post';
       }
    }
@@ -455,16 +456,16 @@ class SubverseManager {
             this.updateVoteButtonStates(postId, voteType);
          } else if (response.status === 401) {
             this.showMessage("You must be logged in to vote", "error");
-            scoreElement.textContent = originalScore;
+            (scoreElement as HTMLElement).textContent = originalScore.toString();
          } else {
             const error = await response.json();
             this.showMessage(error.error || "Failed to vote", "error");
-            scoreElement.textContent = originalScore;
+            (scoreElement as HTMLElement).textContent = originalScore.toString();
          }
       } catch (error) {
          console.error("Error voting:", error);
          this.showMessage("Failed to vote. Try again.", "error");
-         scoreElement.textContent = originalScore;
+         (scoreElement as HTMLElement).textContent = originalScore.toString();
       } finally {
          button.disabled = false;
       }

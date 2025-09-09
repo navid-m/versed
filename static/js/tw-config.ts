@@ -1,3 +1,5 @@
+declare var tailwind: any;
+
 tailwind.config = {
    darkMode: "class",
    theme: {

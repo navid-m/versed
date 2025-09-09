@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
    );
    const postsContainer = document.querySelector(".space-y-3");
    const originalContent = postsContainer.innerHTML;
-   let searchTimeout;
+   let searchTimeout: number;
 
    function renderSearchResults(results) {
       console.log("Rendering search results:", results);
@@ -26,10 +26,11 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       document.addEventListener("click", function (e) {
-         const commentBtn = e.target.closest(".view-comments-btn");
+         const target = e.target as HTMLElement;
+         const commentBtn = target.closest(".view-comments-btn");
          if (commentBtn) {
             e.preventDefault();
-            const postId = commentBtn.dataset.postId;
+            const postId = (commentBtn as HTMLElement).dataset.postId;
             console.log("View comments clicked for post:", postId);
             window.location.href = `/post/${postId}`;
          }
