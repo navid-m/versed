@@ -107,10 +107,12 @@ func createTables() error {
 			user_id INTEGER NOT NULL,
 			username TEXT NOT NULL,
 			content TEXT NOT NULL,
+			parent_id INTEGER,
 			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 			updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 			FOREIGN KEY (item_id) REFERENCES feed_items(id),
-			FOREIGN KEY (user_id) REFERENCES users(id)
+			FOREIGN KEY (user_id) REFERENCES users(id),
+			FOREIGN KEY (parent_id) REFERENCES comments(id) ON DELETE CASCADE
 		)`,
 		`CREATE TABLE IF NOT EXISTS banned_ips (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -189,6 +191,11 @@ func createTables() error {
 		return err
 	}
 
+	// Check if parent_id column exists in comments table and add it if not
+	if err := ensureParentIDColumn(); err != nil {
+		return err
+	}
+
 	for _, query := range queries {
 		if _, err := db.Exec(query); err != nil {
 			return err
@@ -207,6 +214,23 @@ func ensureIPAddressColumn() error {
 	if count == 0 {
 		// Column does not exist, add it
 		_, err = db.Exec("ALTER TABLE users ADD COLUMN ip_address TEXT")
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// ensureParentIDColumn checks if the parent_id column exists in the comments table and adds it if not
+func ensureParentIDColumn() error {
+	var count int
+	err := db.QueryRow("SELECT COUNT(*) FROM pragma_table_info('comments') WHERE name='parent_id'").Scan(&count)
+	if err != nil {
+		return err
+	}
+	if count == 0 {
+		// Column does not exist, add it
+		_, err = db.Exec("ALTER TABLE comments ADD COLUMN parent_id INTEGER")
 		if err != nil {
 			return err
 		}

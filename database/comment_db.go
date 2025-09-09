@@ -1,6 +1,7 @@
 package database
 
 import (
+	"log"
 	"time"
 )
 
@@ -11,6 +12,8 @@ type Comment struct {
 	UserID    int       `json:"user_id"`
 	Username  string    `json:"username"`
 	Content   string    `json:"content"`
+	ParentID  *int      `json:"parent_id"`
+	Replies   []Comment `json:"replies,omitempty"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -18,44 +21,68 @@ type Comment struct {
 // Adds a new comment to the database
 //
 // Connected to POST request
-func CreateComment(itemID string, userID int, username, content string) (*Comment, error) {
+func CreateComment(itemID string, userID int, username, content string, parentID *int) (*Comment, error) {
+	log.Printf("=== CreateComment called with parentID: %v ===", parentID)
+	if parentID != nil {
+		log.Printf("=== CreateComment parentID value: %d ===", *parentID)
+	} else {
+		log.Printf("=== CreateComment parentID is nil ===")
+	}
+	
 	query := `
-		INSERT INTO comments (item_id, user_id, username, content)
-		VALUES (?, ?, ?, ?)`
+		INSERT INTO comments (item_id, user_id, username, content, parent_id)
+		VALUES (?, ?, ?, ?, ?)`
 
-	result, err := GetDB().Exec(query, itemID, userID, username, content)
+	log.Printf("=== CreateComment executing query with params: itemID=%s, userID=%d, username=%s, content=%s, parentID=%v ===", 
+		itemID, userID, username, content, parentID)
+	
+	result, err := GetDB().Exec(query, itemID, userID, username, content, parentID)
 	if err != nil {
+		log.Printf("=== CreateComment ERROR executing query: %v ===", err)
 		return nil, err
 	}
+	log.Printf("=== CreateComment query executed successfully ===")
 
 	id, err := result.LastInsertId()
 	if err != nil {
+		log.Printf("=== CreateComment ERROR getting last insert ID: %v ===", err)
 		return nil, err
 	}
+	log.Printf("=== CreateComment inserted comment with ID: %d ===", id)
 
 	_, err = GetDB().Exec("UPDATE feed_items SET comments_count = comments_count + 1 WHERE id = ?", itemID)
 	if err != nil {
+		log.Printf("=== CreateComment ERROR updating comments_count: %v ===", err)
 		return nil, err
 	}
 
-	return GetCommentByID(int(id))
+	comment, err := GetCommentByID(int(id))
+	if err != nil {
+		log.Printf("=== CreateComment ERROR getting created comment: %v ===", err)
+		return nil, err
+	}
+	log.Printf("=== CreateComment returning comment with ParentID: %v ===", comment.ParentID)
+	
+	return comment, nil
 }
 
 // Retrieves all comments for a specific feed item
 func GetCommentsByItemID(itemID string) ([]Comment, error) {
+	log.Printf("=== GetCommentsByItemID called with itemID: %s ===", itemID)
 	query := `
-		SELECT id, item_id, user_id, username, content, created_at, updated_at
+		SELECT id, item_id, user_id, username, content, parent_id, created_at, updated_at
 		FROM comments
 		WHERE item_id = ?
 		ORDER BY created_at ASC`
 
 	rows, err := GetDB().Query(query, itemID)
 	if err != nil {
+		log.Printf("=== GetCommentsByItemID ERROR querying database: %v ===", err)
 		return nil, err
 	}
 	defer rows.Close()
 
-	var comments []Comment
+	var allComments []Comment
 	for rows.Next() {
 		var comment Comment
 		err := rows.Scan(
@@ -64,22 +91,40 @@ func GetCommentsByItemID(itemID string) ([]Comment, error) {
 			&comment.UserID,
 			&comment.Username,
 			&comment.Content,
+			&comment.ParentID,
 			&comment.CreatedAt,
 			&comment.UpdatedAt,
 		)
 		if err != nil {
+			log.Printf("=== GetCommentsByItemID ERROR scanning row: %v ===", err)
 			return nil, err
 		}
-		comments = append(comments, comment)
+		allComments = append(allComments, comment)
 	}
 
-	return comments, nil
+	// Build hierarchical structure
+	log.Printf("=== BUILDING HIERARCHY: Processing %d comments ===", len(allComments))
+	for i, comment := range allComments {
+		log.Printf("=== HIERARCHY INPUT: Comment %d: ID=%d, Content='%s', ParentID=%v ===", i+1, comment.ID, comment.Content, comment.ParentID)
+	}
+	topLevelComments := buildCommentHierarchy(allComments)
+	
+	log.Printf("=== HIERARCHY RESULT: %d top-level comments ===", len(topLevelComments))
+	for i, comment := range topLevelComments {
+		log.Printf("=== HIERARCHY OUTPUT: Top-level %d: ID=%d, Content='%s', Replies=%d ===", i+1, comment.ID, comment.Content, len(comment.Replies))
+		for j, reply := range comment.Replies {
+			log.Printf("=== HIERARCHY OUTPUT:   Reply %d.%d: ID=%d, Content='%s' ===", i+1, j+1, reply.ID, reply.Content)
+		}
+	}
+
+	log.Printf("=== GetCommentsByItemID returning %d top-level comments ===", len(topLevelComments))
+	return topLevelComments, nil
 }
 
 // Retrieves a single comment by its ID
 func GetCommentByID(commentID int) (*Comment, error) {
 	query := `
-		SELECT id, item_id, user_id, username, content, created_at, updated_at
+		SELECT id, item_id, user_id, username, content, parent_id, created_at, updated_at
 		FROM comments
 		WHERE id = ?`
 
@@ -90,6 +135,7 @@ func GetCommentByID(commentID int) (*Comment, error) {
 		&comment.UserID,
 		&comment.Username,
 		&comment.Content,
+		&comment.ParentID,
 		&comment.CreatedAt,
 		&comment.UpdatedAt,
 	)
@@ -137,4 +183,51 @@ func GetCommentCountByItemID(itemID string) (int, error) {
 	var count int
 	err := GetDB().QueryRow(query, itemID).Scan(&count)
 	return count, err
+}
+
+// Builds hierarchical comment structure from flat comments array
+func buildCommentHierarchy(comments []Comment) []Comment {
+	commentMap := make(map[int]*Comment)
+	var topLevelComments []Comment
+
+	// First pass: create map of all comments
+	for i := range comments {
+		comment := &comments[i]
+		commentMap[comment.ID] = comment
+	}
+
+	// Second pass: build hierarchy
+	log.Printf("=== BUILDING HIERARCHY: Starting hierarchy construction ===")
+	for i := range comments {
+		comment := &comments[i]
+		log.Printf("=== BUILDING HIERARCHY: Processing comment %d (ID=%d, ParentID=%v) ===", i+1, comment.ID, comment.ParentID)
+		if comment.ParentID == nil {
+			log.Printf("=== BUILDING HIERARCHY: Comment %d (ID=%d) is top-level (ParentID=nil) ===", i+1, comment.ID)
+			// Store reference to the original comment so we can modify it later
+			topLevelComments = append(topLevelComments, *comment)
+			log.Printf("=== BUILDING HIERARCHY: Added to topLevelComments, now have %d ===", len(topLevelComments))
+		} else {
+			parentIDValue := *comment.ParentID
+			log.Printf("=== BUILDING HIERARCHY: Comment %d (ID=%d) is reply to parent %d ===", i+1, comment.ID, parentIDValue)
+			if parent, exists := commentMap[parentIDValue]; exists {
+				log.Printf("=== BUILDING HIERARCHY: Found parent %d, adding reply %d ===", parentIDValue, comment.ID)
+				parent.Replies = append(parent.Replies, *comment)
+				log.Printf("=== BUILDING HIERARCHY: Parent %d now has %d replies ===", parentIDValue, len(parent.Replies))
+			} else {
+				log.Printf("=== BUILDING HIERARCHY: Parent %d not found in commentMap, treating as top-level ===", parentIDValue)
+				topLevelComments = append(topLevelComments, *comment)
+			}
+		}
+	}
+
+	// Third pass: update topLevelComments with the modified parents that now have replies
+	for i := range topLevelComments {
+		if parent, exists := commentMap[topLevelComments[i].ID]; exists {
+			// Replace the copy with the updated version that has replies
+			topLevelComments[i] = *parent
+			log.Printf("=== BUILDING HIERARCHY: Updated topLevel comment %d with %d replies ===", topLevelComments[i].ID, len(topLevelComments[i].Replies))
+		}
+	}
+
+	return topLevelComments
 }

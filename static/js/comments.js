@@ -9,6 +9,9 @@ class CommentsManager {
       this.initializeCommentCount();
       this.setupIndexPageListener();
 
+      // Update existing comments to highlight @mentions
+      this.updateExistingComments();
+
       const existingComments = document.querySelectorAll("[data-comment-id]");
       console.log("=== EXISTING COMMENTS IN DOM ===");
       console.log("Number of existing comments:", existingComments.length);
@@ -671,50 +674,25 @@ class CommentsManager {
          if (response.ok) {
             const newReply = await response.json();
 
-            console.log("=== CLIENT: Received comment from server ===");
-            console.log("CLIENT: Comment ID:", newReply.id);
-            console.log("CLIENT: Comment PostID:", newReply.post_id);
-            console.log("CLIENT: Comment UserID:", newReply.user_id);
-            console.log("CLIENT: Comment Username:", newReply.username);
-            console.log("CLIENT: Comment Content:", newReply.content);
-            console.log("CLIENT: Comment ParentID:", newReply.parent_id);
-            console.log("CLIENT: Comment CreatedAt:", newReply.created_at);
-            console.log("CLIENT: Comment UpdatedAt:", newReply.updated_at);
-            console.log(
-               "CLIENT: Full received comment:",
-               JSON.stringify(newReply, null, 2)
-            );
-            console.log("=== CLIENT: Processing received comment ===");
+            console.log("=== CLIENT: Received reply from server ===");
+            console.log("Reply content:", newReply.content);
+            console.log("Reply parent_id:", newReply.parent_id);
 
-            if (!newReply.username) {
-               newReply.username =
-                  document.body.dataset.username || "Anonymous";
-            }
-            if (!newReply.created_at) {
-               newReply.created_at = new Date().toISOString();
-            }
-            if (!newReply.content) {
-               console.error("Reply content is missing from server response!");
-               newReply.content = content;
-            }
-
-            console.log("Reply object after processing:", newReply);
-
+            // Format the reply for UI
             const formattedReply = {
-               id: newReply.id || newReply.ID,
-               post_id: newReply.post_id || newReply.PostID,
-               user_id: newReply.user_id || newReply.UserID,
-               username: newReply.username || newReply.Username,
-               content: newReply.content || newReply.Content,
-               parent_id: newReply.parent_id || newReply.ParentID,
-               created_at: newReply.created_at || newReply.CreatedAt,
-               updated_at: newReply.updated_at || newReply.UpdatedAt,
+               ID: newReply.id || newReply.ID,
+               PostID: postId,
+               UserID: parseInt(document.body.dataset.userId) || 0,
+               Username: newReply.username || document.body.dataset.username || "Anonymous",
+               Content: newReply.content || content,
+               ParentID: newReply.parent_id || parentId,
+               CreatedAt: newReply.created_at || new Date().toISOString(),
+               UpdatedAt: newReply.updated_at || new Date().toISOString(),
+               Replies: [],
             };
 
-            console.log("Formatted reply for UI:", formattedReply);
-
-            this.addReplyToUI(formattedReply, parentId);
-
+            // Add as a regular flat comment (no nesting)
+            this.addCommentToUI(formattedReply);
             this.cancelReply(commentId);
 
             this.currentCommentCount++;
@@ -735,60 +713,12 @@ class CommentsManager {
       }
    }
 
-   addReplyToUI(reply, parentId) {
-      console.log("=== DEBUG: addReplyToUI called ===");
-      console.log("Reply object received:", JSON.stringify(reply, null, 2));
-      console.log("Parent ID:", parentId);
-      console.log("Reply has ID:", reply.id);
-      console.log("Reply has parent_id:", reply.parent_id);
-      console.log("Reply has content:", reply.content);
+   addReplyToUI() {
+      // No longer needed - replies are added as flat comments
+   }
 
-      const parentComment = document.querySelector(
-         `[data-comment-id="${parentId}"]`
-      );
-
-      console.log("Parent comment element found:", parentComment);
-
-      if (!parentComment) {
-         console.error("Parent comment not found for parentId:", parentId);
-         console.log("Available comment IDs:");
-         document.querySelectorAll("[data-comment-id]").forEach((el) => {
-            console.log("Comment ID:", el.getAttribute("data-comment-id"));
-         });
-         return;
-      }
-
-      const postId = document.body.dataset.postId || "";
-      console.log("Using postId:", postId);
-
-      let depth = 0;
-      let currentElement = parentComment;
-      while (
-         currentElement &&
-         currentElement !== document.querySelector("#commentsList")
-      ) {
-         if (currentElement.hasAttribute("data-comment-id")) {
-            depth++;
-         }
-         currentElement = currentElement.parentElement;
-      }
-      console.log("Calculated depth:", depth);
-
-      let repliesContainer = parentComment.querySelector(".replies-container");
-      console.log("Existing replies container:", repliesContainer);
-
-      if (!repliesContainer) {
-         repliesContainer = document.createElement("div");
-         repliesContainer.className = "replies-container mt-3 space-y-2";
-         parentComment.appendChild(repliesContainer);
-         console.log("Created new replies container");
-      }
-
-      const replyHTML = this.createReplyHTML(reply, postId, depth);
-      console.log("Generated reply HTML:", replyHTML.substring(0, 200) + "...");
-
-      repliesContainer.insertAdjacentHTML("beforeend", replyHTML);
-      console.log("Reply HTML added to container");
+   createReplyHTML() {
+      // No longer needed - all comments use createCommentHTML
    }
 
    createCommentHTML(comment) {
@@ -812,10 +742,11 @@ class CommentsManager {
          isOwner
       );
 
+      // Process @mentions in content
+      const processedContent = this.processMentions(comment.Content);
+
       return `
-            <div class="border-l-2 border-gray-200 dark:border-gray-600 pl-4" data-comment-id="${
-               comment.ID
-            }">
+            <div class="border-l-2 border-gray-200 dark:border-gray-600 pl-4" data-comment-id="${comment.ID}">
                 <div class="flex items-start space-x-3">
                     <div class="flex-shrink-0">
                         <div class="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
@@ -837,8 +768,8 @@ class CommentsManager {
                                }
                             )}</span>
                         </div>
-                        <div class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
-                            ${comment.Content}
+                        <div class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed comment-content">
+                            ${processedContent}
                         </div>
                         ${
                            isOwner
@@ -860,96 +791,23 @@ class CommentsManager {
         `;
    }
 
-   createReplyHTML(reply, postId = "", depth = 1) {
-      const currentUserId = parseInt(document.body.dataset.userId) || 0;
-      const isOwner = currentUserId === reply.user_id;
+   // Process @mentions in comment content
+   processMentions(content) {
+      if (!content) return content;
+      
+      // Replace @ followed by numbers with highlighted spans
+      return content.replace(/@(\d+)/g, '<span class="mention">@$1</span>');
+   }
 
-      const username = reply.username || "Anonymous";
-      const createdAt = reply.created_at
-         ? new Date(reply.created_at)
-         : new Date();
-
-      const marginClass = depth > 1 ? `ml-${4 + (depth - 1) * 4}` : "ml-4";
-
-      return `
-         <div class="border-l-2 border-gray-200 dark:border-gray-600 pl-4 ${marginClass}" data-comment-id="${
-         reply.id
-      }">
-            <div class="flex items-start space-x-3">
-               <div class="flex-shrink-0">
-                  <div class="w-6 h-6 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
-                     <i class="fas fa-reply text-gray-600 dark:text-gray-400 text-xs"></i>
-                  </div>
-               </div>
-               <div class="flex-1 min-w-0">
-                  <div class="flex items-center space-x-2 mb-1">
-                     <span class="text-sm font-medium text-gray-900 dark:text-gray-100">${username}</span>
-                     <span class="text-xs text-gray-500 dark:text-gray-400">${createdAt.toLocaleDateString(
-                        "en-US",
-                        {
-                           year: "numeric",
-                           month: "short",
-                           day: "numeric",
-                           hour: "numeric",
-                           minute: "2-digit",
-                           hour12: true,
-                        }
-                     )}</span>
-                  </div>
-                  <div class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
-                     ${reply.content}
-                  </div>
-                  <div class="flex items-center space-x-2 mt-2">
-                     <button class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 reply-btn" data-comment-id="${
-                        reply.id
-                     }" data-parent-id="${reply.id}" data-post-id="${postId}">
-                        <i class="fas fa-reply mr-1"></i>Reply
-                     </button>
-                     ${
-                        isOwner
-                           ? `
-                        <button class="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 edit-comment-btn" data-comment-id="${reply.id}">
-                           <i class="fas fa-edit mr-1"></i>Edit
-                        </button>
-                        <button class="text-xs text-red-500 hover:text-red-700 delete-comment-btn" data-comment-id="${reply.id}">
-                           <i class="fas fa-trash mr-1"></i>Delete
-                        </button>
-                     `
-                           : ""
-                     }
-                  </div>
-
-                  <!-- Reply Form (hidden by default) -->
-                  <div class="reply-form mt-3 hidden" data-comment-id="${
-                     reply.id
-                  }">
-                     <div class="flex items-start space-x-3">
-                        <div class="flex-shrink-0">
-                           <div class="w-6 h-6 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
-                              <i class="fas fa-reply text-gray-600 dark:text-gray-400 text-xs"></i>
-                           </div>
-                        </div>
-                        <div class="flex-1">
-                           <textarea class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 text-sm resize-y" rows="2" placeholder="Write a reply..." data-reply-content="${
-                              reply.id
-                           }"></textarea>
-                           <div class="flex justify-end space-x-2 mt-2">
-                              <button class="px-3 py-1 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 cancel-reply-btn" data-comment-id="${
-                                 reply.id
-                              }">Cancel</button>
-                              <button class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 submit-reply-btn" data-comment-id="${
-                                 reply.id
-                              }" data-parent-id="${
-         reply.id
-      }" data-post-id="${postId}">Reply</button>
-                           </div>
-                        </div>
-                     </div>
-                  </div>
-               </div>
-            </div>
-         </div>
-      `;
+   // Update existing comments to highlight mentions
+   updateExistingComments() {
+      const commentContents = document.querySelectorAll('.comment-content');
+      commentContents.forEach(contentDiv => {
+         if (!contentDiv.querySelector('.mention')) {
+            const originalContent = contentDiv.innerHTML;
+            contentDiv.innerHTML = this.processMentions(originalContent);
+         }
+      });
    }
 }
 

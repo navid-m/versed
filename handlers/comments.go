@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"fmt"
+	"log"
 	"strconv"
 
 	"github.com/navid-m/versed/database"
@@ -70,22 +72,48 @@ func CreateComment(c *fiber.Ctx) error {
 	}
 
 	var req struct {
-		Content string `json:"content"`
+		Content     string `json:"content"`
+		ParentIDStr string `json:"parent_id,omitempty"`
 	}
 
 	if err := c.BodyParser(&req); err != nil {
+		log.Printf("=== CreateComment ERROR parsing request body: %v ===", err)
 		return c.Status(400).JSON(fiber.Map{
 			"error": "Invalid request body",
 		})
 	}
 
+	log.Printf("=== CreateComment parsed request: Content='%s', ParentIDStr='%s' ===", req.Content, req.ParentIDStr)
+
 	if req.Content == "" {
+		log.Printf("=== CreateComment ERROR: Content is empty ===")
 		return c.Status(400).JSON(fiber.Map{
 			"error": "Comment content is required",
 		})
 	}
 
-	comment, err := database.CreateComment(itemID, userID, username, req.Content)
+	// Parse parent_id string to int if provided
+	var parentID *int
+	if req.ParentIDStr != "" {
+		if parsedID, err := strconv.Atoi(req.ParentIDStr); err != nil {
+			log.Printf("=== CreateComment ERROR parsing parent_id '%s': %v ===", req.ParentIDStr, err)
+			return c.Status(400).JSON(fiber.Map{
+				"error": "Invalid parent_id format",
+			})
+		} else {
+			parentID = &parsedID
+			log.Printf("=== CreateComment parsed parent_id: %d ===", *parentID)
+			// Prepend @mention to reply content
+			if req.Content != "" {
+				req.Content = fmt.Sprintf("@%d %s", *parentID, req.Content)
+				log.Printf("=== CreateComment added @mention: '%s' ===", req.Content)
+			}
+		}
+	}
+
+	log.Printf("=== CreateComment calling database with parentID: %v ===", parentID)
+
+	comment, err := database.CreateComment(itemID, userID, username, req.Content, parentID)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": "Failed to create comment",

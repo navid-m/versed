@@ -51,3 +51,33 @@
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
  }
+
+/* @mention highlighting for comments */
+.comment-content {
+    word-wrap: break-word;
+}
+
+.comment-content .mention {
+    background-color: #dbeafe;
+    color: #1d4ed8;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-weight: 500;
+    text-decoration: none;
+    border: 1px solid #bfdbfe;
+}
+
+.dark .comment-content .mention {
+    background-color: #1e3a8a;
+    color: #60a5fa;
+    border: 1px solid #3b82f6;
+}
+
+.comment-content .mention:hover {
+    background-color: #bfdbfe;
+    text-decoration: underline;
+}
+
+.dark .comment-content .mention:hover {
+    background-color: #3b82f6;
+}

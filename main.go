@@ -27,14 +27,16 @@ import (
 )
 
 func main() {
+	log.Printf("=== MAIN FUNCTION STARTED ===")
 	if err := database.InitDatabase(); err != nil {
+		log.Printf("=== DATABASE INIT ERROR: %v ===", err)
 		log.Fatal("Failed to initialize database:", err)
 	}
+	log.Printf("=== DATABASE INITIALIZED SUCCESSFULLY ===")
 	err := feeds.ResetAllFeedTimestamps(database.GetDB())
 	if err != nil {
 		log.Printf("Warning: Failed to reset feed timestamps: %v", err)
 	}
-	defer database.CloseConnection()
 	feeds.DebugFeeds(database.GetDB())
 
 	var (
@@ -50,9 +52,13 @@ func main() {
 		scheduler    = NewFeedScheduler(database.GetDB())
 	)
 
+	log.Printf("=== VIEWS PATH: %s ===", viewsPath)
+	log.Printf("=== TEMPLATE ENGINE CREATED ===")
+	log.Printf("=== STARTING FEED SCHEDULER ===")
 	scheduler.Start()
 	defer scheduler.Stop()
 
+	log.Printf("=== SETTING UP MIDDLEWARE ===")
 	app.Use(func(c *fiber.Ctx) error {
 		sess, err := store.Get(c)
 		if err == nil {
@@ -68,6 +74,7 @@ func main() {
 		return c.Next()
 	})
 
+	log.Printf("=== SETTING UP IP BAN MIDDLEWARE ===")
 	app.Use(func(c *fiber.Ctx) error {
 		clientIP := c.IP()
 
@@ -81,10 +88,10 @@ func main() {
 			log.Printf("Blocked access from banned IP: %s", clientIP)
 			return c.Status(403).SendString("Access denied. Your IP address has been banned.")
 		}
-
 		return c.Next()
 	})
 
+	log.Printf("=== SETTING UP STATIC FILE MIDDLEWARE ===")
 	app.Use("/static", func(c *fiber.Ctx) error {
 		path := c.Path()
 		if strings.HasPrefix(path, "/static/js/admin") ||
@@ -112,6 +119,7 @@ func main() {
 
 	app.Static("/static", "./static")
 
+	log.Printf("=== SETTING UP ROUTES ===")
 	app.Get("/", func(c *fiber.Ctx) error {
 		userEmail := c.Locals("userEmail")
 		userUsername := c.Locals("userUsername")
@@ -957,7 +965,9 @@ func main() {
 			&post.CreatedAt, &sourceName,
 		)
 
+		fmt.Println("helloo")
 		if err != nil {
+			fmt.Println("hello2")
 			postObj, postErr := database.GetPostByID(db, itemID)
 			if postErr != nil {
 				return c.Status(404).SendString("Post not found")
@@ -999,10 +1009,23 @@ func main() {
 		post.SourceName = sourceName
 
 		comments, err := database.GetCommentsByItemID(itemID)
+		fmt.Println(comments)
+		log.Printf("=== POST PAGE DEBUG: Retrieved %d comments for item %s ===", len(comments), itemID)
+		for i, comment := range comments {
+			log.Printf("=== POST PAGE DEBUG: Comment %d: ID=%d, Content='%s', ParentID=%v, Replies=%d ===",
+				i+1, comment.ID, comment.Content, comment.ParentID, len(comment.Replies))
+			for j, reply := range comment.Replies {
+				log.Printf("=== POST PAGE DEBUG:   Reply %d.%d: ID=%d, Content='%s' ===",
+					i+1, j+1, reply.ID, reply.Content)
+			}
+		}
+
 		if err != nil {
 			log.Printf("Failed to get comments: %v", err)
 			comments = []database.Comment{}
 		}
+
+		log.Printf("=== POST PAGE DEBUG: About to render template with %d comments ===", len(comments))
 
 		data := fiber.Map{
 			"post":     post,

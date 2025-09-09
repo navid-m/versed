@@ -118,7 +118,7 @@
             {% macro render_comment(comment, depth=0, post_id='', user_id='', email='') %}
             <!-- Debug: Comment ID: {{ comment.ID }}, Has Replies: {% if comment.Replies %}Yes{% else %}No{% endif %}, Replies Count: {% if comment.Replies %}{{ comment.Replies|length }}{% else %}0{% endif %} -->
             {% for reply in comment.Replies %}
-            <!-- Debug Reply: ID={{ reply.ID }}, ParentID={{ reply.ParentID }}, Content={{ reply.Content|slice:":50" }}... -->
+            <!-- Debug Reply: ID={{ reply.ID }}, ParentID={{ reply.ParentID }}, Content={{ reply.Content }} -->
             {% endfor %}
             <div class="border-l-2 border-gray-200 dark:border-gray-600 pl-4{% if depth > 0 %} ml-{{ 4 + depth * 4 }}{% endif %}" data-comment-id="{{ comment.ID }}">
                <div class="flex items-start space-x-3">
