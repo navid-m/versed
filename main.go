@@ -22,6 +22,7 @@ import (
 	"github.com/navid-m/versed/database"
 	"github.com/navid-m/versed/feeds"
 	"github.com/navid-m/versed/handlers"
+	"github.com/navid-m/versed/models"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -963,10 +964,10 @@ func main() {
 
 		post.SourceName = sourceName
 
-		comments, err := database.GetCommentsByItemID(itemID)
+		comments, err := database.GetPostComments(db, itemID)
 		if err != nil {
 			log.Printf("Failed to get comments: %v", err)
-			comments = []database.Comment{}
+			comments = []models.PostComment{}
 		}
 
 		data := fiber.Map{
