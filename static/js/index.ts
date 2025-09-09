@@ -49,7 +49,6 @@ document.addEventListener("DOMContentLoaded", function () {
          }
       });
 
-      // Set initial theme based on localStorage
       const savedTheme = localStorage.getItem("theme");
       if (savedTheme === "dark") {
          html.classList.add("dark");
