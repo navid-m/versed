@@ -137,7 +137,7 @@ func createTables() error {
 			FOREIGN KEY (feed_source_id) REFERENCES feed_sources(id)
 		)`,
 		`CREATE TABLE IF NOT EXISTS posts (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			id TEXT PRIMARY KEY,
 			subverse_id INTEGER NOT NULL,
 			user_id INTEGER NOT NULL,
 			title TEXT NOT NULL,
@@ -150,9 +150,19 @@ func createTables() error {
 			FOREIGN KEY (subverse_id) REFERENCES subverses(id),
 			FOREIGN KEY (user_id) REFERENCES users(id)
 		)`,
+		`CREATE TABLE IF NOT EXISTS post_votes (
+			user_id INTEGER NOT NULL,
+			post_id TEXT NOT NULL,
+			vote_type TEXT NOT NULL,
+			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (user_id, post_id),
+			FOREIGN KEY (user_id) REFERENCES users(id),
+			FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
+		)`,
 		`CREATE TABLE IF NOT EXISTS post_comments (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			post_id INTEGER NOT NULL,
+			post_id TEXT NOT NULL,
 			user_id INTEGER NOT NULL,
 			username TEXT NOT NULL,
 			content TEXT NOT NULL,

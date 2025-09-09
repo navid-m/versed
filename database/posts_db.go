@@ -176,15 +176,19 @@ func DeletePost(db *sql.DB, postID string, userID int) error {
 
 // CreatePostComment creates a new comment on a post
 func CreatePostComment(db *sql.DB, postID string, userID int, username, content string, parentID *string) (*models.PostComment, error) {
+	log.Printf("CreatePostComment called with postID='%s', userID=%d, username='%s', content='%s', parentID=%v", postID, userID, username, content, parentID)
+
 	// For now, let's try inserting without the id field to see if SQLite auto-generates it
 	now := time.Now()
 
 	query := `INSERT INTO post_comments (post_id, user_id, username, content, created_at, updated_at)
 	          VALUES (?, ?, ?, ?, ?, ?)`
 
+	log.Printf("Executing query: %s with params: postID=%s, userID=%d, username=%s, content=%s", query, postID, userID, username, content)
+
 	result, err := db.Exec(query, postID, userID, username, content, now, now)
 	if err != nil {
-		log.Printf("Failed to insert comment without id: %v", err)
+		log.Printf("Failed to insert comment: %v", err)
 		return nil, fmt.Errorf("failed to create comment: %w", err)
 	}
 
@@ -197,14 +201,25 @@ func CreatePostComment(db *sql.DB, postID string, userID int, username, content 
 
 	// Convert to string for our model
 	commentID := fmt.Sprintf("%d", commentIDInt)
+	log.Printf("Created comment with ID: %s", commentID)
 
 	// Update parent_id if provided
-	if parentID != nil && *parentID != "" {
-		updateQuery := `UPDATE post_comments SET parent_id = ? WHERE id = ?`
-		_, err = db.Exec(updateQuery, *parentID, commentID)
-		if err != nil {
-			log.Printf("Failed to update parent_id: %v", err)
+	if parentID != nil {
+		log.Printf("ParentID is not nil, value: '%s'", *parentID)
+		if *parentID != "" {
+			log.Printf("Updating parent_id to: %s", *parentID)
+			updateQuery := `UPDATE post_comments SET parent_id = ? WHERE id = ?`
+			_, err = db.Exec(updateQuery, *parentID, commentID)
+			if err != nil {
+				log.Printf("Failed to update parent_id: %v", err)
+			} else {
+				log.Printf("Successfully updated parent_id")
+			}
+		} else {
+			log.Printf("ParentID is empty string, skipping update")
 		}
+	} else {
+		log.Printf("ParentID is nil")
 	}
 
 	comment := &models.PostComment{
@@ -218,6 +233,7 @@ func CreatePostComment(db *sql.DB, postID string, userID int, username, content 
 		UpdatedAt: now,
 	}
 
+	log.Printf("Successfully created comment: %+v", comment)
 	return comment, nil
 }
 
