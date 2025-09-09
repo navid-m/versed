@@ -8,18 +8,8 @@
    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
    {% include "partials/icon.html" %}
    <script src="https://cdn.tailwindcss.com"></script>
-   <script>
-      (function () {
-         const theme = localStorage.getItem("theme");
-         const html = document.documentElement;
-         if (
-            theme === "dark" ||
-            (!theme && window.matchMedia("(prefers-color-scheme: dark)").matches)
-         ) {
-            html.classList.add("dark");
-         }
-      })();
-   </script>
+   <script src="/static/js/tw-config.js"></script>
+   <script src="/static/js/flash-fix.js"></script>
 </head>
 
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
@@ -255,6 +245,13 @@
    </script>
 
    <script src="/static/js/description-truncation.js"></script>
+   <script src="/static/js/index.js"></script>
+   <script src="/static/js/fetch-posts.js"></script>
+   <script src="/static/js/categories.js"></script>
+   <script src="/static/js/comments.js"></script>
+   <script src="/static/js/profile.js"></script>
+   <link rel="stylesheet" href="/static/css/index.css" />
+
    <style>
       .line-clamp-2 {
          display: -webkit-box;
@@ -313,6 +310,5 @@
       }
    </style>
 </body>
-<script src="/static/js/index.js"></script>
 
 </html>
