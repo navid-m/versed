@@ -187,9 +187,11 @@ func GetCommentCountByItemID(itemID string) (int, error) {
 
 // Builds hierarchical comment structure from flat comments array
 func buildCommentHierarchy(comments []Comment) []Comment {
-	commentMap := make(map[int]*Comment)
-	replyMap := make(map[int][]*Comment)
-	var topLevelComments []Comment
+	var (
+		commentMap       = make(map[int]*Comment)
+		replyMap         = make(map[int][]*Comment)
+		topLevelComments []Comment
+	)
 
 	for i := range comments {
 		comment := &comments[i]
