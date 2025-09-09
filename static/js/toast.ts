@@ -12,7 +12,7 @@ class Toast {
       document.body.appendChild(this.toastContainer);
    }
 
-   show(message, type = "info", duration = 5000) {
+   show(message: any, type = "info", duration = 5000) {
       const toast = document.createElement("div");
       const typeClasses = {
          success: "bg-green-500 text-white",
@@ -49,7 +49,7 @@ class Toast {
       return toast;
    }
 
-   removeToast(toast) {
+   removeToast(toast: HTMLDivElement) {
       toast.classList.remove("opacity-100", "translate-x-0");
       toast.classList.add("opacity-0", "translate-x-8");
       setTimeout(() => {
@@ -63,10 +63,12 @@ class Toast {
 (window as any).toast = new Toast();
 
 (window as any).showToast = {
-   success: (message, duration) =>
+   success: (message: any, duration: any) =>
       (window as any).toast.show(message, "success", duration),
-   error: (message, duration) => (window as any).toast.show(message, "error", duration),
-   info: (message, duration) => (window as any).toast.show(message, "info", duration),
-   warning: (message, duration) =>
+   error: (message: any, duration: any) =>
+      (window as any).toast.show(message, "error", duration),
+   info: (message: any, duration: any) =>
+      (window as any).toast.show(message, "info", duration),
+   warning: (message: any, duration: any) =>
       (window as any).toast.show(message, "warning", duration),
 };
