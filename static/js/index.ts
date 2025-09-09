@@ -31,60 +31,82 @@ document.addEventListener("DOMContentLoaded", function () {
       }
    });
 
-   checkAdminStatus();
-});
+   // Initialize dark mode toggle
+   const darkModeToggle = document.getElementById("darkModeToggle");
+   const toggleSlider = document.getElementById("toggleSlider");
+   const html = document.documentElement;
 
-darkModeToggle.addEventListener("click", () => {
-   const isDark = html.classList.toggle("dark");
-   localStorage.setItem("theme", isDark ? "dark" : "light");
-   if (html.classList.contains("dark")) {
-      toggleSlider.classList.remove("translate-x-6");
-      toggleSlider.classList.add("translate-x-1");
-   } else {
-      toggleSlider.classList.remove("translate-x-1");
-      toggleSlider.classList.add("translate-x-6");
-   }
-});
+   if (darkModeToggle && toggleSlider) {
+      darkModeToggle.addEventListener("click", () => {
+         const isDark = html.classList.toggle("dark");
+         localStorage.setItem("theme", isDark ? "dark" : "light");
+         if (html.classList.contains("dark")) {
+            toggleSlider.classList.remove("translate-x-6");
+            toggleSlider.classList.add("translate-x-1");
+         } else {
+            toggleSlider.classList.remove("translate-x-1");
+            toggleSlider.classList.add("translate-x-6");
+         }
+      });
 
-if (userMenuButton && userDropdown) {
-   userMenuButton.addEventListener("click", (e) => {
-      e.stopPropagation();
-      userDropdown.classList.toggle("hidden");
-   });
-
-   document.addEventListener("click", (e) => {
-      if (
-         !userMenuButton.contains(e.target as Node) &&
-         !userDropdown.contains(e.target as Node)
-      ) {
-         userDropdown.classList.add("hidden");
+      // Set initial theme based on localStorage
+      const savedTheme = localStorage.getItem("theme");
+      if (savedTheme === "dark") {
+         html.classList.add("dark");
+         toggleSlider.classList.remove("translate-x-6");
+         toggleSlider.classList.add("translate-x-1");
+      } else {
+         html.classList.remove("dark");
+         toggleSlider.classList.remove("translate-x-1");
+         toggleSlider.classList.add("translate-x-6");
       }
-   });
-}
+   }
 
-const listViewBtn = document.getElementById("listViewBtn");
-const gridViewBtn = document.getElementById("gridViewBtn");
-const postsContainer = document.getElementById("postsContainer");
+   checkAdminStatus();
 
-if (listViewBtn && gridViewBtn && postsContainer) {
-   listViewBtn.addEventListener("click", () => {
-      postsContainer.className = "space-y-3";
-      listViewBtn.className =
-         "flex items-center px-3 py-1.5 rounded-md text-xs font-medium transition-colors bg-gray-900 dark:bg-gray-600 text-white";
-      gridViewBtn.className =
-         "flex items-center px-3 py-1.5 rounded-md text-xs font-medium transition-colors text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200";
-   });
+   // Initialize user menu dropdown
+   const userMenuButton = document.getElementById("userMenuButton");
+   const userDropdown = document.getElementById("userDropdown");
 
-   gridViewBtn.addEventListener("click", () => {
-      postsContainer.className =
-         "grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4";
-      gridViewBtn.className =
-         "flex items-center px-3 py-1.5 rounded-md text-xs font-medium transition-colors bg-gray-900 dark:bg-gray-600 text-white";
-      listViewBtn.className =
-         "flex items-center px-3 py-1.5 rounded-md text-xs font-medium transition-colors text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200";
-   });
-}
-document.addEventListener("DOMContentLoaded", function () {
+   if (userMenuButton && userDropdown) {
+      userMenuButton.addEventListener("click", (e) => {
+         e.stopPropagation();
+         userDropdown.classList.toggle("hidden");
+      });
+
+      document.addEventListener("click", (e) => {
+         if (
+            !userMenuButton.contains(e.target as Node) &&
+            !userDropdown.contains(e.target as Node)
+         ) {
+            userDropdown.classList.add("hidden");
+         }
+      });
+   }
+
+   // Initialize view buttons
+   const listViewBtn = document.getElementById("listViewBtn");
+   const gridViewBtn = document.getElementById("gridViewBtn");
+   const postsContainer = document.getElementById("postsContainer");
+
+   if (listViewBtn && gridViewBtn && postsContainer) {
+      listViewBtn.addEventListener("click", () => {
+         postsContainer.className = "space-y-3";
+         listViewBtn.className =
+            "flex items-center px-3 py-1.5 rounded-md text-xs font-medium transition-colors bg-gray-900 dark:bg-gray-600 text-white";
+         gridViewBtn.className =
+            "flex items-center px-3 py-1.5 rounded-md text-xs font-medium transition-colors text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200";
+      });
+
+      gridViewBtn.addEventListener("click", () => {
+         postsContainer.className =
+            "grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4";
+         gridViewBtn.className =
+            "flex items-center px-3 py-1.5 rounded-md text-xs font-medium transition-colors bg-gray-900 dark:bg-gray-600 text-white";
+         listViewBtn.className =
+            "flex items-center px-3 py-1.5 rounded-md text-xs font-medium transition-colors text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200";
+      });
+   }
    console.log("=== index.js DOMContentLoaded fired ===");
 
    const voteButtons = document.querySelectorAll("[data-vote-type]");
