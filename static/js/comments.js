@@ -636,25 +636,44 @@ class CommentsManager {
    }
 
    addReplyToUI(reply, parentId) {
+      console.log("addReplyToUI called with reply:", reply, "parentId:", parentId);
+
       const parentComment = document.querySelector(
          `[data-comment-id="${parentId}"]`
       );
-      if (!parentComment) return;
+
+      console.log("Parent comment found:", parentComment);
+
+      if (!parentComment) {
+         console.error("Parent comment not found for parentId:", parentId);
+         console.log("Available comment IDs:");
+         document.querySelectorAll("[data-comment-id]").forEach(el => {
+            console.log("Comment ID:", el.getAttribute("data-comment-id"));
+         });
+         return;
+      }
 
       // Get the post ID from the body element
       const postId = document.body.dataset.postId || "";
+      console.log("Using postId:", postId);
 
       // Find the replies container or create one
       let repliesContainer = parentComment.querySelector(".replies-container");
+      console.log("Existing replies container:", repliesContainer);
+
       if (!repliesContainer) {
          repliesContainer = document.createElement("div");
          repliesContainer.className = "replies-container mt-3 space-y-2";
          parentComment.appendChild(repliesContainer);
+         console.log("Created new replies container");
       }
 
       // Create the reply HTML
       const replyHTML = this.createReplyHTML(reply, postId);
+      console.log("Generated reply HTML:", replyHTML.substring(0, 200) + "...");
+
       repliesContainer.insertAdjacentHTML("beforeend", replyHTML);
+      console.log("Reply HTML added to container");
    }
 
    createCommentHTML(comment) {
