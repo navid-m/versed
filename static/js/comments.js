@@ -6,10 +6,9 @@ class CommentsManager {
 
    init() {
       console.log("=== COMMENTS MANAGER INITIALIZING ===");
+
       this.initializeCommentCount();
       this.setupIndexPageListener();
-
-      // Update existing comments to highlight @mentions
       this.updateExistingComments();
 
       const existingComments = document.querySelectorAll("[data-comment-id]");
@@ -678,12 +677,14 @@ class CommentsManager {
             console.log("Reply content:", newReply.content);
             console.log("Reply parent_id:", newReply.parent_id);
 
-            // Format the reply for UI
             const formattedReply = {
                ID: newReply.id || newReply.ID,
                PostID: postId,
                UserID: parseInt(document.body.dataset.userId) || 0,
-               Username: newReply.username || document.body.dataset.username || "Anonymous",
+               Username:
+                  newReply.username ||
+                  document.body.dataset.username ||
+                  "Anonymous",
                Content: newReply.content || content,
                ParentID: newReply.parent_id || parentId,
                CreatedAt: newReply.created_at || new Date().toISOString(),
@@ -691,14 +692,11 @@ class CommentsManager {
                Replies: [],
             };
 
-            // Add as a regular flat comment (no nesting)
             this.addCommentToUI(formattedReply);
             this.cancelReply(commentId);
-
             this.currentCommentCount++;
             this.updateCommentCountDisplay();
             this.updateIndexPageCommentCount(postId, this.currentCommentCount);
-
             this.showMessage("Reply posted successfully", "success");
          } else {
             const error = await response.json();
@@ -713,13 +711,9 @@ class CommentsManager {
       }
    }
 
-   addReplyToUI() {
-      // No longer needed - replies are added as flat comments
-   }
+   addReplyToUI() {}
 
-   createReplyHTML() {
-      // No longer needed - all comments use createCommentHTML
-   }
+   createReplyHTML() {}
 
    createCommentHTML(comment) {
       console.log("createCommentHTML called with:", comment);
@@ -742,11 +736,12 @@ class CommentsManager {
          isOwner
       );
 
-      // Process @mentions in content
       const processedContent = this.processMentions(comment.Content);
 
       return `
-            <div class="border-l-2 border-gray-200 dark:border-gray-600 pl-4" data-comment-id="${comment.ID}">
+            <div class="border-l-2 border-gray-200 dark:border-gray-600 pl-4" data-comment-id="${
+               comment.ID
+            }">
                 <div class="flex items-start space-x-3">
                     <div class="flex-shrink-0">
                         <div class="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
@@ -791,19 +786,15 @@ class CommentsManager {
         `;
    }
 
-   // Process @mentions in comment content
    processMentions(content) {
       if (!content) return content;
-      
-      // Replace @ followed by numbers with highlighted spans
       return content.replace(/@(\d+)/g, '<span class="mention">@$1</span>');
    }
 
-   // Update existing comments to highlight mentions
    updateExistingComments() {
-      const commentContents = document.querySelectorAll('.comment-content');
-      commentContents.forEach(contentDiv => {
-         if (!contentDiv.querySelector('.mention')) {
+      const commentContents = document.querySelectorAll(".comment-content");
+      commentContents.forEach((contentDiv) => {
+         if (!contentDiv.querySelector(".mention")) {
             const originalContent = contentDiv.innerHTML;
             contentDiv.innerHTML = this.processMentions(originalContent);
          }
