@@ -250,7 +250,12 @@ func main() {
 			password = c.FormValue("password")
 		)
 		if email == "" || password == "" {
-			return c.Status(400).SendString("Email and password are required")
+			return c.Status(400).JSON(fiber.Map{
+				"toast": fiber.Map{
+					"type":    "error",
+					"message": "Email and password are required",
+				},
+			})
 		}
 		user, err := database.GetUserByEmail(email)
 		if err != nil {
@@ -275,16 +280,28 @@ func main() {
 
 		sess, err := store.Get(c)
 		if err != nil {
-			return c.Status(500).SendString("Session error")
+			return c.Status(500).JSON(fiber.Map{
+				"toast": fiber.Map{
+					"type":    "error",
+					"message": "Session error",
+				},
+			})
 		}
 		sess.Set("user_id", user.ID)
 		sess.Set("user_email", user.Email)
 		sess.Set("user_username", user.Username)
 		if err := sess.Save(); err != nil {
-			return c.Status(500).SendString("Failed to save session")
+			return c.Status(500).JSON(fiber.Map{
+				"toast": fiber.Map{
+					"type":    "error",
+					"message": "Failed to save session",
+				},
+			})
 		}
 
-		return c.Redirect("/")
+		return c.JSON(fiber.Map{
+			"success": true,
+		})
 	})
 
 	app.Get("/signout", func(c *fiber.Ctx) error {
