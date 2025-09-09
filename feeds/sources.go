@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/mmcdole/gofeed"
 )
 
@@ -57,6 +59,13 @@ func (r *RedditFeed) ParseFeed(content []byte, sourceID int) ([]FeedItem, error)
 			CommentsCount: commentsCount,
 			CreatedAt:     time.Now(),
 		}
+
+		if innerLink := extractRedditInnerLink(item.Description); innerLink != "" {
+			feedItem.URL = innerLink
+		} else if isDirectRedditLink(item.Link) {
+			feedItem.URL = fmt.Sprintf("/post/%s", id)
+		}
+
 		items = append(items, feedItem)
 	}
 
@@ -84,6 +93,43 @@ func extractRedditComments(_ string) int {
 func cleanRedditTitle(title string) string {
 	re := regexp.MustCompile(`^\[.*?\]\s*`)
 	return re.ReplaceAllString(title, "")
+}
+
+// Extracts the best inner link from Reddit's HTML description.
+// Prioritizes i.reddit.com, imgur.com, then other image/video links.
+func extractRedditInnerLink(description string) string {
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(description))
+	if err != nil {
+		return ""
+	}
+
+	var links []string
+	doc.Find("a").Each(func(i int, s *goquery.Selection) {
+		href, exists := s.Attr("href")
+		if exists {
+			links = append(links, href)
+		}
+	})
+
+	for _, link := range links {
+		if strings.Contains(link, "i.reddit.com") {
+			return link
+		}
+	}
+	for _, link := range links {
+		if strings.Contains(link, "imgur.com") {
+			return link
+		}
+	}
+	if len(links) > 0 {
+		return links[0]
+	}
+	return ""
+}
+
+// Determines if a URL is a direct Reddit link that should be avoided
+func isDirectRedditLink(url string) bool {
+	return strings.Contains(url, "reddit.com/r/") && strings.Contains(url, "/comments/")
 }
 
 // HN feed structure.
