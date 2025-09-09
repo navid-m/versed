@@ -32,7 +32,9 @@ class CommentsManager {
       document.addEventListener("click", (e) => {
          if ((e.target as HTMLElement).closest(".view-comments-btn")) {
             e.preventDefault();
-            const button = (e.target as HTMLElement).closest(".view-comments-btn");
+            const button = (e.target as HTMLElement).closest(
+               ".view-comments-btn"
+            );
             const postId = (button as HTMLElement).dataset.postId;
             this.viewPostComments(postId);
          }
@@ -46,7 +48,9 @@ class CommentsManager {
       document.addEventListener("click", (e) => {
          if ((e.target as HTMLElement).closest(".edit-comment-btn")) {
             e.preventDefault();
-            const button = (e.target as HTMLElement).closest(".edit-comment-btn");
+            const button = (e.target as HTMLElement).closest(
+               ".edit-comment-btn"
+            );
             const commentId = (button as HTMLElement).dataset.commentId;
             this.editComment(commentId);
          }
@@ -55,7 +59,9 @@ class CommentsManager {
       document.addEventListener("click", (e) => {
          if ((e.target as HTMLElement).closest(".delete-comment-btn")) {
             e.preventDefault();
-            const button = (e.target as HTMLElement).closest(".delete-comment-btn");
+            const button = (e.target as HTMLElement).closest(
+               ".delete-comment-btn"
+            );
             const commentId = (button as HTMLElement).dataset.commentId;
             this.deleteComment(commentId);
          }
@@ -73,7 +79,9 @@ class CommentsManager {
       document.addEventListener("click", (e) => {
          if ((e.target as HTMLElement).closest(".cancel-reply-btn")) {
             e.preventDefault();
-            const button = (e.target as HTMLElement).closest(".cancel-reply-btn");
+            const button = (e.target as HTMLElement).closest(
+               ".cancel-reply-btn"
+            );
             const commentId = (button as HTMLElement).dataset.commentId;
             this.cancelReply(commentId);
          }
@@ -82,7 +90,9 @@ class CommentsManager {
       document.addEventListener("click", (e) => {
          if ((e.target as HTMLElement).closest(".submit-reply-btn")) {
             e.preventDefault();
-            const button = (e.target as HTMLElement).closest(".submit-reply-btn");
+            const button = (e.target as HTMLElement).closest(
+               ".submit-reply-btn"
+            );
             const commentId = (button as HTMLElement).dataset.commentId;
             const parentId = (button as HTMLElement).dataset.parentId;
             const postId = (button as HTMLElement).dataset.postId;
@@ -157,7 +167,9 @@ class CommentsManager {
    }
 
    async submitComment() {
-      const content = (document.getElementById("commentContent") as HTMLInputElement).value.trim();
+      const content = (
+         document.getElementById("commentContent") as HTMLInputElement
+      ).value.trim();
       const submitButton = document.getElementById("submitComment");
       const postId = (submitButton as HTMLElement).dataset.postId;
 
@@ -221,7 +233,9 @@ class CommentsManager {
             this.updateCommentCountDisplay();
             this.updateIndexPageCommentCount(postId, this.currentCommentCount);
 
-            (document.getElementById("commentContent") as HTMLInputElement).value = "";
+            (
+               document.getElementById("commentContent") as HTMLInputElement
+            ).value = "";
 
             this.showMessage("Comment posted successfully", "success");
 
@@ -464,9 +478,9 @@ class CommentsManager {
             this.currentCommentCount--;
             this.updateCommentCountDisplay();
 
-            const postId =
-               (document.querySelector("[data-post-id]") as HTMLElement)
-                  .dataset.postId;
+            const postId = (
+               document.querySelector("[data-post-id]") as HTMLElement
+            ).dataset.postId;
             if (postId) {
                this.updateIndexPageCommentCount(
                   postId,
@@ -488,7 +502,17 @@ class CommentsManager {
       }
    }
 
-   addCommentToUI(comment: { ID: any; PostID?: any; UserID: any; Username: any; Content: any; ParentID?: any; CreatedAt: any; UpdatedAt?: any; Replies?: any; }) {
+   addCommentToUI(comment: {
+      ID: any;
+      PostID?: any;
+      UserID: any;
+      Username: any;
+      Content: any;
+      ParentID?: any;
+      CreatedAt: any;
+      UpdatedAt?: any;
+      Replies?: any;
+   }) {
       console.log("addCommentToUI called with:", comment);
       const commentsList = document.getElementById("commentsList");
       console.log("commentsList element:", commentsList);
@@ -521,7 +545,17 @@ class CommentsManager {
       console.log("Added element found:", addedElement);
    }
 
-   updateCommentInUI(comment: { ID: any; PostID?: any; UserID: any; Username: any; Content: any; CreatedAt: any; UpdatedAt?: any; ParentID?: any; Replies?: any; }) {
+   updateCommentInUI(comment: {
+      ID: any;
+      PostID?: any;
+      UserID: any;
+      Username: any;
+      Content: any;
+      CreatedAt: any;
+      UpdatedAt?: any;
+      ParentID?: any;
+      Replies?: any;
+   }) {
       const commentElement = document.querySelector(
          `[data-comment-id="${comment.ID}"]`
       );
@@ -718,7 +752,18 @@ class CommentsManager {
 
    createReplyHTML() {}
 
-   createCommentHTML(comment: { ID: any; PostID?: any; UserID: any; Username: any; Content: any; CreatedAt: any; UpdatedAt?: any; ParentID?: any; Replies?: any; id?: any; }) {
+   createCommentHTML(comment: {
+      ID: any;
+      PostID?: any;
+      UserID: any;
+      Username: any;
+      Content: any;
+      CreatedAt: any;
+      UpdatedAt?: any;
+      ParentID?: any;
+      Replies?: any;
+      id?: any;
+   }) {
       console.log("createCommentHTML called with:", comment);
       console.log("comment.ID:", comment.ID, "comment.id:", comment.id);
 

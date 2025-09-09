@@ -35,7 +35,7 @@ class GraphView {
       const zoom = d3
          .zoom()
          .scaleExtent([0.1, 4])
-         .on("zoom", (event: { transform: any; }) => {
+         .on("zoom", (event: { transform: any }) => {
             this.svg!.select("g").attr("transform", event.transform);
          });
 
@@ -76,7 +76,7 @@ class GraphView {
             "link",
             d3
                .forceLink(this.links)
-               .id((d: { id: any; }) => d.id)
+               .id((d: { id: any }) => d.id)
                .distance(100)
          )
          .force("charge", d3.forceManyBody().strength(-50))
@@ -106,20 +106,33 @@ class GraphView {
          .call(
             d3
                .drag()
-               .on("start", (event: { active: any; }, d: { fx: any; x: any; fy: any; y: any; }) => {
-                  if (!event.active) this.simulation.alphaTarget(0.3).restart();
-                  d.fx = d.x;
-                  d.fy = d.y;
-               })
-               .on("drag", (event: { x: any; y: any; }, d: { fx: any; fy: any; }) => {
-                  d.fx = event.x;
-                  d.fy = event.y;
-               })
-               .on("end", (event: { active: any; }, d: { fx: null; fy: null; }) => {
-                  if (!event.active) this.simulation.alphaTarget(0);
-                  d.fx = null;
-                  d.fy = null;
-               })
+               .on(
+                  "start",
+                  (
+                     event: { active: any },
+                     d: { fx: any; x: any; fy: any; y: any }
+                  ) => {
+                     if (!event.active)
+                        this.simulation.alphaTarget(0.3).restart();
+                     d.fx = d.x;
+                     d.fy = d.y;
+                  }
+               )
+               .on(
+                  "drag",
+                  (event: { x: any; y: any }, d: { fx: any; fy: any }) => {
+                     d.fx = event.x;
+                     d.fy = event.y;
+                  }
+               )
+               .on(
+                  "end",
+                  (event: { active: any }, d: { fx: null; fy: null }) => {
+                     if (!event.active) this.simulation.alphaTarget(0);
+                     d.fx = null;
+                     d.fy = null;
+                  }
+               )
          );
       node
          .append("circle")
@@ -134,19 +147,22 @@ class GraphView {
          .style("font-size", "12px")
          .style("font-family", "Arial, sans-serif")
          .style("font-weight", "bold")
-         .text((d: { name: any; }) => this.truncateText(d.name, 20));
+         .text((d: { name: any }) => this.truncateText(d.name, 20));
       this.simulation.on("tick", () => {
          link
-            .attr("x1", (d: { source: { x: any; }; }) => d.source.x)
-            .attr("y1", (d: { source: { y: any; }; }) => d.source.y)
-            .attr("x2", (d: { target: { x: any; }; }) => d.target.x)
-            .attr("y2", (d: { target: { y: any; }; }) => d.target.y);
+            .attr("x1", (d: { source: { x: any } }) => d.source.x)
+            .attr("y1", (d: { source: { y: any } }) => d.source.y)
+            .attr("x2", (d: { target: { x: any } }) => d.target.x)
+            .attr("y2", (d: { target: { y: any } }) => d.target.y);
 
-         node.attr("transform", (d: { x: any; y: any; }) => `translate(${d.x},${d.y})`);
+         node.attr(
+            "transform",
+            (d: { x: any; y: any }) => `translate(${d.x},${d.y})`
+         );
       });
    }
 
-   getNodeRadius(d: { type: string; }) {
+   getNodeRadius(d: { type: string }) {
       if (d.type === "root") {
          return 20;
       } else if (d.type === "category") {
@@ -156,7 +172,7 @@ class GraphView {
       }
    }
 
-   getNodeColor(d: { type: string; }) {
+   getNodeColor(d: { type: string }) {
       if (d.type === "root") {
          return "#1f2937";
       } else if (d.type === "category") {
@@ -183,6 +199,7 @@ class GraphView {
         `;
    }
 }
+
 document.addEventListener("DOMContentLoaded", () => {
    new GraphView();
 });

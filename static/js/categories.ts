@@ -1,4 +1,6 @@
 class CategoryManager {
+   categories: any[];
+   currentCategory: null;
    constructor() {
       this.categories = [];
       this.currentCategory = null;
@@ -99,7 +101,7 @@ class CategoryManager {
          .querySelectorAll(".category-btn[data-category-id]")
          .forEach((btn) => {
             btn.addEventListener("click", (e) => {
-               if (e.target.closest(".fa-ellipsis-h")) return;
+               if ((e.target as HTMLElement).closest(".fa-ellipsis-h")) return;
 
                const categoryId = btn.getAttribute("data-category-id");
                this.selectCategory(categoryId);
@@ -456,10 +458,12 @@ class CategoryManager {
    }
 
    async createCategory() {
-      const name = document.getElementById("categoryName").value.trim();
-      const description = document
-         .getElementById("categoryDescription")
-         .value.trim();
+      const name = (
+         document.getElementById("categoryName") as HTMLInputElement
+      ).value.trim();
+      const description = (
+         document.getElementById("categoryDescription") as HTMLInputElement
+      ).value.trim();
 
       if (!name) return;
 
@@ -638,9 +642,14 @@ class CategoryManager {
    }
 
    async addFeedToCategory(categoryId) {
-      const feedType = document.getElementById("feedType").value;
-      const feedUrl = document.getElementById("feedUrl").value.trim();
-      const feedName = document.getElementById("feedName").value.trim();
+      const feedType = (document.getElementById("feedType") as HTMLInputElement)
+         .value;
+      const feedUrl = (
+         document.getElementById("feedUrl") as HTMLInputElement
+      ).value.trim();
+      const feedName = (
+         document.getElementById("feedName") as HTMLInputElement
+      ).value.trim();
 
       if (!feedUrl || !feedName) return;
 
@@ -836,10 +845,12 @@ class CategoryManager {
    }
 
    async updateCategory(categoryId) {
-      const name = document.getElementById("editCategoryName").value.trim();
-      const description = document
-         .getElementById("editCategoryDescription")
-         .value.trim();
+      const name = (
+         document.getElementById("editCategoryName") as HTMLInputElement
+      ).value.trim();
+      const description = (
+         document.getElementById("editCategoryDescription") as HTMLInputElement
+      ).value.trim();
 
       if (!name) return;
 
@@ -876,7 +887,7 @@ class CategoryManager {
          });
 
          if (response.ok) {
-            this.currentCategory = "all";
+            (this.currentCategory as string) = "all";
             await this.loadCategories();
          } else {
             alert("Failed to delete category");
