@@ -179,7 +179,6 @@ func DeleteComment(commentID int) error {
 // Returns the number of comments for a feed item
 func GetCommentCountByItemID(itemID string) (int, error) {
 	query := `SELECT COUNT(*) FROM comments WHERE item_id = ?`
-
 	var count int
 	err := GetDB().QueryRow(query, itemID).Scan(&count)
 	return count, err
