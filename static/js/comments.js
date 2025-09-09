@@ -146,13 +146,14 @@ class CommentsManager {
       }
 
       const currentUsername = document.body.dataset.username || "Anonymous";
+      console.log("Current username from DOM:", currentUsername);
 
       submitButton.disabled = true;
       submitButton.innerHTML =
          '<i class="fas fa-spinner fa-spin mr-2"></i>Posting...';
 
       try {
-         const response = await fetch(`/posts/${postId}/comments`, {
+         const response = await fetch(`/api/posts/${postId}/comments`, {
             method: "POST",
             headers: {
                "Content-Type": "application/json",
@@ -163,17 +164,23 @@ class CommentsManager {
          if (response.ok) {
             const serverComment = await response.json();
 
+            console.log("Server comment response:", serverComment);
+            console.log("Current username from DOM:", currentUsername);
+            console.log("User ID from DOM:", document.body.dataset.userId);
+
             const optimisticComment = {
                ID: serverComment.id || Date.now(),
                PostID: postId,
                UserID: parseInt(document.body.dataset.userId) || 0,
-               Username: currentUsername,
+               Username: serverComment.username || currentUsername || "Anonymous",
                Content: content,
                ParentID: null,
-               CreatedAt: new Date().toISOString(),
-               UpdatedAt: new Date().toISOString(),
+               CreatedAt: serverComment.created_at || new Date().toISOString(),
+               UpdatedAt: serverComment.updated_at || new Date().toISOString(),
                Replies: [],
             };
+
+            console.log("Optimistic comment:", optimisticComment);
 
             this.addCommentToUI(optimisticComment);
             this.currentCommentCount++;
@@ -207,15 +214,41 @@ class CommentsManager {
    }
 
    refreshCommentFromServer(serverId, tempId) {
+      console.log("Refreshing comment from server:", serverId, "tempId:", tempId);
       fetch(`/api/comments/${serverId}`)
-         .then((response) => response.json())
+         .then((response) => {
+            console.log("Refresh response status:", response.status);
+            return response.json();
+         })
          .then((updatedComment) => {
+            console.log("Updated comment from server:", updatedComment);
+            // Convert snake_case to camelCase for consistency
+            const camelCaseComment = {
+               ID: updatedComment.id,
+               PostID: updatedComment.item_id,
+               UserID: updatedComment.user_id,
+               Username: updatedComment.username,
+               Content: updatedComment.content,
+               CreatedAt: updatedComment.created_at,
+               UpdatedAt: updatedComment.updated_at,
+               ParentID: updatedComment.parent_id,
+               Replies: updatedComment.replies || []
+            };
+
+            console.log("Converted camelCase comment:", camelCaseComment);
+
             const optimisticElement = document.querySelector(
                `[data-comment-id="${tempId}"]`
             );
+            console.log("Optimistic element found:", optimisticElement);
+
             if (optimisticElement) {
-               optimisticElement.outerHTML =
-                  this.createCommentHTML(updatedComment);
+               const newHTML = this.createCommentHTML(camelCaseComment);
+               console.log("Generated new HTML:", newHTML.substring(0, 200) + "...");
+               optimisticElement.outerHTML = newHTML;
+               console.log("Comment HTML replaced successfully");
+            } else {
+               console.error("Optimistic element not found for tempId:", tempId);
             }
          })
          .catch((error) => {
@@ -338,7 +371,19 @@ class CommentsManager {
 
          if (response.ok) {
             const updatedComment = await response.json();
-            this.updateCommentInUI(updatedComment);
+            // Convert snake_case to camelCase for consistency
+            const camelCaseComment = {
+               ID: updatedComment.id,
+               PostID: updatedComment.item_id,
+               UserID: updatedComment.user_id,
+               Username: updatedComment.username,
+               Content: updatedComment.content,
+               CreatedAt: updatedComment.created_at,
+               UpdatedAt: updatedComment.updated_at,
+               ParentID: updatedComment.parent_id,
+               Replies: updatedComment.replies || []
+            };
+            this.updateCommentInUI(camelCaseComment);
             this.showMessage("Comment updated successfully", "success");
          } else {
             const error = await response.json();
@@ -400,16 +445,32 @@ class CommentsManager {
    }
 
    addCommentToUI(comment) {
+      console.log("addCommentToUI called with:", comment);
       const commentsList = document.getElementById("commentsList");
-      if (!commentsList) return;
+      console.log("commentsList element:", commentsList);
+
+      if (!commentsList) {
+         console.error("commentsList not found!");
+         return;
+      }
 
       const noCommentsElement = commentsList.querySelector(".text-center.py-8");
+      console.log("noCommentsElement:", noCommentsElement);
+
       if (noCommentsElement) {
          noCommentsElement.remove();
+         console.log("Removed no comments element");
       }
 
       const commentHTML = this.createCommentHTML(comment);
+      console.log("Generated comment HTML:", commentHTML.substring(0, 200) + "...");
+
       commentsList.insertAdjacentHTML("afterbegin", commentHTML);
+      console.log("Comment HTML inserted into DOM");
+
+      // Verify the element was added
+      const addedElement = commentsList.querySelector(`[data-comment-id="${comment.ID}"]`);
+      console.log("Added element found:", addedElement);
    }
 
    updateCommentInUI(comment) {
@@ -449,68 +510,24 @@ class CommentsManager {
          const response = await fetch(`/api/comments/${commentId}`);
          if (response.ok) {
             const comment = await response.json();
-            this.updateCommentInUI(comment);
+            // Convert snake_case to camelCase for consistency
+            const camelCaseComment = {
+               ID: comment.id,
+               PostID: comment.item_id,
+               UserID: comment.user_id,
+               Username: comment.username,
+               Content: comment.content,
+               CreatedAt: comment.created_at,
+               UpdatedAt: comment.updated_at,
+               ParentID: comment.parent_id,
+               Replies: comment.replies || []
+            };
+            this.updateCommentInUI(camelCaseComment);
          }
       } catch (error) {
          console.error("Error refreshing comment:", error);
+         this.showMessage("Failed to refresh comment", "error");
       }
-   }
-
-   createCommentHTML(comment) {
-      const currentUserId = parseInt(document.body.dataset.userId) || 0;
-      const isOwner = currentUserId === comment.UserID;
-
-      const username = comment.Username || "Anonymous";
-      const createdAt = comment.CreatedAt
-         ? new Date(comment.CreatedAt)
-         : new Date();
-
-      return `
-            <div class="border-l-2 border-gray-200 dark:border-gray-600 pl-4" data-comment-id="${
-               comment.ID
-            }">
-                <div class="flex items-start space-x-3">
-                    <div class="flex-shrink-0">
-                        <div class="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
-                            <i class="fas fa-user text-gray-600 dark:text-gray-400 text-xs"></i>
-                        </div>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-center space-x-2 mb-1">
-                            <span class="text-sm font-medium text-gray-900 dark:text-gray-100">${username}</span>
-                            <span class="text-xs text-gray-500 dark:text-gray-400">${createdAt.toLocaleDateString(
-                               "en-US",
-                               {
-                                  year: "numeric",
-                                  month: "short",
-                                  day: "numeric",
-                                  hour: "numeric",
-                                  minute: "2-digit",
-                                  hour12: true,
-                               }
-                            )}</span>
-                        </div>
-                        <div class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
-                            ${comment.Content}
-                        </div>
-                        ${
-                           isOwner
-                              ? `
-                        <div class="flex items-center space-x-2 mt-2">
-                            <button class="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 edit-comment-btn" data-comment-id="${comment.ID}">
-                                <i class="fas fa-edit mr-1"></i>Edit
-                            </button>
-                            <button class="text-xs text-red-500 hover:text-red-700 delete-comment-btn" data-comment-id="${comment.ID}">
-                                <i class="fas fa-trash mr-1"></i>Delete
-                            </button>
-                        </div>
-                        `
-                              : ""
-                        }
-                    </div>
-                </div>
-            </div>
-        `;
    }
 
    updateCommentCount() {
@@ -601,7 +618,7 @@ class CommentsManager {
       submitBtn.textContent = "Posting...";
 
       try {
-         const response = await fetch(`/posts/${postId}/comments`, {
+         const response = await fetch(`/api/posts/${postId}/comments`, {
             method: "POST",
             headers: {
                "Content-Type": "application/json",
@@ -725,28 +742,25 @@ class CommentsManager {
    }
 
    createCommentHTML(comment) {
-      const currentUserId = parseInt(document.body.dataset.userId) || 0;
-      const isOwner = currentUserId === comment.user_id;
+      console.log("createCommentHTML called with:", comment);
+      console.log("comment.ID:", comment.ID, "comment.id:", comment.id);
 
-      const username = comment.username || "Anonymous";
-      const createdAt = comment.created_at
-         ? new Date(comment.created_at)
+      const currentUserId = parseInt(document.body.dataset.userId) || 0;
+      const isOwner = currentUserId === comment.UserID;
+
+      const username = comment.Username || "Anonymous";
+      const createdAt = comment.CreatedAt
+         ? new Date(comment.CreatedAt)
          : new Date();
 
-      const isReply =
-         comment.parent_id !== null && comment.parent_id !== undefined;
-      const depthClass = isReply ? "ml-4" : "";
-      const avatarSize = isReply ? "w-6 h-6" : "w-8 h-8";
-      const avatarIcon = isReply ? "fa-reply" : "fa-user";
+      console.log("Username:", username, "CreatedAt:", createdAt, "isOwner:", isOwner);
 
       return `
-            <div class="border-l-2 border-gray-200 dark:border-gray-600 pl-4 ${depthClass}" data-comment-id="${
-         comment.id
-      }">
+            <div class="border-l-2 border-gray-200 dark:border-gray-600 pl-4" data-comment-id="${comment.ID}">
                 <div class="flex items-start space-x-3">
                     <div class="flex-shrink-0">
-                        <div class="${avatarSize} bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
-                            <i class="fas ${avatarIcon} text-gray-600 dark:text-gray-400 text-xs"></i>
+                        <div class="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-gray-600 dark:text-gray-400 text-xs"></i>
                         </div>
                     </div>
                     <div class="flex-1 min-w-0">
@@ -765,76 +779,18 @@ class CommentsManager {
                             )}</span>
                         </div>
                         <div class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
-                            ${comment.content}
+                            ${comment.Content}
                         </div>
+                        ${
+                           isOwner
+                              ? `
                         <div class="flex items-center space-x-2 mt-2">
-                            <button class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 reply-btn" data-comment-id="${
-                               comment.id
-                            }" data-parent-id="${comment.id}" data-post-id="${
-         comment.post_id || document.body.dataset.postId
-      }">
-                                <i class="fas fa-reply mr-1"></i>Reply
-                            </button>
-                            ${
-                               isOwner
-                                  ? `
-                            <button class="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 edit-comment-btn" data-comment-id="${comment.id}">
+                            <button class="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 edit-comment-btn" data-comment-id="${comment.ID}">
                                 <i class="fas fa-edit mr-1"></i>Edit
                             </button>
-                            <button class="text-xs text-red-500 hover:text-red-700 delete-comment-btn" data-comment-id="${comment.id}">
+                            <button class="text-xs text-red-500 hover:text-red-700 delete-comment-btn" data-comment-id="${comment.ID}">
                                 <i class="fas fa-trash mr-1"></i>Delete
                             </button>
-                            `
-                                  : ""
-                            }
-                        </div>
-
-                        <!-- Reply Form (hidden by default) -->
-                        <div class="reply-form mt-3 hidden" data-comment-id="${
-                           comment.id
-                        }">
-                            <div class="flex items-start space-x-3">
-                                <div class="flex-shrink-0">
-                                    <div class="w-6 h-6 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
-                                        <i class="fas fa-reply text-gray-600 dark:text-gray-400 text-xs"></i>
-                                    </div>
-                                </div>
-                                <div class="flex-1">
-                                    <textarea class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 text-sm resize-y" rows="2" placeholder="Write a reply..." data-reply-content="${
-                                       comment.id
-                                    }"></textarea>
-                                    <div class="flex justify-end space-x-2 mt-2">
-                                        <button class="px-3 py-1 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 cancel-reply-btn" data-comment-id="${
-                                           comment.id
-                                        }">Cancel</button>
-                                        <button class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 submit-reply-btn" data-comment-id="${
-                                           comment.id
-                                        }" data-parent-id="${
-         comment.id
-      }" data-post-id="${
-         comment.post_id || document.body.dataset.postId
-      }">Reply</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Nested Replies -->
-                        ${
-                           comment.replies && comment.replies.length > 0
-                              ? `
-                        <div class="replies-container mt-3 space-y-2" data-replies-container="${
-                           comment.id
-                        }">
-                            ${comment.replies
-                               .map((reply) =>
-                                  this.createReplyHTML(
-                                     reply,
-                                     comment.post_id ||
-                                        document.body.dataset.postId
-                                  )
-                               )
-                               .join("")}
                         </div>
                         `
                               : ""

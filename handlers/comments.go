@@ -228,6 +228,26 @@ func DeleteComment(c *fiber.Ctx) error {
 	})
 }
 
+// Retrieves a single comment by its ID
+func GetComment(c *fiber.Ctx) error {
+	commentIDStr := c.Params("commentId")
+	commentID, err := strconv.Atoi(commentIDStr)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Invalid comment ID",
+		})
+	}
+
+	comment, err := database.GetCommentByID(commentID)
+	if err != nil {
+		return c.Status(404).JSON(fiber.Map{
+			"error": "Comment not found",
+		})
+	}
+
+	return c.JSON(comment)
+}
+
 // Retrieves a single post with its comments for viewing
 func GetPostView(c *fiber.Ctx) error {
 	itemID := c.Params("itemId")

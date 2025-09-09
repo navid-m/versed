@@ -200,7 +200,7 @@ class SubverseManager {
 
                   <div class="flex-1 min-w-0">
                      <h2 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 hover:text-gray-700 dark:hover:text-gray-300 transition-colors line-clamp-2">
-                        <a href="/posts/${post.id}" class="hover:underline">
+                        <a href="/post/${post.id}" class="hover:underline">
                            ${post.title}
                         </a>
                      </h2>

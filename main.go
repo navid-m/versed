@@ -991,6 +991,7 @@ func main() {
 	app.Get("/api/posts/:itemId", handlers.GetPostView)
 	app.Get("/api/posts/:itemId/comments", handlers.GetComments)
 	app.Post("/api/posts/:itemId/comments", handlers.CreateComment)
+	app.Get("/api/comments/:commentId", handlers.GetComment)
 	app.Put("/api/comments/:commentId", handlers.UpdateComment)
 	app.Delete("/api/comments/:commentId", handlers.DeleteComment)
 
