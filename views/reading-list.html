@@ -138,16 +138,6 @@
    {% include "partials/footer.html" %}
 
    <script>
-      const darkModeToggle = document.getElementById("darkModeToggle");
-      const toggleSlider = document.getElementById("toggleSlider");
-      const userMenuButton = document.getElementById("userMenuButton");
-      const userDropdown = document.getElementById("userDropdown");
-
-      function htmlDecode(input) {
-         var doc = new DOMParser().parseFromString(input, "text/html");
-         return doc.documentElement.textContent;
-      }
-
       document.addEventListener("DOMContentLoaded", function () {
          const avatarElement = document.querySelector("[data-email]");
          if (avatarElement) {
@@ -323,5 +313,6 @@
       }
    </style>
 </body>
+<script src="/static/js/index.js"></script>
 
 </html>
