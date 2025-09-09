@@ -10,8 +10,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// Creates a new user in the database with a hashed password
-func CreateUser(email, username, password string) error {
+// Creates a new user in the database with a hashed password and IP address tracking
+func CreateUser(email, username, password, ipAddress string) error {
 	var emailCount int
 	err := db.QueryRow("SELECT COUNT(*) FROM users WHERE email = ?", email).Scan(&emailCount)
 	if err != nil {
@@ -36,8 +36,8 @@ func CreateUser(email, username, password string) error {
 	}
 
 	sqlQuery, args, err := squirrel.Insert("users").
-		Columns("email", "username", "password").
-		Values(email, username, string(hashedPassword)).
+		Columns("email", "username", "password", "ip_address").
+		Values(email, username, string(hashedPassword), ipAddress).
 		ToSql()
 	if err != nil {
 		return fmt.Errorf("error preparing query: %v", err)

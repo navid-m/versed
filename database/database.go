@@ -35,6 +35,7 @@ func createTables() error {
 			email TEXT UNIQUE NOT NULL,
 			username TEXT,
 			password TEXT NOT NULL,
+			ip_address TEXT,
 			is_admin BOOLEAN DEFAULT 0
 		)`,
 		`CREATE TABLE IF NOT EXISTS feed_sources (
@@ -183,8 +184,30 @@ func createTables() error {
 		)`,
 	}
 
+	// Check if ip_address column exists in users table and add it if not
+	if err := ensureIPAddressColumn(); err != nil {
+		return err
+	}
+
 	for _, query := range queries {
 		if _, err := db.Exec(query); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// ensureIPAddressColumn checks if the ip_address column exists in the users table and adds it if not
+func ensureIPAddressColumn() error {
+	var count int
+	err := db.QueryRow("SELECT COUNT(*) FROM pragma_table_info('users') WHERE name='ip_address'").Scan(&count)
+	if err != nil {
+		return err
+	}
+	if count == 0 {
+		// Column does not exist, add it
+		_, err = db.Exec("ALTER TABLE users ADD COLUMN ip_address TEXT")
+		if err != nil {
 			return err
 		}
 	}

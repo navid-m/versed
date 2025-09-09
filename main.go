@@ -200,7 +200,7 @@ func main() {
 			return c.Status(400).SendString("Password must be at least 3 characters long")
 		}
 
-		err := database.CreateUser(email, username, password)
+		err := database.CreateUser(email, username, password, c.IP())
 		if err != nil {
 			switch err.Error() {
 			case "email already in use":
