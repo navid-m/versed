@@ -5,8 +5,26 @@ class CommentsManager {
    }
 
    init() {
+      console.log("=== COMMENTS MANAGER INITIALIZING ===");
       this.initializeCommentCount();
       this.setupIndexPageListener();
+
+      const existingComments = document.querySelectorAll("[data-comment-id]");
+      console.log("=== EXISTING COMMENTS IN DOM ===");
+      console.log("Number of existing comments:", existingComments.length);
+      existingComments.forEach((comment, index) => {
+         const commentId = comment.getAttribute("data-comment-id");
+         console.log(`Comment ${index + 1}: ID=${commentId}`);
+         const repliesContainer = comment.querySelector(".replies-container");
+         if (repliesContainer) {
+            const replyElements =
+               repliesContainer.querySelectorAll("[data-comment-id]");
+            console.log(`  - Has ${replyElements.length} replies`);
+         } else {
+            console.log("  - No replies container found");
+         }
+      });
+
       document.addEventListener("click", (e) => {
          if (e.target.closest(".view-comments-btn")) {
             e.preventDefault();
@@ -39,7 +57,6 @@ class CommentsManager {
          }
       });
 
-      // Reply button handlers
       document.addEventListener("click", (e) => {
          if (e.target.closest(".reply-btn")) {
             e.preventDefault();
@@ -164,15 +181,24 @@ class CommentsManager {
          if (response.ok) {
             const serverComment = await response.json();
 
-            console.log("Server comment response:", serverComment);
-            console.log("Current username from DOM:", currentUsername);
-            console.log("User ID from DOM:", document.body.dataset.userId);
+            console.log("=== SERVER COMMENT RESPONSE ===");
+            console.log(
+               "Raw server response:",
+               JSON.stringify(serverComment, null, 2)
+            );
+            console.log("Server comment ID:", serverComment.id);
+            console.log("Server comment PostID:", serverComment.post_id);
+            console.log("Server comment ParentID:", serverComment.parent_id);
+            console.log("Server comment Content:", serverComment.content);
+            console.log("Server comment Username:", serverComment.username);
+            console.log("Server comment CreatedAt:", serverComment.created_at);
 
             const optimisticComment = {
                ID: serverComment.id || Date.now(),
                PostID: postId,
                UserID: parseInt(document.body.dataset.userId) || 0,
-               Username: serverComment.username || currentUsername || "Anonymous",
+               Username:
+                  serverComment.username || currentUsername || "Anonymous",
                Content: content,
                ParentID: null,
                CreatedAt: serverComment.created_at || new Date().toISOString(),
@@ -180,7 +206,11 @@ class CommentsManager {
                Replies: [],
             };
 
-            console.log("Optimistic comment:", optimisticComment);
+            console.log("=== OPTIMISTIC COMMENT STRUCTURE ===");
+            console.log(
+               "Optimistic comment:",
+               JSON.stringify(optimisticComment, null, 2)
+            );
 
             this.addCommentToUI(optimisticComment);
             this.currentCommentCount++;
@@ -214,7 +244,12 @@ class CommentsManager {
    }
 
    refreshCommentFromServer(serverId, tempId) {
-      console.log("Refreshing comment from server:", serverId, "tempId:", tempId);
+      console.log(
+         "Refreshing comment from server:",
+         serverId,
+         "tempId:",
+         tempId
+      );
       fetch(`/api/comments/${serverId}`)
          .then((response) => {
             console.log("Refresh response status:", response.status);
@@ -222,7 +257,6 @@ class CommentsManager {
          })
          .then((updatedComment) => {
             console.log("Updated comment from server:", updatedComment);
-            // Convert snake_case to camelCase for consistency
             const camelCaseComment = {
                ID: updatedComment.id,
                PostID: updatedComment.item_id,
@@ -232,7 +266,7 @@ class CommentsManager {
                CreatedAt: updatedComment.created_at,
                UpdatedAt: updatedComment.updated_at,
                ParentID: updatedComment.parent_id,
-               Replies: updatedComment.replies || []
+               Replies: updatedComment.replies || [],
             };
 
             console.log("Converted camelCase comment:", camelCaseComment);
@@ -244,11 +278,17 @@ class CommentsManager {
 
             if (optimisticElement) {
                const newHTML = this.createCommentHTML(camelCaseComment);
-               console.log("Generated new HTML:", newHTML.substring(0, 200) + "...");
+               console.log(
+                  "Generated new HTML:",
+                  newHTML.substring(0, 200) + "..."
+               );
                optimisticElement.outerHTML = newHTML;
                console.log("Comment HTML replaced successfully");
             } else {
-               console.error("Optimistic element not found for tempId:", tempId);
+               console.error(
+                  "Optimistic element not found for tempId:",
+                  tempId
+               );
             }
          })
          .catch((error) => {
@@ -371,7 +411,6 @@ class CommentsManager {
 
          if (response.ok) {
             const updatedComment = await response.json();
-            // Convert snake_case to camelCase for consistency
             const camelCaseComment = {
                ID: updatedComment.id,
                PostID: updatedComment.item_id,
@@ -381,7 +420,7 @@ class CommentsManager {
                CreatedAt: updatedComment.created_at,
                UpdatedAt: updatedComment.updated_at,
                ParentID: updatedComment.parent_id,
-               Replies: updatedComment.replies || []
+               Replies: updatedComment.replies || [],
             };
             this.updateCommentInUI(camelCaseComment);
             this.showMessage("Comment updated successfully", "success");
@@ -463,13 +502,17 @@ class CommentsManager {
       }
 
       const commentHTML = this.createCommentHTML(comment);
-      console.log("Generated comment HTML:", commentHTML.substring(0, 200) + "...");
+      console.log(
+         "Generated comment HTML:",
+         commentHTML.substring(0, 200) + "..."
+      );
 
       commentsList.insertAdjacentHTML("afterbegin", commentHTML);
       console.log("Comment HTML inserted into DOM");
 
-      // Verify the element was added
-      const addedElement = commentsList.querySelector(`[data-comment-id="${comment.ID}"]`);
+      const addedElement = commentsList.querySelector(
+         `[data-comment-id="${comment.ID}"]`
+      );
       console.log("Added element found:", addedElement);
    }
 
@@ -510,7 +553,6 @@ class CommentsManager {
          const response = await fetch(`/api/comments/${commentId}`);
          if (response.ok) {
             const comment = await response.json();
-            // Convert snake_case to camelCase for consistency
             const camelCaseComment = {
                ID: comment.id,
                PostID: comment.item_id,
@@ -520,7 +562,7 @@ class CommentsManager {
                CreatedAt: comment.created_at,
                UpdatedAt: comment.updated_at,
                ParentID: comment.parent_id,
-               Replies: comment.replies || []
+               Replies: comment.replies || [],
             };
             this.updateCommentInUI(camelCaseComment);
          }
@@ -567,14 +609,11 @@ class CommentsManager {
       }, 3000);
    }
 
-   // Reply functionality methods
    showReplyForm(commentId) {
-      // Hide any existing reply forms
       document.querySelectorAll(".reply-form").forEach((form) => {
          form.classList.add("hidden");
       });
 
-      // Show the reply form for this comment
       const replyForm = document.querySelector(
          `.reply-form[data-comment-id="${commentId}"]`
       );
@@ -625,8 +664,7 @@ class CommentsManager {
             },
             body: JSON.stringify({
                content: content,
-               parent_id:
-                  parentId && parentId !== "undefined" ? parentId : null,
+               parent_id: parentId,
             }),
          });
 
@@ -648,7 +686,6 @@ class CommentsManager {
             );
             console.log("=== CLIENT: Processing received comment ===");
 
-            // Ensure the reply has the correct data
             if (!newReply.username) {
                newReply.username =
                   document.body.dataset.username || "Anonymous";
@@ -658,12 +695,25 @@ class CommentsManager {
             }
             if (!newReply.content) {
                console.error("Reply content is missing from server response!");
-               newReply.content = content; // Use the content we just sent
+               newReply.content = content;
             }
 
             console.log("Reply object after processing:", newReply);
 
-            this.addReplyToUI(newReply, parentId);
+            const formattedReply = {
+               id: newReply.id || newReply.ID,
+               post_id: newReply.post_id || newReply.PostID,
+               user_id: newReply.user_id || newReply.UserID,
+               username: newReply.username || newReply.Username,
+               content: newReply.content || newReply.Content,
+               parent_id: newReply.parent_id || newReply.ParentID,
+               created_at: newReply.created_at || newReply.CreatedAt,
+               updated_at: newReply.updated_at || newReply.UpdatedAt,
+            };
+
+            console.log("Formatted reply for UI:", formattedReply);
+
+            this.addReplyToUI(formattedReply, parentId);
 
             this.cancelReply(commentId);
 
@@ -686,18 +736,18 @@ class CommentsManager {
    }
 
    addReplyToUI(reply, parentId) {
-      console.log(
-         "addReplyToUI called with reply:",
-         reply,
-         "parentId:",
-         parentId
-      );
+      console.log("=== DEBUG: addReplyToUI called ===");
+      console.log("Reply object received:", JSON.stringify(reply, null, 2));
+      console.log("Parent ID:", parentId);
+      console.log("Reply has ID:", reply.id);
+      console.log("Reply has parent_id:", reply.parent_id);
+      console.log("Reply has content:", reply.content);
 
       const parentComment = document.querySelector(
          `[data-comment-id="${parentId}"]`
       );
 
-      console.log("Parent comment found:", parentComment);
+      console.log("Parent comment element found:", parentComment);
 
       if (!parentComment) {
          console.error("Parent comment not found for parentId:", parentId);
@@ -753,10 +803,19 @@ class CommentsManager {
          ? new Date(comment.CreatedAt)
          : new Date();
 
-      console.log("Username:", username, "CreatedAt:", createdAt, "isOwner:", isOwner);
+      console.log(
+         "Username:",
+         username,
+         "CreatedAt:",
+         createdAt,
+         "isOwner:",
+         isOwner
+      );
 
       return `
-            <div class="border-l-2 border-gray-200 dark:border-gray-600 pl-4" data-comment-id="${comment.ID}">
+            <div class="border-l-2 border-gray-200 dark:border-gray-600 pl-4" data-comment-id="${
+               comment.ID
+            }">
                 <div class="flex items-start space-x-3">
                     <div class="flex-shrink-0">
                         <div class="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">

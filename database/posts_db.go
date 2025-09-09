@@ -269,15 +269,19 @@ func GetPostComments(db *sql.DB, postID string) ([]models.PostComment, error) {
 		}
 
 		comment.Replies = []models.PostComment{}
+		log.Printf("DEBUG: Loaded comment ID=%s, ParentID=%v", comment.ID, comment.ParentID)
 		commentMap[comment.ID] = &comment
 	}
 
 	var rootComments []models.PostComment
+	log.Printf("DEBUG: Starting hierarchy building, total comments: %d", len(commentMap))
 	for _, comment := range commentMap {
 		if comment.ParentID == nil {
+			log.Printf("DEBUG: Adding root comment ID=%s", comment.ID)
 			rootComments = append(rootComments, *comment)
 		} else {
 			if parent, exists := commentMap[*comment.ParentID]; exists {
+				log.Printf("DEBUG: Adding reply ID=%s to parent ID=%s", comment.ID, *comment.ParentID)
 				parent.Replies = append(parent.Replies, *comment)
 			} else {
 				// Parent doesn't exist, treat as root comment
@@ -285,6 +289,11 @@ func GetPostComments(db *sql.DB, postID string) ([]models.PostComment, error) {
 				rootComments = append(rootComments, *comment)
 			}
 		}
+	}
+
+	log.Printf("DEBUG: Returning %d root comments", len(rootComments))
+	for i, rootComment := range rootComments {
+		log.Printf("DEBUG: Root comment %d: ID=%s, Replies=%d", i+1, rootComment.ID, len(rootComment.Replies))
 	}
 
 	return rootComments, nil
