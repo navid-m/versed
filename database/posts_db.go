@@ -206,7 +206,7 @@ func CreatePostComment(db *sql.DB, postID string, userID int, username, content 
 	// Update parent_id if provided
 	if parentID != nil {
 		log.Printf("ParentID is not nil, value: '%s'", *parentID)
-		if *parentID != "" {
+		if *parentID != "" && *parentID != "undefined" && *parentID != "null" {
 			log.Printf("Updating parent_id to: %s", *parentID)
 			updateQuery := `UPDATE post_comments SET parent_id = ? WHERE id = ?`
 			_, err = db.Exec(updateQuery, *parentID, commentID)
@@ -216,7 +216,7 @@ func CreatePostComment(db *sql.DB, postID string, userID int, username, content 
 				log.Printf("Successfully updated parent_id")
 			}
 		} else {
-			log.Printf("ParentID is empty string, skipping update")
+			log.Printf("ParentID is empty string or invalid (%s), skipping update", *parentID)
 		}
 	} else {
 		log.Printf("ParentID is nil")

@@ -65,6 +65,8 @@ class CommentsManager {
             const commentId = button.dataset.commentId;
             const parentId = button.dataset.parentId;
             const postId = button.dataset.postId;
+            console.log("Button data attributes - parentId:", JSON.stringify(parentId), "postId:", JSON.stringify(postId));
+            console.log("parentId type:", typeof parentId, "parentId == 'undefined':", parentId === "undefined", "parentId truthy:", !!parentId);
             this.submitReply(commentId, parentId, postId);
          }
       });
@@ -594,26 +596,36 @@ class CommentsManager {
             },
             body: JSON.stringify({
                content: content,
-               parent_id: parentId || null,
+               parent_id: (parentId && parentId !== "undefined") ? parentId : null,
             }),
          });
 
          if (response.ok) {
             const newReply = await response.json();
 
-            console.log("Server response for new reply:", newReply);
+            console.log("=== CLIENT: Received comment from server ===");
+            console.log("CLIENT: Comment ID:", newReply.id);
+            console.log("CLIENT: Comment PostID:", newReply.post_id);
+            console.log("CLIENT: Comment UserID:", newReply.user_id);
+            console.log("CLIENT: Comment Username:", newReply.username);
+            console.log("CLIENT: Comment Content:", newReply.content);
+            console.log("CLIENT: Comment ParentID:", newReply.parent_id);
+            console.log("CLIENT: Comment CreatedAt:", newReply.created_at);
+            console.log("CLIENT: Comment UpdatedAt:", newReply.updated_at);
+            console.log("CLIENT: Full received comment:", JSON.stringify(newReply, null, 2));
+            console.log("=== CLIENT: Processing received comment ===");
 
             // Ensure the reply has the correct data
-            if (!newReply.Username) {
-               newReply.Username =
+            if (!newReply.username) {
+               newReply.username =
                   document.body.dataset.username || "Anonymous";
             }
-            if (!newReply.CreatedAt) {
-               newReply.CreatedAt = new Date().toISOString();
+            if (!newReply.created_at) {
+               newReply.created_at = new Date().toISOString();
             }
-            if (!newReply.Content) {
+            if (!newReply.content) {
                console.error("Reply content is missing from server response!");
-               newReply.Content = content; // Use the content we just sent
+               newReply.content = content; // Use the content we just sent
             }
 
             console.log("Reply object after processing:", newReply);
@@ -697,23 +709,23 @@ class CommentsManager {
 
    createCommentHTML(comment) {
       const currentUserId = parseInt(document.body.dataset.userId) || 0;
-      const isOwner = currentUserId === comment.UserID;
+      const isOwner = currentUserId === comment.user_id;
 
-      const username = comment.Username || "Anonymous";
-      const createdAt = comment.CreatedAt
-         ? new Date(comment.CreatedAt)
+      const username = comment.username || "Anonymous";
+      const createdAt = comment.created_at
+         ? new Date(comment.created_at)
          : new Date();
 
       // Check if this is a reply (has parent_id)
       const isReply =
-         comment.ParentID !== null && comment.ParentID !== undefined;
+         comment.parent_id !== null && comment.parent_id !== undefined;
       const depthClass = isReply ? "ml-4" : "";
       const avatarSize = isReply ? "w-6 h-6" : "w-8 h-8";
       const avatarIcon = isReply ? "fa-reply" : "fa-user";
 
       return `
             <div class="border-l-2 border-gray-200 dark:border-gray-600 pl-4 ${depthClass}" data-comment-id="${
-         comment.ID
+         comment.id
       }">
                 <div class="flex items-start space-x-3">
                     <div class="flex-shrink-0">
@@ -737,23 +749,23 @@ class CommentsManager {
                             )}</span>
                         </div>
                         <div class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
-                            ${comment.Content}
+                            ${comment.content}
                         </div>
                         <div class="flex items-center space-x-2 mt-2">
                             <button class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 reply-btn" data-comment-id="${
-                               comment.ID
-                            }" data-parent-id="${comment.ID}" data-post-id="${
-         comment.PostID || document.body.dataset.postId
+                               comment.id
+                            }" data-parent-id="${comment.id}" data-post-id="${
+         comment.post_id || document.body.dataset.postId
       }">
                                 <i class="fas fa-reply mr-1"></i>Reply
                             </button>
                             ${
                                isOwner
                                   ? `
-                            <button class="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 edit-comment-btn" data-comment-id="${comment.ID}">
+                            <button class="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 edit-comment-btn" data-comment-id="${comment.id}">
                                 <i class="fas fa-edit mr-1"></i>Edit
                             </button>
-                            <button class="text-xs text-red-500 hover:text-red-700 delete-comment-btn" data-comment-id="${comment.ID}">
+                            <button class="text-xs text-red-500 hover:text-red-700 delete-comment-btn" data-comment-id="${comment.id}">
                                 <i class="fas fa-trash mr-1"></i>Delete
                             </button>
                             `
@@ -763,7 +775,7 @@ class CommentsManager {
 
                         <!-- Reply Form (hidden by default) -->
                         <div class="reply-form mt-3 hidden" data-comment-id="${
-                           comment.ID
+                           comment.id
                         }">
                             <div class="flex items-start space-x-3">
                                 <div class="flex-shrink-0">
@@ -773,18 +785,18 @@ class CommentsManager {
                                 </div>
                                 <div class="flex-1">
                                     <textarea class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 text-sm resize-y" rows="2" placeholder="Write a reply..." data-reply-content="${
-                                       comment.ID
+                                       comment.id
                                     }"></textarea>
                                     <div class="flex justify-end space-x-2 mt-2">
                                         <button class="px-3 py-1 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 cancel-reply-btn" data-comment-id="${
-                                           comment.ID
+                                           comment.id
                                         }">Cancel</button>
                                         <button class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 submit-reply-btn" data-comment-id="${
-                                           comment.ID
+                                           comment.id
                                         }" data-parent-id="${
-         comment.ID
+         comment.id
       }" data-post-id="${
-         comment.PostID || document.body.dataset.postId
+         comment.post_id || document.body.dataset.postId
       }">Reply</button>
                                     </div>
                                 </div>
@@ -793,15 +805,15 @@ class CommentsManager {
 
                         <!-- Nested Replies -->
                         ${
-                           comment.Replies && comment.Replies.length > 0
+                           comment.replies && comment.replies.length > 0
                               ? `
                         <div class="replies-container mt-3 space-y-2" data-replies-container="${
-                           comment.ID
+                           comment.id
                         }">
-                            ${comment.Replies.map((reply) =>
+                            ${comment.replies.map((reply) =>
                                this.createReplyHTML(
                                   reply,
-                                  comment.PostID || document.body.dataset.postId
+                                  comment.post_id || document.body.dataset.postId
                                )
                             ).join("")}
                         </div>
@@ -816,11 +828,11 @@ class CommentsManager {
 
    createReplyHTML(reply, postId = "", depth = 1) {
       const currentUserId = parseInt(document.body.dataset.userId) || 0;
-      const isOwner = currentUserId === reply.UserID;
+      const isOwner = currentUserId === reply.user_id;
 
-      const username = reply.Username || "Anonymous";
-      const createdAt = reply.CreatedAt
-         ? new Date(reply.CreatedAt)
+      const username = reply.username || "Anonymous";
+      const createdAt = reply.created_at
+         ? new Date(reply.created_at)
          : new Date();
 
       // Calculate margin based on depth
@@ -828,7 +840,7 @@ class CommentsManager {
 
       return `
          <div class="border-l-2 border-gray-200 dark:border-gray-600 pl-4 ${marginClass}" data-comment-id="${
-            reply.ID
+            reply.id
          }">
             <div class="flex items-start space-x-3">
                <div class="flex-shrink-0">
@@ -852,21 +864,21 @@ class CommentsManager {
                      )}</span>
                   </div>
                   <div class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
-                     ${reply.Content}
+                     ${reply.content}
                   </div>
                   <div class="flex items-center space-x-2 mt-2">
                      <button class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 reply-btn" data-comment-id="${
-                        reply.ID
-                     }" data-parent-id="${reply.ID}" data-post-id="${postId}">
+                        reply.id
+                     }" data-parent-id="${reply.id}" data-post-id="${postId}">
                         <i class="fas fa-reply mr-1"></i>Reply
                      </button>
                      ${
                         isOwner
                            ? `
-                        <button class="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 edit-comment-btn" data-comment-id="${reply.ID}">
+                        <button class="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 edit-comment-btn" data-comment-id="${reply.id}">
                            <i class="fas fa-edit mr-1"></i>Edit
                         </button>
-                        <button class="text-xs text-red-500 hover:text-red-700 delete-comment-btn" data-comment-id="${reply.ID}">
+                        <button class="text-xs text-red-500 hover:text-red-700 delete-comment-btn" data-comment-id="${reply.id}">
                            <i class="fas fa-trash mr-1"></i>Delete
                         </button>
                      `
@@ -876,7 +888,7 @@ class CommentsManager {
 
                   <!-- Reply Form (hidden by default) -->
                   <div class="reply-form mt-3 hidden" data-comment-id="${
-                     reply.ID
+                     reply.id
                   }">
                      <div class="flex items-start space-x-3">
                         <div class="flex-shrink-0">
@@ -886,16 +898,16 @@ class CommentsManager {
                         </div>
                         <div class="flex-1">
                            <textarea class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 text-sm resize-y" rows="2" placeholder="Write a reply..." data-reply-content="${
-                              reply.ID
+                              reply.id
                            }"></textarea>
                            <div class="flex justify-end space-x-2 mt-2">
                               <button class="px-3 py-1 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 cancel-reply-btn" data-comment-id="${
-                                 reply.ID
+                                 reply.id
                               }">Cancel</button>
                               <button class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 submit-reply-btn" data-comment-id="${
-                                 reply.ID
+                                 reply.id
                               }" data-parent-id="${
-         reply.ID
+         reply.id
       }" data-post-id="${postId}">Reply</button>
                            </div>
                         </div>

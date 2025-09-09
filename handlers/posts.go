@@ -321,6 +321,20 @@ func CreatePostComment(c *fiber.Ctx) error {
 		})
 	}
 
+	log.Printf("=== SERVER: About to return comment ===")
+	log.Printf("SERVER: Comment ID: %s", comment.ID)
+	log.Printf("SERVER: Comment PostID: %s", comment.PostID)
+	log.Printf("SERVER: Comment UserID: %d", comment.UserID)
+	log.Printf("SERVER: Comment Username: %s", comment.Username)
+	log.Printf("SERVER: Comment Content: %s", comment.Content)
+	if comment.ParentID != nil {
+		log.Printf("SERVER: Comment ParentID: %s", *comment.ParentID)
+	} else {
+		log.Printf("SERVER: Comment ParentID: nil")
+	}
+	log.Printf("SERVER: Full comment structure: %+v", comment)
+	log.Printf("=== SERVER: Returning comment to client ===")
+
 	return c.Status(fiber.StatusCreated).JSON(comment)
 }
 
