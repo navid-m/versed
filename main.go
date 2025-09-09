@@ -53,13 +53,9 @@ func main() {
 		scheduler    = NewFeedScheduler(database.GetDB())
 	)
 
-	log.Printf("=== VIEWS PATH: %s ===", viewsPath)
-	log.Printf("=== TEMPLATE ENGINE CREATED ===")
-	log.Printf("=== STARTING FEED SCHEDULER ===")
 	scheduler.Start()
 	defer scheduler.Stop()
 
-	log.Printf("=== SETTING UP MIDDLEWARE ===")
 	app.Use(func(c *fiber.Ctx) error {
 		sess, err := store.Get(c)
 		if err == nil {
@@ -75,7 +71,6 @@ func main() {
 		return c.Next()
 	})
 
-	log.Printf("=== SETTING UP IP BAN MIDDLEWARE ===")
 	app.Use(func(c *fiber.Ctx) error {
 		clientIP := c.IP()
 
@@ -562,13 +557,9 @@ func main() {
 
 		var hiddenItems []feeds.FeedItem
 		for _, itemID := range itemIDs {
-			query := `SELECT fi.id, fi.source_id, fi.title, fi.url, fi.description, fi.author, fi.published_at, COALESCE(fi.score, 0) as score, COALESCE(fi.comments_count, 0) as comments_count, fi.created_at, fs.name as source_name
-				FROM feed_items fi
-				JOIN feed_sources fs ON fi.source_id = fs.id
-				WHERE fi.id = ?`
 			var item feeds.FeedItem
 			var sourceName string
-			err := database.GetDB().QueryRow(query, itemID).Scan(
+			err := database.GetDB().QueryRow(database.FeedItemsQueryVariation, itemID).Scan(
 				&item.ID, &item.SourceID, &item.Title, &item.URL, &item.Description,
 				&item.Author, &item.PublishedAt, &item.Score, &item.CommentsCount, &item.CreatedAt, &sourceName)
 			if err != nil {
@@ -708,7 +699,7 @@ func main() {
 		categoryName = strings.ReplaceAll(categoryName, "-", " ")
 
 		var categoryID int
-		err := db.QueryRow("SELECT id FROM user_categories WHERE user_id = ? AND LOWER(name) = LOWER(?)", userID, categoryName).Scan(&categoryID)
+		err := db.QueryRow(database.CategoryQueryVariation, userID, categoryName).Scan(&categoryID)
 		if err != nil {
 			log.Printf("Category not found: %v (user_id=%d, name='%s')", err, userID, categoryName)
 			return c.Status(404).SendString("Category not found")
@@ -899,7 +890,7 @@ func main() {
 		log.Printf("Graph API called for user %d", userID)
 
 		db := database.GetDB()
-		categoryRows, err := db.Query("SELECT id, name FROM user_categories WHERE user_id = ?", userID)
+		categoryRows, err := db.Query(database.CategoryQuery, userID)
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{
 				"error": "Failed to get categories",
@@ -993,16 +984,14 @@ func main() {
 			&post.CreatedAt, &sourceName,
 		)
 
-		fmt.Println("helloo")
 		if err != nil {
-			fmt.Println("hello2")
 			postObj, postErr := database.GetPostByID(db, itemID)
 			if postErr != nil {
 				return c.Status(404).SendString("Post not found")
 			}
 
 			var subverse models.Subverse
-			subverseErr := db.QueryRow("SELECT id, name, created_at FROM subverses WHERE id = ?", postObj.SubverseID).Scan(
+			subverseErr := db.QueryRow(database.SubverseQuery, postObj.SubverseID).Scan(
 				&subverse.ID, &subverse.Name, &subverse.CreatedAt)
 			if subverseErr != nil {
 				return c.Status(500).SendString("Failed to get subverse information")
@@ -1052,8 +1041,6 @@ func main() {
 			log.Printf("Failed to get comments: %v", err)
 			comments = []database.Comment{}
 		}
-
-		log.Printf("=== POST PAGE DEBUG: About to render template with %d comments ===", len(comments))
 
 		data := fiber.Map{
 			"post":     post,

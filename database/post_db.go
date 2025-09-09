@@ -109,3 +109,5 @@ func RetrieveReadingList(userID int) (*sql.Rows, error) {
 	rows, err := GetDB().Query(query, userID)
 	return rows, err
 }
+
+var SubverseQuery = "SELECT id, name, created_at FROM subverses WHERE id = ?"
