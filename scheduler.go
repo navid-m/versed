@@ -103,7 +103,7 @@ func CreateOrUpdateFeedSource(db *sql.DB, name, url string) (*feeds.FeedSource, 
 }
 
 func ResetAllFeedTimestamps(db *sql.DB) error {
-	query := `UPDATE feed_sources SET last_updated = datetime('2000-01-01 00:00:00')`
+	query := database.ResetAllFeedTimestampsQuery
 	_, err := db.Exec(query)
 	if err != nil {
 		return fmt.Errorf("failed to reset feed timestamps: %w", err)

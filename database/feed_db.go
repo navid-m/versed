@@ -127,3 +127,5 @@ var FeedItemsQueryVariation = `SELECT fi.id, fi.source_id, fi.title, fi.url, fi.
 FROM feed_items fi
 JOIN feed_sources fs ON fi.source_id = fs.id
 WHERE fi.id = ?`
+
+var ResetAllFeedTimestampsQuery = `UPDATE feed_sources SET last_updated = datetime('2000-01-01 00:00:00')`
