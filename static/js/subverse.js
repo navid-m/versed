@@ -153,10 +153,10 @@ class SubverseManager {
                   <i class="fas fa-folder-open text-4xl"></i>
                </div>
                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-                  No posts in /s/${this.subverseName}
+                  No posts in /${this.subverseName}/
                </h3>
                <p class="text-gray-500 dark:text-gray-400">
-                  Be the first to create a post!
+                  Be the first to create a post.
                </p>
             </div>
          `;
@@ -240,8 +240,14 @@ class SubverseManager {
                            ${createdAt}
                         </span>
                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200">
-                           <span class="sm:hidden">${(post.post_type || 'Unknown').slice(0, 4)}${(post.post_type || '').length > 4 ? '..' : ''}</span>
-                           <span class="hidden sm:inline">${post.post_type}</span>
+                           <span class="sm:hidden">${(
+                              post.post_type || "Unknown"
+                           ).slice(0, 4)}${
+         (post.post_type || "").length > 4 ? ".." : ""
+      }</span>
+                           <span class="hidden sm:inline">${
+                              post.post_type
+                           }</span>
                         </span>
                         ${
                            isLoggedIn
