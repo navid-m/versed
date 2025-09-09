@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"log"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/navid-m/versed/database"
@@ -93,12 +94,15 @@ func CreatePost(c *fiber.Ctx) error {
 
 // Handles retrieving a single post
 func GetPost(c *fiber.Ctx) error {
-	postID, err := c.ParamsInt("postID")
-	if err != nil {
+	postIDStr := c.Params("postID")
+	if postIDStr == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Invalid post ID",
 		})
 	}
+
+	// Use the UUID string directly without conversion
+	postID := strings.TrimSpace(postIDStr)
 
 	db := database.GetDB()
 	post, err := database.GetPostByID(db, postID)
@@ -196,12 +200,15 @@ func UpdatePost(c *fiber.Ctx) error {
 		})
 	}
 
-	postID, err := c.ParamsInt("postID")
-	if err != nil {
+	postIDStr := c.Params("postID")
+	if postIDStr == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Invalid post ID",
 		})
 	}
+
+	// Use the UUID string directly without conversion
+	postID := strings.TrimSpace(postIDStr)
 
 	var req struct {
 		Title   string `json:"title"`
@@ -221,7 +228,7 @@ func UpdatePost(c *fiber.Ctx) error {
 	}
 
 	db := database.GetDB()
-	err = database.UpdatePost(db, postID, userID.(int), req.Title, req.Content)
+	err := database.UpdatePost(db, postID, userID.(int), req.Title, req.Content)
 	if err != nil {
 		log.Printf("Failed to update post: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -244,15 +251,18 @@ func DeletePost(c *fiber.Ctx) error {
 		})
 	}
 
-	postID, err := c.ParamsInt("postID")
-	if err != nil {
+	postIDStr := c.Params("postID")
+	if postIDStr == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Invalid post ID",
 		})
 	}
 
+	// Use the UUID string directly without conversion
+	postID := strings.TrimSpace(postIDStr)
+
 	db := database.GetDB()
-	err = database.DeletePost(db, postID, userID.(int))
+	err := database.DeletePost(db, postID, userID.(int))
 	if err != nil {
 		log.Printf("Failed to delete post: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -276,16 +286,19 @@ func CreatePostComment(c *fiber.Ctx) error {
 		})
 	}
 
-	postID, err := c.ParamsInt("postID")
-	if err != nil {
+	postIDStr := c.Params("postID")
+	if postIDStr == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Invalid post ID",
 		})
 	}
 
+	// Use the UUID string directly without conversion
+	postID := strings.TrimSpace(postIDStr)
+
 	var req struct {
-		Content  string `json:"content"`
-		ParentID *int   `json:"parent_id,omitempty"`
+		Content  string  `json:"content"`
+		ParentID *string `json:"parent_id,omitempty"`
 	}
 
 	if err := c.BodyParser(&req); err != nil {
@@ -314,12 +327,15 @@ func CreatePostComment(c *fiber.Ctx) error {
 
 // Handles retrieving comments for a post
 func GetPostComments(c *fiber.Ctx) error {
-	postID, err := c.ParamsInt("postID")
-	if err != nil {
+	postIDStr := c.Params("postID")
+	if postIDStr == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Invalid post ID",
 		})
 	}
+
+	// Use the UUID string directly without conversion
+	postID := strings.TrimSpace(postIDStr)
 
 	db := database.GetDB()
 	comments, err := database.GetPostComments(db, postID)
@@ -423,12 +439,15 @@ func VotePost(c *fiber.Ctx) error {
 		})
 	}
 
-	postID, err := c.ParamsInt("postID")
-	if err != nil {
+	postIDStr := c.Params("postID")
+	if postIDStr == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Invalid post ID",
 		})
 	}
+
+	// Use the UUID string directly without conversion
+	postID := strings.TrimSpace(postIDStr)
 
 	var req struct {
 		VoteType string `json:"vote_type"`
@@ -448,7 +467,7 @@ func VotePost(c *fiber.Ctx) error {
 
 	db := database.GetDB()
 
-	err = database.VoteOnPost(db, userID.(int), postID, req.VoteType)
+	err := database.VoteOnPost(db, userID.(int), postID, req.VoteType)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to vote on post",

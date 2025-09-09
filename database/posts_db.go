@@ -7,10 +7,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/navid-m/versed/models"
 )
 
-// CreatePost creates a new post in a subverse
+// generateUUID generates a new UUID string
+func generateUUID() string {
+	return uuid.New().String()
+}
 func CreatePost(db *sql.DB, subverseID, userID int, username, title, content, postType, url string) (*models.Post, error) {
 	if postType != "text" && postType != "link" {
 		return nil, fmt.Errorf("invalid post type: must be 'text' or 'link'")
@@ -24,22 +28,20 @@ func CreatePost(db *sql.DB, subverseID, userID int, username, title, content, po
 		return nil, fmt.Errorf("content is required for text posts")
 	}
 
-	query := `INSERT INTO posts (subverse_id, user_id, title, content, post_type, url, score, created_at, updated_at)
-	          VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)`
+	// Generate UUID for the post ID
+	postID := generateUUID()
+
+	query := `INSERT INTO posts (id, subverse_id, user_id, title, content, post_type, url, score, created_at, updated_at)
+	          VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?)`
 
 	now := time.Now()
-	result, err := db.Exec(query, subverseID, userID, title, content, postType, url, now, now)
+	_, err := db.Exec(query, postID, subverseID, userID, title, content, postType, url, now, now)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create post: %w", err)
 	}
 
-	id, err := result.LastInsertId()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get post ID: %w", err)
-	}
-
 	post := &models.Post{
-		ID:         int(id),
+		ID:         postID,
 		SubverseID: subverseID,
 		UserID:     userID,
 		Username:   username,
@@ -56,7 +58,7 @@ func CreatePost(db *sql.DB, subverseID, userID int, username, title, content, po
 }
 
 // GetPostByID retrieves a post by its ID
-func GetPostByID(db *sql.DB, postID int) (*models.Post, error) {
+func GetPostByID(db *sql.DB, postID string) (*models.Post, error) {
 	query := `SELECT p.id, p.subverse_id, p.user_id, u.username, p.title, p.content, p.post_type, p.url, p.score, p.created_at, p.updated_at
 	          FROM posts p
 	          JOIN users u ON p.user_id = u.id
@@ -123,7 +125,7 @@ func GetPostsBySubverse(db *sql.DB, subverseID int, limit, offset int) ([]models
 }
 
 // UpdatePost updates a post's title and content
-func UpdatePost(db *sql.DB, postID, userID int, title, content string) error {
+func UpdatePost(db *sql.DB, postID string, userID int, title, content string) error {
 	query := `UPDATE posts SET title = ?, content = ?, updated_at = ? WHERE id = ? AND user_id = ?`
 	result, err := db.Exec(query, title, content, time.Now(), postID, userID)
 	if err != nil {
@@ -143,7 +145,7 @@ func UpdatePost(db *sql.DB, postID, userID int, title, content string) error {
 }
 
 // DeletePost deletes a post and all its comments
-func DeletePost(db *sql.DB, postID, userID int) error {
+func DeletePost(db *sql.DB, postID string, userID int) error {
 	tx, err := db.Begin()
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
@@ -173,23 +175,21 @@ func DeletePost(db *sql.DB, postID, userID int) error {
 }
 
 // CreatePostComment creates a new comment on a post
-func CreatePostComment(db *sql.DB, postID, userID int, username, content string, parentID *int) (*models.PostComment, error) {
-	query := `INSERT INTO post_comments (post_id, user_id, username, content, parent_id, created_at, updated_at)
-	          VALUES (?, ?, ?, ?, ?, ?, ?)`
+func CreatePostComment(db *sql.DB, postID string, userID int, username, content string, parentID *string) (*models.PostComment, error) {
+	// Generate UUID for the comment ID
+	commentID := generateUUID()
+
+	query := `INSERT INTO post_comments (id, post_id, user_id, username, content, parent_id, created_at, updated_at)
+	          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
 
 	now := time.Now()
-	result, err := db.Exec(query, postID, userID, username, content, parentID, now, now)
+	_, err := db.Exec(query, commentID, postID, userID, username, content, parentID, now, now)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create comment: %w", err)
 	}
 
-	id, err := result.LastInsertId()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get comment ID: %w", err)
-	}
-
 	comment := &models.PostComment{
-		ID:        int(id),
+		ID:        commentID,
 		PostID:    postID,
 		UserID:    userID,
 		Username:  username,
@@ -203,7 +203,7 @@ func CreatePostComment(db *sql.DB, postID, userID int, username, content string,
 }
 
 // GetPostComments retrieves comments for a specific post
-func GetPostComments(db *sql.DB, postID int) ([]models.PostComment, error) {
+func GetPostComments(db *sql.DB, postID string) ([]models.PostComment, error) {
 	query := `SELECT id, post_id, user_id, username, content, parent_id, created_at, updated_at
 	          FROM post_comments
 	          WHERE post_id = ?
@@ -215,11 +215,11 @@ func GetPostComments(db *sql.DB, postID int) ([]models.PostComment, error) {
 	}
 	defer rows.Close()
 
-	commentMap := make(map[int]*models.PostComment)
+	commentMap := make(map[string]*models.PostComment)
 
 	for rows.Next() {
 		var comment models.PostComment
-		var parentID sql.NullInt64
+		var parentID sql.NullString
 		err := rows.Scan(
 			&comment.ID, &comment.PostID, &comment.UserID, &comment.Username,
 			&comment.Content, &parentID, &comment.CreatedAt, &comment.UpdatedAt,
@@ -229,8 +229,8 @@ func GetPostComments(db *sql.DB, postID int) ([]models.PostComment, error) {
 		}
 
 		if parentID.Valid {
-			parentIDInt := int(parentID.Int64)
-			comment.ParentID = &parentIDInt
+			parentIDStr := parentID.String
+			comment.ParentID = &parentIDStr
 		}
 
 		comment.Replies = []models.PostComment{}
@@ -302,7 +302,7 @@ func DeletePostComment(db *sql.DB, commentID, userID int) error {
 }
 
 // VoteOnPost creates or updates a vote on a post and updates the post score
-func VoteOnPost(db *sql.DB, userID, postID int, voteType string) error {
+func VoteOnPost(db *sql.DB, userID int, postID string, voteType string) error {
 	if voteType != "upvote" && voteType != "downvote" {
 		return fmt.Errorf("invalid vote type: must be 'upvote' or 'downvote'")
 	}
@@ -363,7 +363,7 @@ func GetUserVoteOnPost(db *sql.DB, userID, postID int) (string, error) {
 }
 
 // updatePostScore recalculates and updates the score for a post based on votes
-func updatePostScore(tx *sql.Tx, postID int) error {
+func updatePostScore(tx *sql.Tx, postID string) error {
 	var upvotes, downvotes int
 
 	err := tx.QueryRow("SELECT COUNT(*) FROM post_votes WHERE post_id = ? AND vote_type = 'upvote'", postID).Scan(&upvotes)

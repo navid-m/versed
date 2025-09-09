@@ -11,7 +11,7 @@ type Subverse struct {
 
 // Post represents a user-created post in a subverse
 type Post struct {
-	ID         int       `json:"id"`
+	ID         string    `json:"id"`
 	SubverseID int       `json:"subverse_id"`
 	UserID     int       `json:"user_id"`
 	Username   string    `json:"username"`
@@ -26,12 +26,12 @@ type Post struct {
 
 // PostComment represents a comment on a post
 type PostComment struct {
-	ID        int           `json:"id"`
-	PostID    int           `json:"post_id"`
+	ID        string        `json:"id"`
+	PostID    string        `json:"post_id"`
 	UserID    int           `json:"user_id"`
 	Username  string        `json:"username"`
 	Content   string        `json:"content"`
-	ParentID  *int          `json:"parent_id,omitempty"`
+	ParentID  *string       `json:"parent_id,omitempty"`
 	CreatedAt time.Time     `json:"created_at"`
 	UpdatedAt time.Time     `json:"updated_at"`
 	Replies   []PostComment `json:"replies,omitempty"`
@@ -40,7 +40,7 @@ type PostComment struct {
 // Vote represents a user's vote on a post
 type Vote struct {
 	UserID    int       `json:"user_id"`
-	PostID    int       `json:"post_id"`
+	PostID    string    `json:"post_id"`
 	VoteType  string    `json:"vote_type"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
