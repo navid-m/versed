@@ -888,7 +888,6 @@ class CategoryManager {
    }
 
    setupEventListeners() {
-      // Add category container if it doesn't exist
       if (!document.getElementById("categoryContainer")) {
          const container = document.querySelector(".flex.flex-wrap.gap-2");
          if (container) {
@@ -898,10 +897,8 @@ class CategoryManager {
    }
 }
 
-// Initialize category manager
 const categoryManager = new CategoryManager();
 
-// Only initialize if we're not on a category URL route
 if (!window.location.pathname.match(/^\/u\/[^\/]+\/c\/[^\/]+$/)) {
    console.log("Initializing category manager for dynamic loading");
    categoryManager.init();
