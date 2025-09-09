@@ -122,7 +122,6 @@ document.addEventListener("DOMContentLoaded", function () {
       });
    });
 
-   // Handle hide/unhide buttons
    console.log("=== Looking for hide buttons ===");
    const hideButtons = document.querySelectorAll(".hide-button");
    console.log(`Found ${hideButtons.length} hide buttons`);
@@ -141,7 +140,6 @@ document.addEventListener("DOMContentLoaded", function () {
             const action = this.getAttribute("data-action");
             console.log(`Hiding post ${feedId}, action: ${action}`);
 
-            // Immediately hide the post
             const article = this.closest("article");
             if (article) {
                console.log("Found article, hiding it");
@@ -188,15 +186,11 @@ document.addEventListener("DOMContentLoaded", function () {
                console.log(`Post ${feedId} ${action}d successfully`, data);
             } catch (error) {
                console.error(`Error ${action}ing post:`, error);
-
-               // Restore the post if API call failed
                if (article) {
                   article.style.display = "";
                   article.style.opacity = "1";
                }
-
-               // Show error message
-               alert(`Failed to ${action} post. Please try again.`);
+               alert(`Failed to ${action} post. Try again.`);
             }
          });
       } else {

@@ -83,7 +83,7 @@ document.addEventListener("DOMContentLoaded", function () {
          hiddenPostsContainer.innerHTML = `
             <div class="text-center py-8 text-red-500 dark:text-red-400">
                <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
-               <p>Failed to load hidden posts. Please try again.</p>
+               <p>Failed to load hidden posts. Try again.</p>
                <p class="text-sm">Error: ${error.message}</p>
             </div>
          `;

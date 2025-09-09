@@ -138,7 +138,7 @@ class SubverseManager {
          }
       } catch (error) {
          console.error("Error saving post:", error);
-         this.showMessage("Failed to save post. Please try again.", "error");
+         this.showMessage("Failed to save post. Try again.", "error");
       }
    }
 
