@@ -28,12 +28,9 @@ import (
 )
 
 func main() {
-	log.Printf("=== MAIN FUNCTION STARTED ===")
 	if err := database.InitDatabase(); err != nil {
-		log.Printf("=== DATABASE INIT ERROR: %v ===", err)
 		log.Fatal("Failed to initialize database:", err)
 	}
-	log.Printf("=== DATABASE INITIALIZED SUCCESSFULLY ===")
 	err := feeds.ResetAllFeedTimestamps(database.GetDB())
 	if err != nil {
 		log.Printf("Warning: Failed to reset feed timestamps: %v", err)
@@ -87,7 +84,6 @@ func main() {
 		return c.Next()
 	})
 
-	log.Printf("=== SETTING UP STATIC FILE MIDDLEWARE ===")
 	app.Use("/static", func(c *fiber.Ctx) error {
 		path := c.Path()
 		if strings.HasPrefix(path, "/static/js/admin") ||
@@ -115,7 +111,6 @@ func main() {
 
 	app.Static("/static", "./static")
 
-	log.Printf("=== SETTING UP ROUTES ===")
 	app.Get("/", func(c *fiber.Ctx) error {
 		userEmail := c.Locals("userEmail")
 		userUsername := c.Locals("userUsername")
@@ -157,12 +152,15 @@ func main() {
 		fmt.Println(err)
 		return c.Render("index", data)
 	})
+
 	app.Get("/signin", func(c *fiber.Ctx) error {
 		return c.Render("signin", fiber.Map{})
 	})
+
 	app.Get("/signup", func(c *fiber.Ctx) error {
 		return c.Render("signup", fiber.Map{})
 	})
+
 	app.Get("/about", func(c *fiber.Ctx) error {
 		userEmail := c.Locals("userEmail")
 		userUsername := c.Locals("userUsername")
