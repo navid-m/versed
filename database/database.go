@@ -186,25 +186,24 @@ func createTables() error {
 		)`,
 	}
 
-	// Check if ip_address column exists in users table and add it if not
-	if err := ensureIPAddressColumn(); err != nil {
-		return err
-	}
-
-	// Check if parent_id column exists in comments table and add it if not
-	if err := ensureParentIDColumn(); err != nil {
-		return err
-	}
-
 	for _, query := range queries {
 		if _, err := db.Exec(query); err != nil {
 			return err
 		}
 	}
+
+	if err := ensureIPAddressColumn(); err != nil {
+		return err
+	}
+
+	if err := ensureParentIDColumn(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
-// ensureIPAddressColumn checks if the ip_address column exists in the users table and adds it if not
+// Checks if the ip_address column exists in the users table and adds it if not
 func ensureIPAddressColumn() error {
 	var count int
 	err := db.QueryRow("SELECT COUNT(*) FROM pragma_table_info('users') WHERE name='ip_address'").Scan(&count)
@@ -212,7 +211,6 @@ func ensureIPAddressColumn() error {
 		return err
 	}
 	if count == 0 {
-		// Column does not exist, add it
 		_, err = db.Exec("ALTER TABLE users ADD COLUMN ip_address TEXT")
 		if err != nil {
 			return err
@@ -221,7 +219,7 @@ func ensureIPAddressColumn() error {
 	return nil
 }
 
-// ensureParentIDColumn checks if the parent_id column exists in the comments table and adds it if not
+// Checks if the parent_id column exists in the comments table and adds it if not
 func ensureParentIDColumn() error {
 	var count int
 	err := db.QueryRow("SELECT COUNT(*) FROM pragma_table_info('comments') WHERE name='parent_id'").Scan(&count)
@@ -229,7 +227,6 @@ func ensureParentIDColumn() error {
 		return err
 	}
 	if count == 0 {
-		// Column does not exist, add it
 		_, err = db.Exec("ALTER TABLE comments ADD COLUMN parent_id INTEGER")
 		if err != nil {
 			return err
