@@ -1,17 +1,17 @@
 <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
-   <div class="flex justify-between items-center h-12">
+   <div class="flex justify-between items-center h-16">
       <div class="flex items-center space-x-4">
          <button id="sidebarToggle"
-            class="md:-ml-11 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-all duration-300 p-2">
+            class="md:-ml-11 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 p-2 rounded-lg">
             <i class="fas fa-bars"></i>
          </button>
          <a href="/"
-            class="flex items-center text-xl text-gray-900 dark:text-gray-100 hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
-            <img src="/static/img/versed-fi.png" style="width: 40px" alt=":D" />
-            <span class="ml-2">Versed</span>
+            class="flex items-center text-xl font-bold text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+            <img src="/static/img/versed-fi.png" style="width: 42px" alt=":D" class="rounded-lg" />
+            <span class="ml-2 bg-gradient-to-r from-blue-600 to-red-600 bg-clip-text text-transparent">Versed</span>
          </a>
       </div>
-      <div class="flex items-center space-x-3">
+      <div class="flex items-center space-x-4">
          <button
             class="hidden sm:flex text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
             <i class="fas fa-moon"></i> <i class="ml-2 fas fa-sun"></i>
@@ -19,64 +19,64 @@
 
          <div class="hidden sm:flex items-center">
             <button id="darkModeToggle"
-               class="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-200 dark:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
+               class="relative inline-flex h-7 w-12 items-center rounded-full bg-gray-200 dark:bg-gray-600 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 hover:bg-gray-300 dark:hover:bg-gray-500">
                <span id="toggleSlider"
-                  class="inline-block h-4 w-4 transform rounded-full bg-white dark:bg-gray-300 transition-transform translate-x-6 dark:translate-x-1"></span>
+                  class="inline-block h-5 w-5 transform rounded-full bg-white dark:bg-gray-900 transition-transform translate-x-6 dark:translate-x-1 shadow-md"></span>
             </button>
          </div>
          {% if Username %}
          <div class="relative">
             <button id="userMenuButton"
-               class="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 rounded-md p-1">
+               class="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-gray-700">
                <div
-                  class="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-semibold"
+                  class="w-8 h-8 bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-md"
                   data-email="{{ Email }}"></div>
-               <span class="text-sm font-medium hidden sm:block truncate max-w-32">
+               <span class="text-sm font-semibold hidden sm:block truncate max-w-32">
                   {{ Username }}
                </span>
                <i class="fas fa-chevron-down text-xs"></i>
             </button>
 
             <div id="userDropdown"
-               class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-50 hidden">
+               class="absolute right-0 mt-2 w-52 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-50 hidden overflow-hidden">
                <div class="py-1">
-                  <div class="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
-                     <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate max-w-40">
+                  <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-700 dark:to-gray-800">
+                     <p class="text-sm font-bold text-gray-900 dark:text-gray-100 truncate max-w-40">
                         {{ Username }}
                      </p>
-                     <p class="text-xs text-gray-500 dark:text-gray-400">
+                     <p class="text-xs text-gray-600 dark:text-gray-400 font-medium">
                         Signed in
                      </p>
                   </div>
                   <a href="/profile"
-                     class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
-                     <i class="fas fa-cog mr-1"></i>
+                     class="block px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                     <i class="fas fa-cog mr-2"></i>
                      Settings
                   </a>
                   <a href="/graph"
-                     class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
-                     <i class="fas fa-project-diagram mr-1"></i>
+                     class="block px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                     <i class="fas fa-project-diagram mr-2"></i>
                      Graph View
                   </a>
                   <a href="/reading-list"
-                     class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
+                     class="block px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                      <i class="fas fa-bookmark mr-2"></i>
                      Reading List
                   </a>
                   <a href="/about"
-                     class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
+                     class="block px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                      <i class="fas fa-question-circle mr-2"></i>
                      About
                   </a>
                   <div class="border-t border-gray-200 dark:border-gray-700 admin-divider hidden"></div>
                   <a href="/admin"
-                     class="block px-4 py-2 text-sm text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 hover:text-orange-700 dark:hover:text-orange-300 transition-colors admin-button hidden">
+                     class="block px-4 py-2.5 text-sm text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 hover:text-orange-700 dark:hover:text-orange-300 transition-colors admin-button hidden">
                      <i class="fas fa-shield-alt mr-2"></i>
                      Admin
                   </a>
                   <div class="border-t border-gray-200 dark:border-gray-700"></div>
                   <a href="/signout"
-                     class="block px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-300 transition-colors">
+                     class="block px-4 py-2.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-300 transition-colors">
                      <i class="fas fa-sign-out-alt mr-2"></i>
                      Sign Out
                   </a>

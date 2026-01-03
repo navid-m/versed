@@ -15,52 +15,52 @@
 <body
    class="bg-gray-50 dark:bg-gradient-to-br dark:from-neutral-900 dark:to-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200"
    data-username="{{ Username }}">
-   <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
+   <header class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10 shadow-sm">
       {% include "partials/navbar.html" %}
    </header>
 
    {% include "partials/sidebar.html" %}
 
-   <main class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4">
-      <div class="flex justify-between items-center mb-6">
-         <div class="flex-1 pr-5 relative">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-               <i class="fas fa-search text-gray-400 text-sm"></i>
+   <main class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-6">
+      <div class="flex justify-between items-center mb-8">
+         <div class="flex-1 pr-5 relative group">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none transition-colors duration-200">
+               <i class="fas fa-search text-gray-400 group-focus-within:text-blue-500 text-sm"></i>
             </div>
             <input type="text"
-               class="block w-full pl-8 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-500 focus:border-transparent"
+               class="block w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-gray-700 rounded-xl text-sm bg-white dark:bg-gray-800 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200 shadow-sm hover:shadow-md"
                placeholder="Search content..." />
          </div>
 
          <div class="flex flex-wrap gap-2" id="categoryContainer">
             <button
-               class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gray-900 dark:bg-gray-700 text-white">
+               class="inline-flex items-center px-4 py-2 rounded-full text-xs font-semibold bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-md hover:shadow-lg hover:from-blue-700 hover:to-blue-600 transition-all duration-200">
                All
             </button>
             <button
-               class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+               class="inline-flex items-center px-4 py-2 rounded-full text-xs font-medium bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 transition-all duration-200 shadow-sm hover:shadow-md"
                onclick="categoryManager.showAddCategoryModal()">
-               <i class="fas fa-plus mr-1"></i>
+               <i class="fas fa-plus mr-1.5"></i>
                Add Category
             </button>
          </div>
       </div>
 
-      <div class="space-y-3" id="postsContainer">
+      <div class="space-y-4" id="postsContainer">
          {% for item in FeedItems %}
          <article
-            class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md dark:hover:shadow-xl transition-shadow">
-            <div class="p-4">
-               <div class="flex items-start space-x-3">
-                  <div class="flex flex-col items-center space-y-1 flex-shrink-0">
-                     <button class="p-2 text-orange-500 hover:text-orange-600 transition-colors"
+            class="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 hover:shadow-xl dark:hover:shadow-2xl hover:border-gray-200 dark:hover:border-gray-600 transition-all duration-300 group overflow-hidden">
+            <div class="p-5">
+               <div class="flex items-start space-x-4">
+                  <div class="flex flex-col items-center space-y-1.5 flex-shrink-0 bg-gray-50 dark:bg-gray-900/50 rounded-xl px-2 py-2">
+                     <button class="p-1.5 text-orange-500 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-lg transition-all duration-200"
                         data-feed-id="{{ item.ID }}" data-vote-type="upvote">
                         <i class="fas fa-chevron-up text-sm"></i>
                      </button>
-                     <span class="text-xs font-medium text-orange-500">
+                     <span class="text-sm font-bold text-orange-500">
                         {{ item.Score }}
                      </span>
-                     <button class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                     <button class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-200"
                         data-feed-id="{{ item.ID }}" data-vote-type="downvote">
                         <i class="fas fa-chevron-down text-sm"></i>
                      </button>
@@ -68,40 +68,38 @@
 
                   <div class="flex-1 min-w-0">
                      <h2
-                        class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 hover:text-gray-700 dark:hover:text-gray-300 transition-colors line-clamp-2">
+                        class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors line-clamp-2 leading-tight">
                         <a href="{{ item.URL }}" target="_blank" class="hover:underline">
                            {{ item.Title }}
                         </a>
                      </h2>
 
-                     <div class="relative mb-4 modern-description">
+                     <div class="relative mb-4 overflow-hidden rounded-xl">
                         <div
-                           class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed line-height-6 font-medium tracking-wide line-clamp-3 bg-gradient-to-br from-gray-50/80 to-white/50 dark:from-gray-800/60 dark:to-gray-700/40 backdrop-blur-sm rounded-lg px-4 py-3 border-l-4 border-blue-500/30 dark:border-blue-400/40 shadow-sm">
+                           class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed line-clamp-3 bg-gradient-to-br from-gray-50 to-blue-50/30 dark:from-gray-800/80 dark:to-blue-900/10 px-4 py-3.5 border-l-4 border-blue-500 dark:border-blue-400 shadow-sm">
                            <p>{{ item.Description|safe }}</p>
                         </div>
-                        <div
-                           class="absolute inset-0 bg-gradient-to-r from-blue-50/20 to-indigo-50/20 dark:from-blue-900/10 dark:to-indigo-900/10 rounded-lg blur-xl transform scale-105 opacity-60">
-                        </div>
+                        <div class="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-gray-50 via-gray-50/90 to-transparent dark:from-gray-800/95 dark:via-gray-800/70 pointer-events-none"></div>
                      </div>
 
-                     <div class="flex items-center text-xs text-gray-500 dark:text-gray-400 space-x-3">
-                        <span class="hidden sm:flex items-center">
-                           <i class="far fa-user mr-1"></i>
+                     <div class="flex items-center text-xs text-gray-500 dark:text-gray-400 space-x-3 flex-wrap gap-y-2">
+                        <span class="hidden sm:flex items-center font-medium">
+                           <i class="far fa-user mr-1.5"></i>
                            {{ item.Author }}
                         </span>
                         <span class="flex items-center">
-                           <i class="far fa-clock mr-1"></i>
+                           <i class="far fa-clock mr-1.5"></i>
                            {{ item.PublishedAt }}
                         </span>
                         <span
-                           class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+                           class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900/40 dark:to-indigo-900/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
                            <span class="sm:hidden">{{ item.SourceName|slice:":4" }}{% if item.SourceName|length > 4 %}..{% endif %}</span>
                            <span class="hidden sm:inline">{{ item.SourceName }}</span>
                         </span>
                         <button
-                           class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors view-comments-btn"
+                           class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 transition-all duration-200 border border-gray-200 dark:border-gray-600 view-comments-btn"
                            data-post-id="{{ item.ID }}">
-                           <i class="far fa-comments mr-1"></i>
+                           <i class="far fa-comments mr-1.5"></i>
                            <span class="hidden sm:inline">View comments</span>
                            <span class="sm:hidden">{{ item.CommentsCount }}</span>
                            <span class="hidden sm:inline ml-1">({{ item.CommentsCount }})</span>
@@ -109,14 +107,14 @@
                      </div>
                   </div>
                   {% if Email %}
-                  <div class="flex flex-col items-center space-y-1 flex-shrink-0 ml-3">
-                     <button class="p-1 text-gray-400 hover:text-blue-500 transition-colors save-button"
+                  <div class="flex flex-col items-center space-y-2 flex-shrink-0 ml-3">
+                     <button class="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all duration-200 save-button"
                         data-feed-id="{{ item.ID }}" data-action="save" title="Save to reading list">
-                        <i class="far fa-bookmark text-sm"></i>
+                        <i class="far fa-bookmark text-base"></i>
                      </button>
-                     <button class="p-1 text-gray-400 hover:text-red-500 transition-colors hide-button"
+                     <button class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200 hide-button"
                         data-feed-id="{{ item.ID }}" data-action="hide" title="Hide post">
-                        <i class="far fa-eye-slash text-sm"></i>
+                        <i class="far fa-eye-slash text-base"></i>
                      </button>
                   </div>
                   {% endif %}
@@ -124,24 +122,24 @@
             </div>
          </article>
          {% endfor %} {% if not FeedItems %}
-         <div class="text-center py-12">
-            <div class="w-16 h-16 mx-auto mb-4 text-gray-400 dark:text-gray-600">
+         <div class="text-center py-16">
+            <div class="w-20 h-20 mx-auto mb-4 text-gray-300 dark:text-gray-700 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
                <i class="fas fa-rss text-4xl"></i>
             </div>
-            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+            <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                No feed items available
             </h3>
-            <p class="text-gray-500 dark:text-gray-400">
+            <p class="text-gray-500 dark:text-gray-400 text-sm">
                Check back later for new content updates.
             </p>
          </div>
          {% endif %}
       </div>
 
-      <div class="text-center py-6">
+      <div class="text-center py-8">
          <button
-            class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium text-sm">
-            <i class="fas fa-plus mr-2"></i>
+            class="inline-flex items-center px-6 py-3 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:shadow-md transition-all duration-200 font-semibold text-sm group">
+            <i class="fas fa-plus mr-2 group-hover:scale-110 transition-transform"></i>
             Load More Posts
          </button>
       </div>
