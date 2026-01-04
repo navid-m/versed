@@ -1,16 +1,16 @@
-<div id="sidebar" class="fixed inset-y-0 left-0 z-50 text-sm w-51 md:w-51 bg-white dark:bg-black shadow-xl transform -translate-x-full transition-transform duration-300 ease-in-out">
+<div id="sidebar" class="fixed inset-y-0 left-0 z-30 text-sm w-64 bg-white dark:bg-black shadow-xl transition-all duration-300 ease-in-out border-r border-gray-200 dark:border-gray-700">
    <div class="flex flex-col h-full">
       <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-         <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+         <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 transition-opacity duration-300">
             <i class="fas fa-layer-group mr-2 text-blue-500"></i>
-            Subverses
+            <span id="sidebarTitle">Subverses</span>
          </h2>
-         <button id="closeSidebar" class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors">
-            <i class="fas fa-times"></i>
+         <button id="collapseSidebar" class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors" title="Collapse sidebar">
+            <i class="fas fa-chevron-left"></i>
          </button>
       </div>
 
-      <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+      <div id="sidebarSearchContainer" class="p-4 border-b border-gray-200 dark:border-gray-700 transition-all duration-300">
          <div class="relative">
             <input type="text" id="subverseSearch" placeholder="Search subverses..."
                class="w-full px-3 py-2 pl-10 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
@@ -18,7 +18,7 @@
          </div>
       </div>
 
-      <div class="flex-1 overflow-y-auto">
+      <div id="sidebarContent" class="flex-1 overflow-y-auto transition-all duration-300">
          <div id="subversesList" class="p-2">
             <div id="loadingState" class="flex items-center justify-center py-8">
                <div class="flex items-center space-x-2 text-gray-500 dark:text-gray-400">
@@ -48,43 +48,47 @@
    </div>
 </div>
 
-<div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
-
 <script>
 class SidebarManager {
    constructor() {
       this.sidebar = document.getElementById('sidebar');
-      this.overlay = document.getElementById('sidebarOverlay');
       this.toggleBtn = document.getElementById('sidebarToggle');
-      this.closeBtn = document.getElementById('closeSidebar');
+      this.collapseBtn = document.getElementById('collapseSidebar');
       this.searchInput = document.getElementById('subverseSearch');
       this.retryBtn = document.getElementById('retryLoad');
+      this.sidebarContent = document.getElementById('sidebarContent');
+      this.sidebarTitle = document.getElementById('sidebarTitle');
+      this.searchContainer = document.getElementById('sidebarSearchContainer');
       this.subverses = [];
       this.filteredSubverses = [];
+      this.isCollapsed = false;
 
       this.init();
    }
 
    init() {
       console.log('Initializing SidebarManager...');
-      console.log('Toggle button found:', !!this.toggleBtn);
-      console.log('Search input found:', !!this.searchInput);
+      
+      document.body.style.marginLeft = '16rem';
+      document.body.style.transition = 'margin-left 300ms ease-in-out';
 
-      this.toggleBtn.addEventListener('click', () => this.toggle());
-      this.closeBtn.addEventListener('click', () => this.close());
-      this.overlay.addEventListener('click', () => this.close());
-
-      if (this.searchInput) {
-         console.log('Adding search input event listener');
-         this.searchInput.addEventListener('input', (e) => {
-            console.log('Search input event fired with value:', e.target.value);
-            this.filterSubverses(e.target.value);
-         });
-      } else {
-         console.error('Search input not found!');
+      if (this.toggleBtn) {
+         this.toggleBtn.addEventListener('click', () => this.toggle());
+      }
+      
+      if (this.collapseBtn) {
+         this.collapseBtn.addEventListener('click', () => this.toggle());
       }
 
-      this.retryBtn.addEventListener('click', () => this.loadSubverses());
+      if (this.searchInput) {
+         this.searchInput.addEventListener('input', (e) => {
+            this.filterSubverses(e.target.value);
+         });
+      }
+
+      if (this.retryBtn) {
+         this.retryBtn.addEventListener('click', () => this.loadSubverses());
+      }
 
       document.addEventListener('keydown', (e) => {
          if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
@@ -97,30 +101,30 @@ class SidebarManager {
    }
 
    toggle() {
-      if (this.sidebar.classList.contains('-translate-x-full')) {
-         this.open();
+      this.isCollapsed = !this.isCollapsed;
+      
+      if (this.isCollapsed) {
+         this.sidebar.style.width = '3.5rem';
+         document.body.style.marginLeft = '3.5rem';
+         this.sidebarContent.style.opacity = '0';
+         this.sidebarContent.style.visibility = 'hidden';
+         this.sidebarTitle.style.opacity = '0';
+         this.sidebarTitle.style.visibility = 'hidden';
+         this.searchContainer.style.opacity = '0';
+         this.searchContainer.style.visibility = 'hidden';
+         this.collapseBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+         this.collapseBtn.title = 'Expand sidebar';
       } else {
-         this.close();
-      }
-   }
-
-   open() {
-      this.sidebar.classList.remove('-translate-x-full');
-      this.overlay.classList.remove('hidden');
-      document.body.style.overflow = 'hidden';
-      if (this.toggleBtn) {
-         this.toggleBtn.style.opacity = '0';
-         this.toggleBtn.style.pointerEvents = 'none';
-      }
-   }
-
-   close() {
-      this.sidebar.classList.add('-translate-x-full');
-      this.overlay.classList.add('hidden');
-      document.body.style.overflow = '';
-      if (this.toggleBtn) {
-         this.toggleBtn.style.opacity = '1';
-         this.toggleBtn.style.pointerEvents = 'auto';
+         this.sidebar.style.width = '16rem';
+         document.body.style.marginLeft = '16rem';
+         this.sidebarContent.style.opacity = '1';
+         this.sidebarContent.style.visibility = 'visible';
+         this.sidebarTitle.style.opacity = '1';
+         this.sidebarTitle.style.visibility = 'visible';
+         this.searchContainer.style.opacity = '1';
+         this.searchContainer.style.visibility = 'visible';
+         this.collapseBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+         this.collapseBtn.title = 'Collapse sidebar';
       }
    }
 
