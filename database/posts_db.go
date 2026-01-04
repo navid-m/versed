@@ -11,11 +11,12 @@ import (
 	"github.com/navid-m/versed/models"
 )
 
-// generateUUID generates a new UUID string
+// Generates a new UUID string
 func generateUUID() string {
 	return uuid.New().String()
 }
 
+// Creates some post in a subverse
 func CreatePost(db *sql.DB, subverseID, userID int, username, title, content, postType, url string) (*models.Post, error) {
 	log.Printf("CreatePost called with subverseID=%d, userID=%d, username='%s', title='%s', postType='%s', url='%s', content length=%d",
 		subverseID, userID, username, title, postType, url, len(content))
@@ -74,7 +75,7 @@ func CreatePost(db *sql.DB, subverseID, userID int, username, title, content, po
 	return post, nil
 }
 
-// GetPostByID retrieves a post by its ID
+// Retrieves a post by its ID
 func GetPostByID(db *sql.DB, postID string) (*models.Post, error) {
 	query := `SELECT p.id, p.subverse_id, p.user_id, u.username, p.title, p.content, p.post_type, p.url, p.score, p.created_at, p.updated_at
 	          FROM posts p
