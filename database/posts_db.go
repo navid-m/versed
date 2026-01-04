@@ -45,7 +45,7 @@ func CreatePost(db *sql.DB, subverseID, userID int, username, title, content, po
 	nowStr := now.Format("2006-01-02 15:04:05")
 	log.Printf("Executing INSERT query with values: id=%s, subverse_id=%d, user_id=%d, title='%s', post_type='%s', timestamp=%s",
 		postID, subverseID, userID, title, postType, nowStr)
-	
+
 	_, err := db.Exec(query, postID, subverseID, userID, title, content, postType, url, nowStr, nowStr)
 	if err != nil {
 		log.Printf("CreatePost database error: %v", err)
@@ -195,7 +195,6 @@ func DeletePost(db *sql.DB, postID string, userID int) error {
 func CreatePostComment(db *sql.DB, postID string, userID int, username, content string, parentID *string) (*models.PostComment, error) {
 	log.Printf("CreatePostComment called with postID='%s', userID=%d, username='%s', content='%s', parentID=%v", postID, userID, username, content, parentID)
 
-	// For now, let's try inserting without the id field to see if SQLite auto-generates it
 	now := time.Now()
 
 	query := `INSERT INTO post_comments (post_id, user_id, username, content, created_at, updated_at)
@@ -209,18 +208,15 @@ func CreatePostComment(db *sql.DB, postID string, userID int, username, content 
 		return nil, fmt.Errorf("failed to create comment: %w", err)
 	}
 
-	// Get the auto-generated ID
 	commentIDInt, err := result.LastInsertId()
 	if err != nil {
 		log.Printf("Failed to get comment ID: %v", err)
 		return nil, fmt.Errorf("failed to get comment ID: %w", err)
 	}
 
-	// Convert to string for our model
 	commentID := fmt.Sprintf("%d", commentIDInt)
 	log.Printf("Created comment with ID: %s", commentID)
 
-	// Update parent_id if provided
 	if parentID != nil {
 		log.Printf("ParentID is not nil, value: '%s'", *parentID)
 		if *parentID != "" && *parentID != "undefined" && *parentID != "null" {
