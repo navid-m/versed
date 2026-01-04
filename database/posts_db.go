@@ -37,13 +37,16 @@ func CreatePost(db *sql.DB, subverseID, userID int, username, title, content, po
 
 	postID := generateUUID()
 	log.Printf("Generated post ID: %s", postID)
+
 	query := `INSERT INTO posts (id, subverse_id, user_id, title, content, post_type, url, score, created_at, updated_at)
 	          VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?)`
-	now := time.Now()
-	log.Printf("Executing INSERT query with values: id=%s, subverse_id=%d, user_id=%d, title='%s', post_type='%s'",
-		postID, subverseID, userID, title, postType)
 
-	_, err := db.Exec(query, postID, subverseID, userID, title, content, postType, url, now, now)
+	now := time.Now()
+	nowStr := now.Format("2006-01-02 15:04:05")
+	log.Printf("Executing INSERT query with values: id=%s, subverse_id=%d, user_id=%d, title='%s', post_type='%s', timestamp=%s",
+		postID, subverseID, userID, title, postType, nowStr)
+	
+	_, err := db.Exec(query, postID, subverseID, userID, title, content, postType, url, nowStr, nowStr)
 	if err != nil {
 		log.Printf("CreatePost database error: %v", err)
 		log.Printf("Failed query: %s", query)
@@ -53,8 +56,6 @@ func CreatePost(db *sql.DB, subverseID, userID int, username, title, content, po
 	}
 
 	log.Printf("Successfully created post with ID: %s", postID)
-
-	createdAt, _ := time.Parse("2006-01-02 15:04:05", now)
 
 	post := &models.Post{
 		ID:         postID,
@@ -66,8 +67,8 @@ func CreatePost(db *sql.DB, subverseID, userID int, username, title, content, po
 		PostType:   postType,
 		URL:        url,
 		Score:      0,
-		CreatedAt:  createdAt,
-		UpdatedAt:  createdAt,
+		CreatedAt:  now,
+		UpdatedAt:  now,
 	}
 
 	return post, nil
