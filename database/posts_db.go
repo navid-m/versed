@@ -102,7 +102,7 @@ func GetPostByID(db *sql.DB, postID string) (*models.Post, error) {
 	return &post, nil
 }
 
-// GetPostsBySubverse retrieves posts for a specific subverse
+// Retrieves posts for a specific subverse
 func GetPostsBySubverse(db *sql.DB, subverseID int, limit, offset int) ([]models.Post, error) {
 	query := `SELECT p.id, p.subverse_id, p.user_id, u.username, p.title, p.content, p.post_type, p.url, p.score, p.created_at, p.updated_at
 	          FROM posts p
@@ -141,7 +141,7 @@ func GetPostsBySubverse(db *sql.DB, subverseID int, limit, offset int) ([]models
 	return posts, nil
 }
 
-// UpdatePost updates a post's title and content
+// Updates a post's title and content
 func UpdatePost(db *sql.DB, postID string, userID int, title, content string) error {
 	query := `UPDATE posts SET title = ?, content = ?, updated_at = ? WHERE id = ? AND user_id = ?`
 	result, err := db.Exec(query, title, content, time.Now(), postID, userID)
@@ -161,7 +161,7 @@ func UpdatePost(db *sql.DB, postID string, userID int, title, content string) er
 	return nil
 }
 
-// DeletePost deletes a post and all its comments
+// Deletes a post and all its comments
 func DeletePost(db *sql.DB, postID string, userID int) error {
 	tx, err := db.Begin()
 	if err != nil {
@@ -191,7 +191,7 @@ func DeletePost(db *sql.DB, postID string, userID int) error {
 	return tx.Commit()
 }
 
-// CreatePostComment creates a new comment on a post
+// Creates a new comment on a post
 func CreatePostComment(db *sql.DB, postID string, userID int, username, content string, parentID *string) (*models.PostComment, error) {
 	log.Printf("CreatePostComment called with postID='%s', userID=%d, username='%s', content='%s', parentID=%v", postID, userID, username, content, parentID)
 
