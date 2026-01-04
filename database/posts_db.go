@@ -54,6 +54,8 @@ func CreatePost(db *sql.DB, subverseID, userID int, username, title, content, po
 
 	log.Printf("Successfully created post with ID: %s", postID)
 
+	createdAt, _ := time.Parse("2006-01-02 15:04:05", now)
+
 	post := &models.Post{
 		ID:         postID,
 		SubverseID: subverseID,
@@ -64,8 +66,8 @@ func CreatePost(db *sql.DB, subverseID, userID int, username, title, content, po
 		PostType:   postType,
 		URL:        url,
 		Score:      0,
-		CreatedAt:  now,
-		UpdatedAt:  now,
+		CreatedAt:  createdAt,
+		UpdatedAt:  createdAt,
 	}
 
 	return post, nil
