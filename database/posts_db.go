@@ -15,30 +15,44 @@ import (
 func generateUUID() string {
 	return uuid.New().String()
 }
+
 func CreatePost(db *sql.DB, subverseID, userID int, username, title, content, postType, url string) (*models.Post, error) {
+	log.Printf("CreatePost called with subverseID=%d, userID=%d, username='%s', title='%s', postType='%s', url='%s', content length=%d",
+		subverseID, userID, username, title, postType, url, len(content))
+
 	if postType != "text" && postType != "link" {
+		log.Printf("CreatePost error: invalid post type '%s'", postType)
 		return nil, fmt.Errorf("invalid post type: must be 'text' or 'link'")
 	}
 
 	if postType == "link" && url == "" {
+		log.Printf("CreatePost error: URL is required for link posts")
 		return nil, fmt.Errorf("URL is required for link posts")
 	}
 
 	if postType == "text" && content == "" {
+		log.Printf("CreatePost error: content is required for text posts")
 		return nil, fmt.Errorf("content is required for text posts")
 	}
 
-	// Generate UUID for the post ID
 	postID := generateUUID()
-
+	log.Printf("Generated post ID: %s", postID)
 	query := `INSERT INTO posts (id, subverse_id, user_id, title, content, post_type, url, score, created_at, updated_at)
 	          VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?)`
-
 	now := time.Now()
+	log.Printf("Executing INSERT query with values: id=%s, subverse_id=%d, user_id=%d, title='%s', post_type='%s'",
+		postID, subverseID, userID, title, postType)
+
 	_, err := db.Exec(query, postID, subverseID, userID, title, content, postType, url, now, now)
 	if err != nil {
+		log.Printf("CreatePost database error: %v", err)
+		log.Printf("Failed query: %s", query)
+		log.Printf("Parameters: postID=%s, subverseID=%d, userID=%d, title='%s', content='%s', postType='%s', url='%s'",
+			postID, subverseID, userID, title, content, postType, url)
 		return nil, fmt.Errorf("failed to create post: %w", err)
 	}
+
+	log.Printf("Successfully created post with ID: %s", postID)
 
 	post := &models.Post{
 		ID:         postID,
